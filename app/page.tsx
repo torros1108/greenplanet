@@ -297,7 +297,7 @@ export default function Home() {
   const heroSlides = [
     {
       title: "Baby First Care",
-      text: "Blid babypleje, økologisk tekstil og en lille gave, der føles gennemtænkt.",
+      text: "Blid babypleje, økologisk tekstil og en lille gave, familien kan bruge.",
       productIds: ["p3", "p5", "p6"]
     },
     {

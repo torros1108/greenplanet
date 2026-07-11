@@ -109,7 +109,7 @@ export const giftboxes: Giftbox[] = [
     packing: "Pakkes som premium-æske med tekstil, pleje og babyprodukt tydeligt opdelt.",
     cardText: "Plads til en længere hilsen fra team, familie eller vennegruppe.",
     delivery: "Velegnet til direkte levering til hjemmet eller arbejdspladsen.",
-    why: "Den kombinerer en højere gaveværdi med produkter, der føles gennemtænkte og brugbare.",
+    why: "Den kombinerer en højere gaveværdi med produkter, der både er pæne og praktiske.",
     details: ["3 produkter", "Premium barselsgave", "God til fællesgave", "Mulighed for længere hilsen"]
   },
   {
