@@ -964,8 +964,8 @@ export default function Home() {
                   <div><span>Total</span><strong>{money(cartTotal)}</strong></div>
                 </div>
                 <div className="checkout-note">
-                  <strong>Efter forespørgsel</strong>
-                  <span>Ordren gemmes lokalt nu. Næste version kan sende den til mail/admin og oprette betalingslink.</span>
+                  <strong>Efter bestilling</strong>
+                  <span>Din forespørgsel gemmes sikkert, og Greenplanet vender tilbage med endelig fragt, levering og betalingsoplysninger.</span>
                 </div>
               </div>
             </section>
@@ -976,7 +976,7 @@ export default function Home() {
               <div className="panel confirmation-panel">
                 <span className="eyebrow">Forespørgsel sendt</span>
                 <h2>Tak for din bestilling</h2>
-                <p>Vi har gemt din forespørgsel som {lastOrder.id}. Næste skridt er at sende den videre til mail eller ordre-admin, men hele ordreflowet kan nu testes fra start til slut.</p>
+                <p>Vi har modtaget din forespørgsel som {lastOrder.id}. Greenplanet vender tilbage med endelig fragt, levering og betalingsoplysninger.</p>
                 <div className="order-preview">
                   <div><span>Ordrenr.</span><strong>{lastOrder.id}</strong></div>
                   <div><span>Bestiller</span><strong>{lastOrder.customer.name || "Ikke udfyldt"}</strong></div>
