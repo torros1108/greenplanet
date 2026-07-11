@@ -413,6 +413,47 @@ export default function Home() {
   }, [heroSlideCount, view]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+    const orderNumber = params.get("order");
+    if (!payment) return;
+
+    if (payment === "success") {
+      const storedOrders = window.localStorage.getItem(orderStorageKey);
+      let matchingOrder: SavedOrder | null = null;
+
+      try {
+        const parsed = storedOrders ? JSON.parse(storedOrders) as SavedOrder[] : [];
+        matchingOrder = Array.isArray(parsed) ? parsed.find((order) => order.id === orderNumber) || null : null;
+      } catch {
+        matchingOrder = null;
+      }
+
+      if (matchingOrder) {
+        setLastOrder(matchingOrder);
+      } else if (orderNumber) {
+        setLastOrder({
+          id: orderNumber,
+          createdAt: new Date().toISOString(),
+          lines: [],
+          total: 0,
+          customer: { name: "", email: "", phone: "", address: "", postcode: "", city: "" },
+          delivery: { method: "", recipientName: "", address: "", postcode: "", city: "", requestedDate: "", note: "" }
+        });
+      }
+
+      resetCheckout();
+      setView("confirmation");
+      window.history.replaceState({}, "", "/");
+    }
+
+    if (payment === "cancelled") {
+      setView("orders");
+      window.history.replaceState({}, "", "/#orders");
+    }
+  }, []);
+
+  useEffect(() => {
     function applyHash() {
       const hash = window.location.hash.replace("#", "");
       if (publicViews.includes(hash as (typeof publicViews)[number])) {
@@ -540,42 +581,51 @@ export default function Home() {
     let orderId = `GP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
-      const response = await fetch("/api/orders", {
+      const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderPayload)
       });
 
       if (response.ok) {
-        const saved = await response.json() as { id?: string };
-        if (saved.id) orderId = saved.id;
+        const saved = await response.json() as { orderNumber?: string; url?: string };
+        if (saved.orderNumber) orderId = saved.orderNumber;
+
+        const order: SavedOrder = {
+          id: orderId,
+          createdAt: new Date().toISOString(),
+          ...orderPayload
+        };
+
+        const storedOrders = window.localStorage.getItem(orderStorageKey);
+        let orders: SavedOrder[] = [];
+
+        try {
+          const parsed = storedOrders ? JSON.parse(storedOrders) : [];
+          orders = Array.isArray(parsed) ? parsed : [];
+        } catch {
+          orders = [];
+        }
+
+        window.localStorage.setItem(orderStorageKey, JSON.stringify([order, ...orders]));
+
+        if (saved.url) {
+          window.location.href = saved.url;
+          return;
+        }
+
+        window.alert("Betaling kunne ikke startes. Prøv igen eller kontakt Greenplanet.");
+        return;
       } else {
-        console.warn("Ordren blev ikke gemt i Supabase. Bruger lokal fallback.");
+        const details = await response.json().catch(() => ({ error: "Betaling kunne ikke startes" })) as { error?: string };
+        window.alert(details.error || "Betaling kunne ikke startes. Prøv igen eller kontakt Greenplanet.");
+        return;
       }
     } catch (error) {
-      console.warn("Ordren blev ikke gemt i Supabase. Bruger lokal fallback.", error);
+      console.warn("Betaling kunne ikke startes.", error);
+      window.alert("Betaling kunne ikke startes. Prøv igen eller kontakt Greenplanet.");
+      return;
     }
-
-    const order: SavedOrder = {
-      id: orderId,
-      createdAt: new Date().toISOString(),
-      ...orderPayload
-    };
-
-    const storedOrders = window.localStorage.getItem(orderStorageKey);
-    let orders: SavedOrder[] = [];
-
-    try {
-      const parsed = storedOrders ? JSON.parse(storedOrders) : [];
-      orders = Array.isArray(parsed) ? parsed : [];
-    } catch {
-      orders = [];
-    }
-
-    window.localStorage.setItem(orderStorageKey, JSON.stringify([order, ...orders]));
-    setLastOrder(order);
-    resetCheckout();
-    setView("confirmation");
   }
 
   function importRows() {
@@ -1020,10 +1070,10 @@ export default function Home() {
                 </div>
                 <div className="checkout-section">
                   <h3><span>3</span> Bekræft</h3>
-                  <p className="checkout-help">Du kan se fragt og samlet total, før du sender bestillingen. Kortteksterne følger de enkelte gaver.</p>
+                  <p className="checkout-help">Du kan se fragt og samlet total, før du går til sikker betaling. Kortteksterne følger de enkelte gaver.</p>
                 </div>
                 <button className="btn primary" onClick={submitOrder}>
-                  Send bestilling
+                  Gå til betaling
                 </button>
               </div>
               <div className="panel order-summary-panel">
@@ -1049,8 +1099,8 @@ export default function Home() {
                   <div><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
                 </div>
                 <div className="checkout-note">
-                  <strong>Efter bestilling</strong>
-                  <span>Din bestilling gemmes sikkert, og Greenplanet vender tilbage med betalingsoplysninger.</span>
+                  <strong>Sikker betaling</strong>
+                  <span>Din ordre gemmes, og du sendes videre til Stripe for at betale sikkert med kort.</span>
                 </div>
               </div>
             </section>
@@ -1061,7 +1111,7 @@ export default function Home() {
               <div className="panel confirmation-panel">
                 <span className="eyebrow">Bestilling sendt</span>
                 <h2>Tak for din bestilling</h2>
-                <p>Vi har modtaget din bestilling som {lastOrder.id}. Greenplanet vender tilbage med betalingsoplysninger.</p>
+                <p>Vi har modtaget din betaling og bestilling som {lastOrder.id}. Greenplanet pakker gaven og følger op på levering.</p>
                 <div className="order-preview">
                   <div><span>Ordrenr.</span><strong>{lastOrder.id}</strong></div>
                   <div><span>Bestiller</span><strong>{lastOrder.customer.name || "Ikke udfyldt"}</strong></div>
@@ -1189,7 +1239,7 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     sections: [
       { title: "Levering til modtager", body: "Ved checkout kan du vælge modtagers navn, adresse, ønsket leveringsdato og en leveringsnote. Vi sender uden prisbilag, når gaven sendes direkte." },
       { title: "Leveringstid", body: "Lagervarer pakkes som udgangspunkt inden for 1-3 hverdage efter ordrebekræftelse. Den forventede leveringsdato fremgår af den bekræftelse, du modtager fra Greenplanet." },
-      { title: "Fragt og levering", body: "Fragtprisen vises i checkout, før du sender bestillingen. Levering koster 49 kr., mens afhentning eller særskilt aftalt levering vises som 0 kr. i checkout." },
+      { title: "Fragt og levering", body: "Fragtprisen vises i checkout, før du går til betaling. Levering koster 49 kr., mens afhentning eller særskilt aftalt levering vises som 0 kr. i checkout." },
       { title: "Forsinkelse eller fejl", body: "Hvis pakken bliver forsinket eller beskadiget under levering, hjælper vi med at finde en løsning. Kontakt os med ordrenummer og gerne billeder ved transportskade." }
     ]
   },
@@ -1221,8 +1271,8 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     intro: "Disse handelsbetingelser gælder for køb og bestillinger hos Greenplanet.",
     sections: [
       { title: "Virksomhed", body: `${companyInfo.name}, CVR ${companyInfo.cvr}, ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}, e-mail ${companyInfo.email}.` },
-      { title: "Bestilling og aftale", body: "Når du sender en bestilling, modtager Greenplanet dine ordreoplysninger og den samlede pris inkl. fragt. Aftalen er bindende, når ordren er bekræftet skriftligt af Greenplanet, eller når betaling er gennemført efter de betalingsoplysninger, du har modtaget." },
-      { title: "Priser og betaling", body: "Alle priser vises i danske kroner. Fragt vises i checkout, før bestillingen sendes. Betaling sker efter de betalingsoplysninger, der fremgår af ordrebekræftelsen. Der reserveres eller trækkes ikke betaling automatisk på siden, medmindre der senere tilføjes en betalingsløsning." },
+      { title: "Bestilling og aftale", body: "Når du gennemfører betaling i checkout, modtager Greenplanet dine ordreoplysninger og den samlede pris inkl. fragt. Aftalen er bindende, når betalingen er gennemført, og du har modtaget ordrebekræftelse." },
+      { title: "Priser og betaling", body: "Alle priser vises i danske kroner. Fragt vises i checkout, før du går til betaling. Betaling gennemføres sikkert via Stripe, og ordren behandles, når betalingen er registreret." },
       { title: "Produkter og gaveæsker", body: "Greenplanet sælger gaveæsker og udvalgte produkter til baby, barsel og personlig pleje. Indhold, farver og emballage kan variere en smule afhængigt af lagerstatus. Hvis et produkt ikke kan leveres, kontakter vi dig med forslag til erstatning eller ændring af ordren." },
       { title: "Levering", body: "Gaver kan sendes direkte til modtager eller til bestiller. Ved direkte gavelevering sendes pakken uden prisbilag, når det er muligt. Levering koster 49 kr., medmindre afhentning eller anden løsning er aftalt." },
       { title: "Fortrydelsesret", body: "Som forbruger har du som udgangspunkt 14 dages fortrydelsesret ved køb online. Fristen regnes normalt fra den dag, du eller en valgt modtager får varen i fysisk besiddelse. Du skal give Greenplanet besked inden fristens udløb, hvis du vil fortryde købet." },
