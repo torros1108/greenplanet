@@ -36,6 +36,14 @@ on conflict (legacy_id) do update set
   shape = excluded.shape,
   status = excluded.status;
 
+update public.products
+set variants = '[
+  {"id":"p2-natur","title":"Natur","sku":"BABYLY-NEST-NATUR","price":815.86,"stock":1,"status":"live"},
+  {"id":"p2-rosa","title":"Rosa","sku":"BABYLY-NEST-ROSA","price":815.86,"stock":1,"status":"live"},
+  {"id":"p2-graa","title":"Grå","sku":"BABYLY-NEST-GRAA","price":815.86,"stock":0,"status":"live"}
+]'::jsonb
+where legacy_id = 'p2';
+
 insert into public.giftboxes
   (legacy_id, slug, title, category, description, note, recipient, occasion, packing, card_text, delivery, why, details, box_price, status)
 values
