@@ -38,6 +38,13 @@ on conflict (legacy_id) do update set
 
 update public.products
 set variants = '[
+  {"id":"p1-beige","title":"Beige","sku":"BABYLY-SLEEPER-BEIGE","price":690.69,"stock":2,"image":"https://cdn.faire.com/fastly/0a4b47c9202f6e86eb7fc4f9ac12be65afbd26a83c5ea8198f5fc3227639fa68.jpeg","status":"live"},
+  {"id":"p1-powder-pink","title":"Powder pink","sku":"BABYLY-SLEEPER-POWDER-PINK","price":690.69,"stock":2,"image":"https://cdn.faire.com/fastly/837c12049e4bb36794e1ad0c0b5ff97dd79531a1441aaefd9b9ae7c28e3d7313.jpeg","status":"live"}
+]'::jsonb
+where legacy_id = 'p1';
+
+update public.products
+set variants = '[
   {"id":"p2-beige","title":"Beige","sku":"BABYLY-NEST-BEIGE","price":815.86,"stock":1,"image":"https://cdn.faire.com/fastly/81b057e82552add927d1a2040ad353dbb3c89a2244af930cc0dd7a12b7f2137c.jpeg","status":"live"},
   {"id":"p2-sea-blue","title":"Sea blue","sku":"BABYLY-NEST-SEA-BLUE","price":815.86,"stock":1,"image":"https://cdn.faire.com/fastly/a3d7ad0eb4bf89e3a8c07f054dfae3a23b800c4e22cdecc691e8e7c4d9b5376b.jpeg","status":"live"},
   {"id":"p2-forest-green","title":"Forest green","sku":"BABYLY-NEST-FOREST-GREEN","price":815.86,"stock":0,"image":"https://cdn.faire.com/fastly/820d1a649bbd4de36c678921bb5b73636a7b1177b0cd04bec78bd0b39f0950a8.jpeg","status":"live"}

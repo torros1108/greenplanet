@@ -29,6 +29,15 @@ type CartLine = {
   items: CartItem[];
   total: number;
 };
+type ProductCardItem = {
+  key: string;
+  product: Product;
+  variant?: ProductVariant;
+  title: string;
+  description: string;
+  price: number;
+  meta: string;
+};
 
 type SavedOrder = {
   id: string;
@@ -306,11 +315,35 @@ export default function Home() {
   );
   const eligibleProducts = products.filter((product) => product.giftbox && product.status === "Live");
   const filteredProducts = category === "Alle" ? products : products.filter((product) => product.category === category);
+  const productCards: ProductCardItem[] = filteredProducts.flatMap((product) => {
+    const variants = product.variants?.filter((variant) => variant.status !== "archived") || [];
+    if (!variants.length) {
+      return [{
+        key: product.id,
+        product,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        meta: `${product.brand} · ${product.category}`
+      }];
+    }
+
+    return variants.map((variant) => ({
+      key: `${product.id}-${variant.id}`,
+      product,
+      variant,
+      title: `${product.title} - ${variant.title}`,
+      description: product.description,
+      price: variant.price,
+      meta: `${product.brand} · Farve: ${variant.title}`
+    }));
+  });
   const selectedProduct = products.find((product) => product.id === selectedProductId) || null;
   const selectedProductSpecs = selectedProduct ? productSpecs(selectedProduct) : [];
   const selectedProductVariants = selectedProduct?.variants?.filter((variant) => variant.status !== "archived") || [];
   const selectedProductVariant =
     selectedProductVariants.find((variant) => variant.id === selectedVariantId) || null;
+  const selectedProductVariantUnavailable = !!selectedProductVariant && selectedProductVariant.stock <= 0;
   const selectedProductPrice = selectedProductVariant?.price ?? selectedProduct?.price ?? 0;
   const filteredBuilderProducts =
     occasion === "Alle" ? eligibleProducts : eligibleProducts.filter((product) => product.occasions.includes(occasion));
@@ -477,8 +510,10 @@ export default function Home() {
   }, [heroSlideCount, view]);
 
   useEffect(() => {
-    setSelectedVariantId("");
-  }, [selectedProduct?.id]);
+    if (!selectedProduct?.variants?.some((variant) => variant.id === selectedVariantId)) {
+      setSelectedVariantId("");
+    }
+  }, [selectedProduct?.id, selectedProduct?.variants, selectedVariantId]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -540,6 +575,12 @@ export default function Home() {
 
   function giftboxTotal(giftbox: Giftbox) {
     return giftboxProducts(giftbox).reduce((sum, product) => sum + product.price, 0) + boxPrice;
+  }
+
+  function openProductDetail(product: Product, variant?: ProductVariant) {
+    setSelectedProductId(product.id);
+    setSelectedVariantId(variant?.id || "");
+    setView("product");
   }
 
   function setBuilderVariant(productId: string, variantId: string) {
@@ -913,28 +954,27 @@ export default function Home() {
                 </div>
               </div>
               <div className="grid">
-                {filteredProducts.map((product) => (
-                  <article className="card" key={product.id}>
-                    <div className="product-visual"><ProductVisual product={product} /></div>
+                {productCards.map((card) => (
+                  <article className="card" key={card.key}>
+                    <div className="product-visual"><ProductVisual product={card.product} variant={card.variant} /></div>
                     <div className="card-body">
-                      <div className="meta">{product.brand} · {product.category}</div>
-                      <h3>{product.title}</h3>
-                      <p>{product.description}</p>
+                      <div className="meta">{card.meta}</div>
+                      <h3>{card.title}</h3>
+                      <p>{card.description}</p>
                       <div className="buy-row">
-                        <span className="price">{money(product.price)}</span>
+                        <span className="price">{money(card.price)}</span>
                         <div className="card-actions">
-                          <button className="btn" onClick={() => { setSelectedProductId(product.id); setView("product"); }}>Se detaljer</button>
+                          <button className="btn" onClick={() => openProductDetail(card.product, card.variant)}>Se detaljer</button>
                           <button
                             className="icon-add"
                             onClick={() => {
-                              if (product.variants?.length) {
-                                setSelectedProductId(product.id);
-                                setView("product");
+                              if (card.variant || card.product.variants?.length) {
+                                openProductDetail(card.product, card.variant);
                                 return;
                               }
-                              addProductToCart(product);
+                              addProductToCart(card.product);
                             }}
-                            aria-label={product.variants?.length ? "Vælg variant" : "Læg i kurv"}
+                            aria-label={card.variant || card.product.variants?.length ? "Vælg variant" : "Læg i kurv"}
                           >
                             +
                           </button>
@@ -983,17 +1023,17 @@ export default function Home() {
                 <div className="actions">
                   <button
                     className="btn primary"
-                    disabled={selectedProductVariants.length > 0 && !selectedProductVariant}
+                    disabled={(selectedProductVariants.length > 0 && !selectedProductVariant) || selectedProductVariantUnavailable}
                     onClick={() => addProductToCart(selectedProduct, selectedProductVariant)}
                   >
-                    {selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Læg i kurv"}
+                    {selectedProductVariantUnavailable ? "Ikke på lager" : selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Læg i kurv"}
                   </button>
                   {selectedProduct.giftbox && <button className="btn" onClick={() => {
                     setSelected((current) => current.includes(selectedProduct.id) ? current : [...current, selectedProduct.id].slice(0, 6));
                     if (selectedProductVariant) setBuilderVariant(selectedProduct.id, selectedProductVariant.id);
                     setView("builder");
-                  }} disabled={selectedProductVariants.length > 0 && !selectedProductVariant}>
-                    {selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Brug i byg-selv"}
+                  }} disabled={(selectedProductVariants.length > 0 && !selectedProductVariant) || selectedProductVariantUnavailable}>
+                    {selectedProductVariantUnavailable ? "Ikke på lager" : selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Brug i byg-selv"}
                   </button>}
                 </div>
               </div>
