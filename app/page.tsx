@@ -706,7 +706,7 @@ export default function Home() {
                   <h2 className="big-title">Gaver til baby og barsel.</h2>
                   <p className="lead">
                     Smukke gaveæsker til nye familier, nybagte mødre og de første små øjeblikke. Håndplukket fra små brands
-                    og pakket, så det er nemt at give noget omsorgsfuldt.
+                    og pakket pænt, så gaven kan sendes direkte til den, du vil glæde.
                   </p>
                   <div className="actions">
                     <button className="btn primary" onClick={() => setView("giftboxes")}>Find en gaveæske</button>
