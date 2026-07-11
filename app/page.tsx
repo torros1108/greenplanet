@@ -272,6 +272,8 @@ export default function Home() {
     occasion === "Alle" ? eligibleProducts : eligibleProducts.filter((product) => product.occasions.includes(occasion));
   const selectedProducts = selected.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[];
   const cartTotal = cart.reduce((sum, line) => sum + line.total, 0);
+  const cartProductsTotal = cart.reduce((sum, line) => sum + line.items.reduce((itemSum, item) => itemSum + item.price, 0), 0);
+  const cartPackagingTotal = Math.max(0, cartTotal - cartProductsTotal);
   const cartProductCount = cart.reduce((sum, line) => sum + line.items.length, 0);
   const cardTextCount = cart.filter((line) => line.cardText?.trim()).length;
   const isDirectDelivery = deliveryMethod === "Send direkte til modtager";
@@ -950,7 +952,7 @@ export default function Home() {
                       ))}
                       {line.items.length > 0 && (
                         <div>
-                          <span>Gaveæske og kort</span>
+                          <span>Gaveæske/kasse og kort</span>
                           <strong>{money(Math.max(0, line.total - line.items.reduce((sum, item) => sum + item.price, 0)))}</strong>
                         </div>
                       )}
@@ -966,6 +968,8 @@ export default function Home() {
                   </div>
                 )) : <div className="empty">Kurven er tom.</div>}
                 <div className="checkout-totals">
+                  <div><span>Produkter</span><strong>{money(cartProductsTotal)}</strong></div>
+                  <div><span>Gaveæske/kasse og kort</span><strong>{money(cartPackagingTotal)}</strong></div>
                   <div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div>
                   <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
                   <div className="checkout-total-row"><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
@@ -1028,6 +1032,8 @@ export default function Home() {
                   <div><span>Gaver i kurv</span><strong>{cart.length}</strong></div>
                   <div><span>Produkter i alt</span><strong>{cartProductCount}</strong></div>
                   <div><span>Korttekster</span><strong>{cardTextCount}/{cart.length}</strong></div>
+                  <div><span>Produkter</span><strong>{money(cartProductsTotal)}</strong></div>
+                  <div><span>Gaveæske/kasse og kort</span><strong>{money(cartPackagingTotal)}</strong></div>
                   <div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div>
                   <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
                   <div className="summary-total"><span>Total</span><strong>{money(checkoutTotal)}</strong></div>
