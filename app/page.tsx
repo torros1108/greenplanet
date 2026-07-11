@@ -1152,8 +1152,8 @@ export default function Home() {
           {view === "import" && (
             <section className="split">
               <div className="panel">
-                <h2>Faire-import</h2>
-                <textarea value={csvText} onChange={(event) => setCsvText(event.target.value)} placeholder="Indsæt CSV fra Faire..." />
+                <h2>Produktimport</h2>
+                <textarea value={csvText} onChange={(event) => setCsvText(event.target.value)} placeholder="Indsæt CSV fra leverandør..." />
                 <button className="btn primary" onClick={importRows}>Importer som kladder</button>
               </div>
               <div className="panel">
@@ -1397,7 +1397,7 @@ const viewTitles: Record<View, string> = {
   giftboxes: "Gaveæsker",
   products: "Produkter",
   builder: "Byg selv",
-  import: "Faire-import",
+  import: "Produktimport",
   orders: "Kurv",
   product: "Produkt",
   confirmation: "Tak for din bestilling",
