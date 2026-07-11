@@ -719,7 +719,7 @@ export default function Home() {
                   <strong>Wellness</strong><span>Naturlige olier, ler og små ritualer</span>
                 </button>
                 <button className="stat" onClick={() => setView("giftboxes")}>
-                  <strong>{giftboxCatalog.length}</strong><span>kuraterede launch-gaveæsker</span>
+                  <strong>{giftboxCatalog.length}</strong><span>kuraterede gaveæsker</span>
                 </button>
               </section>
             </>
@@ -727,7 +727,7 @@ export default function Home() {
 
           {view === "giftboxes" && (
             <section>
-              <div className="section-head"><h2>Launch-gaveæsker</h2><p>Fem købsklare koncepter baseret på Faire-historikken.</p></div>
+              <div className="section-head"><h2>Gaveæsker</h2><p>Købsklare gaver til baby, barsel og små øjeblikke med ekstra omsorg.</p></div>
               <div className="grid">
                 {giftboxCatalog.map((giftbox) => {
                   const items = giftboxProducts(giftbox);
@@ -919,7 +919,7 @@ export default function Home() {
               </div>
               <div className="panel">
                 <h3>Admin-flow</h3>
-                <p>Importerede varer bliver kladder, så du kan rette tekst, pris og gaveegnethed før launch.</p>
+                <p>Importerede varer bliver kladder, så du kan rette tekst, pris og gaveegnethed, før de vises i shoppen.</p>
               </div>
             </section>
           )}
