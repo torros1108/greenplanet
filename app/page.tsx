@@ -707,10 +707,18 @@ export default function Home() {
                 </div>
               </section>
               <section className="stats">
-                <div className="stat"><strong>Baby</strong><span>Blide produkter til den første tid</span></div>
-                <div className="stat"><strong>Barsel</strong><span>Gaver til nye familier og nybagte mødre</span></div>
-                <div className="stat"><strong>Wellness</strong><span>Naturlige olier, ler og små ritualer</span></div>
-                <div className="stat"><strong>{giftboxCatalog.length}</strong><span>kuraterede launch-gaveæsker</span></div>
+                <button className="stat" onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>
+                  <strong>Baby</strong><span>Blide produkter til den første tid</span>
+                </button>
+                <button className="stat" onClick={() => setView("giftboxes")}>
+                  <strong>Barsel</strong><span>Gaver til nye familier og nybagte mødre</span>
+                </button>
+                <button className="stat" onClick={() => { setCategory("Naturlig beauty"); setView("products"); }}>
+                  <strong>Wellness</strong><span>Naturlige olier, ler og små ritualer</span>
+                </button>
+                <button className="stat" onClick={() => setView("giftboxes")}>
+                  <strong>{giftboxCatalog.length}</strong><span>kuraterede launch-gaveæsker</span>
+                </button>
               </section>
             </>
           )}
