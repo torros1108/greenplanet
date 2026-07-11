@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product } from "@/lib/data";
+import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 
 const boxPrice = 49;
 const deliveryShippingPrice = 49;
@@ -20,12 +20,13 @@ const publicViews = ["home", "giftboxes", "products", "builder", "orders", "conf
 
 type PolicyView = "contact" | "delivery" | "returns" | "legal" | "terms" | "privacy" | "cookies";
 type View = "home" | "giftboxes" | "products" | "builder" | "import" | "orders" | "product" | "confirmation" | PolicyView;
+type CartItem = Product & { selectedVariant?: ProductVariant };
 type CartLine = {
   id: string;
   title: string;
   note: string;
   cardText: string;
-  items: Product[];
+  items: CartItem[];
   total: number;
 };
 
@@ -65,6 +66,7 @@ type SupabaseProductRow = {
   price: number | string;
   stock: number;
   sku: string | null;
+  variants?: ProductVariant[] | null;
   image_url: string | null;
   giftbox_eligible: boolean;
   occasions: string[] | null;
@@ -189,6 +191,18 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
     price: Number(row.price) || 0,
     stock: row.stock || 0,
     sku: row.sku || "",
+    variants: Array.isArray(row.variants)
+      ? row.variants
+          .map((variant) => ({
+            id: String(variant.id || variant.sku || variant.title),
+            title: String(variant.title || variant.sku || "Variant"),
+            sku: String(variant.sku || ""),
+            price: Number(variant.price) || Number(row.price) || 0,
+            stock: Number(variant.stock) || 0,
+            status: variant.status || "live"
+          }))
+          .filter((variant) => variant.status !== "archived")
+      : [],
     image: row.image_url || "",
     giftbox: row.giftbox_eligible,
     occasions: row.occasions || [],
@@ -258,6 +272,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [lastOrder, setLastOrder] = useState<SavedOrder | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState("");
 
   const categories = useMemo(() => ["Alle", ...Array.from(new Set(products.map((product) => product.category)))], [products]);
   const occasions = useMemo(
@@ -268,6 +283,10 @@ export default function Home() {
   const filteredProducts = category === "Alle" ? products : products.filter((product) => product.category === category);
   const selectedProduct = products.find((product) => product.id === selectedProductId) || null;
   const selectedProductSpecs = selectedProduct ? productSpecs(selectedProduct) : [];
+  const selectedProductVariants = selectedProduct?.variants?.filter((variant) => variant.status !== "archived") || [];
+  const selectedProductVariant =
+    selectedProductVariants.find((variant) => variant.id === selectedVariantId) || selectedProductVariants[0] || null;
+  const selectedProductPrice = selectedProductVariant?.price ?? selectedProduct?.price ?? 0;
   const filteredBuilderProducts =
     occasion === "Alle" ? eligibleProducts : eligibleProducts.filter((product) => product.occasions.includes(occasion));
   const selectedProducts = selected.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[];
@@ -338,10 +357,20 @@ export default function Home() {
 
     async function loadSupabaseData() {
       try {
+        async function loadProducts() {
+          try {
+            return await supabaseGet<SupabaseProductRow[]>(
+              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,giftbox_eligible,occasions,shape,status&status=eq.live&order=legacy_id.asc"
+            );
+          } catch {
+            return supabaseGet<SupabaseProductRow[]>(
+              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,image_url,giftbox_eligible,occasions,shape,status&status=eq.live&order=legacy_id.asc"
+            );
+          }
+        }
+
         const [productRows, giftboxRows, linkRows, pageRows] = await Promise.all([
-          supabaseGet<SupabaseProductRow[]>(
-            "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,image_url,giftbox_eligible,occasions,shape,status&status=eq.live&order=legacy_id.asc"
-          ),
+          loadProducts(),
           supabaseGet<SupabaseGiftboxRow[]>(
             "giftboxes?select=legacy_id,slug,title,category,description,note,recipient,occasion,packing,card_text,delivery,why,details&status=eq.live&order=legacy_id.asc"
           ),
@@ -411,6 +440,10 @@ export default function Home() {
     }, 5500);
     return () => window.clearInterval(interval);
   }, [heroSlideCount, view]);
+
+  useEffect(() => {
+    setSelectedVariantId(selectedProduct?.variants?.[0]?.id || "");
+  }, [selectedProduct?.id]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -507,16 +540,24 @@ export default function Home() {
     setView("orders");
   }
 
-  function addProductToCart(product: Product) {
+  function cartItemLabel(item: CartItem) {
+    return item.selectedVariant ? `${item.title} · ${item.selectedVariant.title}` : item.title;
+  }
+
+  function addProductToCart(product: Product, variant?: ProductVariant | null) {
+    const item: CartItem = variant
+      ? { ...product, price: variant.price, stock: variant.stock, sku: variant.sku, selectedVariant: variant }
+      : product;
+
     setCart((current) => [
       ...current,
         {
-          id: `cart-${Date.now()}-${product.id}`,
-          title: product.title,
+          id: `cart-${Date.now()}-${product.id}${variant ? `-${variant.id}` : ""}`,
+          title: cartItemLabel(item),
           note: product.brand,
           cardText: "",
-          items: [product],
-          total: product.price
+          items: [item],
+          total: item.price
       }
     ]);
   }
@@ -829,8 +870,21 @@ export default function Home() {
                       <div className="buy-row">
                         <span className="price">{money(product.price)}</span>
                         <div className="card-actions">
-                          <Link className="btn" href={`/products/${product.id}`}>Se detaljer</Link>
-                          <button className="icon-add" onClick={() => addProductToCart(product)}>+</button>
+                          <button className="btn" onClick={() => { setSelectedProductId(product.id); setView("product"); }}>Se detaljer</button>
+                          <button
+                            className="icon-add"
+                            onClick={() => {
+                              if (product.variants?.length) {
+                                setSelectedProductId(product.id);
+                                setView("product");
+                                return;
+                              }
+                              addProductToCart(product);
+                            }}
+                            aria-label={product.variants?.length ? "Vælg variant" : "Læg i kurv"}
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -850,7 +904,19 @@ export default function Home() {
                 <div className="meta">{selectedProduct.brand} · {selectedProduct.category}</div>
                 <h2>{selectedProduct.title}</h2>
                 <p className="lead">{selectedProduct.description}</p>
-                <div className="detail-price">{money(selectedProduct.price)}</div>
+                <div className="detail-price">{money(selectedProductPrice)}</div>
+                {selectedProductVariants.length > 0 && (
+                  <label className="variant-picker">
+                    <span>Vælg variant</span>
+                    <select value={selectedProductVariant?.id || ""} onChange={(event) => setSelectedVariantId(event.target.value)}>
+                      {selectedProductVariants.map((variant) => (
+                        <option key={variant.id} value={variant.id}>
+                          {variant.title} · {money(variant.price)} · {variant.stock} på lager
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
                 <h3 className="spec-title">Produkt egenskaber</h3>
                 <div className="detail-list">
                   {selectedProductSpecs.map((spec) => (
@@ -861,7 +927,7 @@ export default function Home() {
                   {selectedProduct.occasions.map((item) => <span key={item}>{item}</span>)}
                 </div>
                 <div className="actions">
-                  <button className="btn primary" onClick={() => addProductToCart(selectedProduct)}>Læg i kurv</button>
+                  <button className="btn primary" onClick={() => addProductToCart(selectedProduct, selectedProductVariant)}>Læg i kurv</button>
                   {selectedProduct.giftbox && <button className="btn" onClick={() => {
                     setSelected((current) => current.includes(selectedProduct.id) ? current : [...current, selectedProduct.id].slice(0, 6));
                     setView("builder");
@@ -951,7 +1017,7 @@ export default function Home() {
                             {selected.includes(product.id) ? "Valgt" : "Vælg"}
                           </button>
                         </div>
-                        <Link className="btn detail-link" href={`/products/${product.id}`}>Se detaljer</Link>
+                        <button className="btn detail-link" onClick={() => { setSelectedProductId(product.id); setView("product"); }}>Se detaljer</button>
                       </div>
                     </article>
                   ))}
@@ -991,12 +1057,12 @@ export default function Home() {
                       <strong>{money(line.total)} <button className="chip" onClick={() => setCart((current) => current.filter((item) => item.id !== line.id))}>Fjern</button></strong>
                     </div>
                     <div className="cart-products">
-                      {line.items.map((item) => <span key={`${line.id}-${item.id}`}>{item.brand}: {item.title}</span>)}
+                      {line.items.map((item) => <span key={`${line.id}-${item.id}-${item.selectedVariant?.id || "standard"}`}>{item.brand}: {cartItemLabel(item)}</span>)}
                     </div>
                     <div className="cart-breakdown">
                       {line.items.map((item) => (
-                        <div key={`${line.id}-price-${item.id}`}>
-                          <span>{item.title}</span>
+                        <div key={`${line.id}-price-${item.id}-${item.selectedVariant?.id || "standard"}`}>
+                          <span>{cartItemLabel(item)}</span>
                           <strong>{money(item.price)}</strong>
                         </div>
                       ))}

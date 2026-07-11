@@ -44,9 +44,19 @@ type AdminProduct = {
   cost: number | string;
   stock: number;
   sku: string | null;
+  variants?: AdminVariant[];
   giftbox_eligible: boolean;
   status: string;
   image_url: string | null;
+};
+
+type AdminVariant = {
+  id: string;
+  title: string;
+  sku: string;
+  price: number;
+  stock: number;
+  status?: string;
 };
 
 type Customer = {
@@ -258,7 +268,7 @@ export default function AdminPage() {
     setPaymentUrl(data.url);
   }
 
-  async function updateProduct(productId: string, update: { stock?: number; status?: string }) {
+  async function updateProduct(productId: string, update: { stock?: number; status?: string; variants?: AdminVariant[] }) {
     setError("");
 
     const response = await fetch("/api/admin/products", {
@@ -275,6 +285,13 @@ export default function AdminPage() {
     setProducts((current) =>
       current.map((product) => product.id === productId ? { ...product, ...update } : product)
     );
+  }
+
+  function updateProductVariant(product: AdminProduct, variantId: string, update: Partial<AdminVariant>) {
+    const variants = (product.variants || []).map((variant) =>
+      variant.id === variantId ? { ...variant, ...update } : variant
+    );
+    void updateProduct(product.id, { variants });
   }
 
   useEffect(() => {
@@ -560,6 +577,28 @@ export default function AdminPage() {
                   />
                   <button className="btn" onClick={() => updateProduct(selectedProduct.id, { stock: selectedProduct.stock + 1 })}>+1</button>
                 </div>
+
+                {!!selectedProduct.variants?.length && (
+                  <div className="admin-variant-list">
+                    <strong>Variantlager</strong>
+                    {selectedProduct.variants.map((variant) => (
+                      <div className="admin-variant-row" key={variant.id}>
+                        <div>
+                          <span>{variant.title}</span>
+                          <em>{variant.sku || "Ingen SKU"} · {money(variant.price)}</em>
+                        </div>
+                        <button className="btn" onClick={() => updateProductVariant(selectedProduct, variant.id, { stock: Math.max(0, variant.stock - 1) })}>-1</button>
+                        <input
+                          min="0"
+                          type="number"
+                          value={variant.stock}
+                          onChange={(event) => updateProductVariant(selectedProduct, variant.id, { stock: Math.max(0, Number(event.target.value) || 0) })}
+                        />
+                        <button className="btn" onClick={() => updateProductVariant(selectedProduct, variant.id, { stock: variant.stock + 1 })}>+1</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="admin-info-grid">
                   <section>

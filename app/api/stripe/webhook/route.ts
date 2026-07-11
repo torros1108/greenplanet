@@ -17,6 +17,34 @@ type StripeEvent = {
   };
 };
 
+type OrderLine = {
+  items: Array<{
+    id?: string;
+    selectedVariant?: {
+      id?: string;
+    };
+  }>;
+};
+
+type PaidOrder = {
+  id: string;
+  status: string;
+  order_lines: OrderLine[];
+};
+
+type InventoryProduct = {
+  id: string;
+  stock: number;
+  variants: Array<{
+    id: string;
+    title: string;
+    sku: string;
+    price: number;
+    stock: number;
+    status?: string;
+  }> | null;
+};
+
 function verifyStripeSignature(payload: string, signatureHeader: string, secret: string) {
   const parts = Object.fromEntries(
     signatureHeader.split(",").map((part) => {
@@ -35,6 +63,48 @@ function verifyStripeSignature(payload: string, signatureHeader: string, secret:
   const signatureBuffer = Buffer.from(signature);
 
   return expectedBuffer.length === signatureBuffer.length && timingSafeEqual(expectedBuffer, signatureBuffer);
+}
+
+async function decrementInventory(orderId: string) {
+  const [order] = await supabaseAdminRequest<PaidOrder[]>(
+    `orders?id=eq.${encodeURIComponent(orderId)}&select=id,status,order_lines(items)`
+  );
+  if (!order || order.status === "paid") return;
+
+  const counts = new Map<string, { productId: string; variantId?: string; quantity: number }>();
+  order.order_lines.forEach((line) => {
+    line.items.forEach((item) => {
+      if (!item.id) return;
+      const variantId = item.selectedVariant?.id;
+      const key = `${item.id}::${variantId || ""}`;
+      const current = counts.get(key);
+      counts.set(key, { productId: item.id, variantId, quantity: (current?.quantity || 0) + 1 });
+    });
+  });
+
+  for (const entry of counts.values()) {
+    const [product] = await supabaseAdminRequest<InventoryProduct[]>(
+      `products?legacy_id=eq.${encodeURIComponent(entry.productId)}&select=id,stock,variants`
+    );
+    if (!product) continue;
+
+    const update: { stock: number; variants?: InventoryProduct["variants"] } = {
+      stock: Math.max(0, Number(product.stock || 0) - entry.quantity)
+    };
+
+    if (entry.variantId && Array.isArray(product.variants)) {
+      update.variants = product.variants.map((variant) =>
+        variant.id === entry.variantId
+          ? { ...variant, stock: Math.max(0, Number(variant.stock || 0) - entry.quantity) }
+          : variant
+      );
+    }
+
+    await supabaseAdminRequest(`products?id=eq.${encodeURIComponent(product.id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(update)
+    });
+  }
 }
 
 export async function POST(request: Request) {
@@ -56,6 +126,7 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.completed") {
       const orderId = event.data.object.metadata?.order_id;
       if (orderId) {
+        await decrementInventory(orderId);
         await supabaseAdminRequest(`orders?id=eq.${encodeURIComponent(orderId)}`, {
           method: "PATCH",
           body: JSON.stringify({ status: "paid" })

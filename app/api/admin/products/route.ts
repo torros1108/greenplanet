@@ -17,9 +17,16 @@ export async function GET() {
       return NextResponse.json({ error: "Ikke logget ind" }, { status: 401 });
     }
 
-    const products = await supabaseAdminRequest(
-      "products?select=id,legacy_id,slug,title,brand,category,price,cost,stock,sku,giftbox_eligible,status,image_url&order=title.asc"
-    );
+    let products;
+    try {
+      products = await supabaseAdminRequest(
+        "products?select=id,legacy_id,slug,title,brand,category,price,cost,stock,sku,variants,giftbox_eligible,status,image_url&order=title.asc"
+      );
+    } catch {
+      products = await supabaseAdminRequest(
+        "products?select=id,legacy_id,slug,title,brand,category,price,cost,stock,sku,giftbox_eligible,status,image_url&order=title.asc"
+      );
+    }
 
     return NextResponse.json({ products });
   } catch (error) {
@@ -34,17 +41,30 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Ikke logget ind" }, { status: 401 });
     }
 
-    const payload = (await request.json()) as { id?: string; stock?: number; status?: string };
+    const payload = (await request.json()) as { id?: string; stock?: number; status?: string; variants?: unknown[] };
     if (!payload.id) {
       return NextResponse.json({ error: "Produkt mangler" }, { status: 400 });
     }
 
-    const update: { stock?: number; status?: string } = {};
+    const update: { stock?: number; status?: string; variants?: unknown[] } = {};
     if (typeof payload.stock === "number" && Number.isFinite(payload.stock) && payload.stock >= 0) {
       update.stock = Math.round(payload.stock);
     }
     if (payload.status && validStatuses.includes(payload.status)) {
       update.status = payload.status;
+    }
+    if (Array.isArray(payload.variants)) {
+      update.variants = payload.variants.map((variant) => {
+        const item = variant as { id?: unknown; title?: unknown; sku?: unknown; price?: unknown; stock?: unknown; status?: unknown };
+        return {
+          id: String(item.id || item.sku || item.title || crypto.randomUUID()),
+          title: String(item.title || item.sku || "Variant"),
+          sku: String(item.sku || ""),
+          price: Math.max(0, Number(item.price) || 0),
+          stock: Math.max(0, Math.round(Number(item.stock) || 0)),
+          status: String(item.status || "live")
+        };
+      });
     }
 
     if (!Object.keys(update).length) {

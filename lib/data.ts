@@ -1,3 +1,12 @@
+export type ProductVariant = {
+  id: string;
+  title: string;
+  sku: string;
+  price: number;
+  stock: number;
+  status?: "live" | "draft" | "archived";
+};
+
 export type Product = {
   id: string;
   title: string;
@@ -10,6 +19,7 @@ export type Product = {
   stock: number;
   sku: string;
   image?: string;
+  variants?: ProductVariant[];
   giftbox: boolean;
   occasions: string[];
   shape: "jar" | "box" | "pouch" | "bottle";

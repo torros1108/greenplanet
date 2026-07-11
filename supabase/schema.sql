@@ -15,6 +15,7 @@ create table if not exists public.products (
   price numeric(10, 2) not null,
   stock integer default 0 not null,
   sku text,
+  variants jsonb default '[]'::jsonb not null,
   image_url text,
   giftbox_eligible boolean default true not null,
   occasions text[] default '{}'::text[] not null,
@@ -45,6 +46,9 @@ create table if not exists public.giftboxes (
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );
+
+alter table public.products
+add column if not exists variants jsonb default '[]'::jsonb not null;
 
 create table if not exists public.giftbox_products (
   giftbox_id uuid not null references public.giftboxes(id) on delete cascade,
