@@ -181,7 +181,9 @@ textarea { min-height: 104px; resize: vertical; }
 .checkout-head { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .checkout-head h2 { margin-top: 8px; }
 .checkout-count { display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px; border-radius: 999px; background: var(--mint); color: var(--forest); font-size: 13px; font-weight: 900; }
-.checkout-total-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 18px 0 6px; padding: 14px; border-radius: 8px; background: #eef5eb; color: var(--forest); font-weight: 900; }
+.checkout-totals { display: grid; gap: 8px; margin: 18px 0 6px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: #fbf8f0; }
+.checkout-totals > div, .checkout-total-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.checkout-total-row { margin: 4px 0 0; padding: 14px; border-radius: 8px; background: #eef5eb; color: var(--forest); font-weight: 900; }
 .checkout-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
 .checkout-section h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 4px; color: var(--forest); font-size: 18px; }
 .checkout-section h3 span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--forest); color: var(--cream); font-size: 12px; }

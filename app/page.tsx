@@ -641,7 +641,7 @@ export default function Home() {
             <h1>{view === "product" ? selectedProduct?.title || "Produkt" : viewTitles[view]}</h1>
           </div>
           <button className="cart-pill" onClick={() => setView("orders")}>
-            Kurv · {cart.length} · {money(cartTotal)}
+            Kurv · {cart.length} · {money(checkoutTotal)}
           </button>
         </header>
 
@@ -965,7 +965,11 @@ export default function Home() {
                     </label>
                   </div>
                 )) : <div className="empty">Kurven er tom.</div>}
-                <div className="checkout-total-row"><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
+                <div className="checkout-totals">
+                  <div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div>
+                  <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
+                  <div className="checkout-total-row"><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
+                </div>
                 <div className="checkout-section">
                   <h3><span>1</span> Bestiller og fakturaadresse</h3>
                   <div className="form-grid">
