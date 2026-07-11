@@ -215,9 +215,30 @@ function ProductShape({ shape }: { shape: Product["shape"] }) {
   return <span className={`shape ${shape === "bottle" ? "" : shape}`} />;
 }
 
-function ProductVisual({ product }: { product: Product }) {
-  if (product.image) {
-    return (
+function variantColor(variant?: ProductVariant | null) {
+  if (!variant) return null;
+  const title = variant.title.toLowerCase();
+  if (title.includes("beige")) return "#d8c4a6";
+  if (title.includes("sea blue")) return "#8fb8c9";
+  if (title.includes("forest green")) return "#2f5a3d";
+  return "#dfeade";
+}
+
+function ProductVisual({ product, variant }: { product: Product; variant?: ProductVariant | null }) {
+  const color = variantColor(variant);
+
+  return (
+    <div
+      className={`visual-frame ${color ? "has-variant" : ""}`}
+      style={color ? { ["--variant-color" as string]: color } : undefined}
+    >
+      {variant && (
+        <div className="variant-badge">
+          <span className="variant-swatch" />
+          {variant.title}
+        </div>
+      )}
+      {product.image ? (
       <img
         className="product-image"
         src={product.image}
@@ -227,10 +248,11 @@ function ProductVisual({ product }: { product: Product }) {
           event.currentTarget.style.display = "none";
         }}
       />
-    );
-  }
-
-  return <ProductShape shape={product.shape} />;
+      ) : (
+        <ProductShape shape={product.shape} />
+      )}
+    </div>
+  );
 }
 
 function GreenplanetLogo({ compact = false }: { compact?: boolean }) {
@@ -927,7 +949,7 @@ export default function Home() {
             <section className="product-detail">
               <button className="btn back-btn" onClick={() => setView("products")}>Tilbage til produkter</button>
               <div className="product-detail-media panel">
-                <ProductVisual product={selectedProduct} />
+                <ProductVisual product={selectedProduct} variant={selectedProductVariant} />
               </div>
               <div className="product-detail-info panel">
                 <div className="meta">{selectedProduct.brand} · {selectedProduct.category}</div>
@@ -1008,6 +1030,7 @@ export default function Home() {
                         <div className="builder-selected-product" key={product.id}>
                           <div className="builder-selected-thumb">
                             {product.image ? <img alt={product.title} src={product.image} /> : <span>{product.brand.slice(0, 1)}</span>}
+                            {selectedVariant && <span className="builder-variant-dot" style={{ background: variantColor(selectedVariant) || undefined }} />}
                           </div>
                           <div>
                             <span>{product.brand}</span>

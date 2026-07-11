@@ -14,6 +14,15 @@ type CartLine = {
   total: number;
 };
 
+function variantColor(variant?: ProductVariant | null) {
+  if (!variant) return null;
+  const title = variant.title.toLowerCase();
+  if (title.includes("beige")) return "#d8c4a6";
+  if (title.includes("sea blue")) return "#8fb8c9";
+  if (title.includes("forest green")) return "#2f5a3d";
+  return "#dfeade";
+}
+
 export function AddToCartButton({ product }: { product: Product }) {
   const variants = useMemo(() => product.variants?.filter((variant) => variant.status !== "archived") || [], [product]);
   const [variantId, setVariantId] = useState("");
@@ -64,6 +73,12 @@ export function AddToCartButton({ product }: { product: Product }) {
             ))}
           </select>
         </label>
+      )}
+      {selectedVariant && (
+        <div className="variant-preview" style={{ ["--variant-color" as string]: variantColor(selectedVariant) || "#dfeade" }}>
+          <span className="variant-swatch" />
+          Valgt farve: <strong>{selectedVariant.title}</strong>
+        </div>
       )}
       <button className="btn primary" disabled={variants.length > 0 && !selectedVariant} onClick={addToCart}>
         {variants.length > 0 && !selectedVariant ? "Vælg farve først" : "Læg i kurv"}
