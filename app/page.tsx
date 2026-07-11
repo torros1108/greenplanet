@@ -730,7 +730,7 @@ export default function Home() {
                 {giftboxCatalog.map((giftbox) => {
                   const items = giftboxProducts(giftbox);
                   return (
-                    <article className="card" key={giftbox.id}>
+                    <article className="card giftbox-card" key={giftbox.id}>
                       <div className="product-visual mini-row">
                         {items.slice(0, 4).map((product, index) => (
                           <div className="selected-mini image-mini" key={product.id} style={{ background: ["#dfeade", "#f1d9d3", "#ead9ad", "#d7d5ea"][index] }}>

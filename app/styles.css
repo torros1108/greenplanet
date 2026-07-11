@@ -95,6 +95,11 @@ button { cursor: pointer; }
 .buy-row, .summary-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; }
 .price { color: var(--forest); font-weight: 900; }
 .card-actions { display: inline-flex; align-items: center; gap: 8px; }
+.card-actions .btn { white-space: nowrap; }
+.giftbox-card .buy-row { display: grid; grid-template-columns: auto minmax(142px,1fr); align-items: start; }
+.giftbox-card .price { padding-top: 8px; }
+.giftbox-card .card-actions { display: grid; grid-template-columns: 1fr; align-items: stretch; }
+.giftbox-card .card-actions .btn { width: 100%; min-height: 38px; border-radius: 8px; padding-inline: 10px; text-align: center; }
 .icon-add { width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--forest); color: var(--cream); font-size: 22px; }
 .detail-link { width: 100%; margin-top: 12px; }
 .product-detail { display: grid; grid-template-columns: minmax(340px, .9fr) minmax(420px, 1.1fr); gap: 18px; align-items: start; }
