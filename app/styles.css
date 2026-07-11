@@ -313,12 +313,14 @@ textarea { min-height: 104px; resize: vertical; }
 
 @media (max-width: 640px) {
   .content, .topbar { padding-inline: 16px; }
-  .sidebar { padding: 12px; }
-  .brand { margin-bottom: 10px; }
-  .brand-logo { width: 112px; }
+  .sidebar { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 10px; align-items: center; padding: 8px 10px; overflow: hidden; }
+  .brand { margin-bottom: 0; }
+  .brand-logo { width: 64px; max-height: 44px; }
   .side-note { display: none; }
-  .nav { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .nav button, .nav a { min-height: 36px; padding: 0 10px; font-size: 13px; }
+  .nav { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav button, .nav a { flex: 0 0 auto; min-height: 34px; min-width: 86px; padding: 0 10px; font-size: 12px; }
+  .nav button span, .nav a span { margin-left: 10px; }
   .topbar { align-items: center; flex-direction: row; min-height: 68px; padding-block: 8px; }
   .logo-lockup.compact .brand-logo { width: 78px; max-height: 54px; }
   .cart-pill { min-height: 34px; padding-inline: 10px; font-size: 13px; }
