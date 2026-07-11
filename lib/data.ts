@@ -56,7 +56,7 @@ export const giftboxes: Giftbox[] = [
     id: "g1",
     title: "Ny Mor Ro",
     category: "Ny mor",
-    description: "En rolig wellness-gave til graviditet, barsel og små pauser.",
+    description: "En gave med blid hudpleje til den gravide eller nybagte mor.",
     productIds: ["p4", "p13", "p15"],
     note: "Belly masks, rosenvand og rosehip olie.",
     recipient: "Til den gravide eller nybagte mor, der fortjener en lille pause.",

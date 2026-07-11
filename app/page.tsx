@@ -302,7 +302,7 @@ export default function Home() {
     },
     {
       title: "Ny Mor Ro",
-      text: "Wellness til graviditet og barsel med naturlige olier, rosenvand og små pauser.",
+      text: "En gave med blid hudpleje til den gravide eller nybagte mor.",
       productIds: ["p4", "p13", "p15"]
     },
     {
