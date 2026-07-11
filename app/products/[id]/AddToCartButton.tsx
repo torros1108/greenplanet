@@ -16,10 +16,12 @@ type CartLine = {
 
 export function AddToCartButton({ product }: { product: Product }) {
   const variants = useMemo(() => product.variants?.filter((variant) => variant.status !== "archived") || [], [product]);
-  const [variantId, setVariantId] = useState(variants[0]?.id || "");
-  const selectedVariant = variants.find((variant) => variant.id === variantId) || variants[0] || null;
+  const [variantId, setVariantId] = useState("");
+  const selectedVariant = variants.find((variant) => variant.id === variantId) || null;
 
   function addToCart() {
+    if (variants.length > 0 && !selectedVariant) return;
+
     const storedCart = window.localStorage.getItem(cartStorageKey);
     let cart: CartLine[] = [];
 
@@ -52,17 +54,20 @@ export function AddToCartButton({ product }: { product: Product }) {
     <>
       {variants.length > 0 && (
         <label className="variant-picker">
-          <span>Vælg variant</span>
+          <span>Vælg farve</span>
           <select value={selectedVariant?.id || ""} onChange={(event) => setVariantId(event.target.value)}>
+            <option value="">Vælg farve</option>
             {variants.map((variant) => (
-              <option key={variant.id} value={variant.id}>
-                {variant.title} · {Math.round(variant.price)} kr. · {variant.stock} på lager
+              <option key={variant.id} value={variant.id} disabled={variant.stock <= 0}>
+                {variant.title} · {Math.round(variant.price)} kr. · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}
               </option>
             ))}
           </select>
         </label>
       )}
-      <button className="btn primary" onClick={addToCart}>Læg i kurv</button>
+      <button className="btn primary" disabled={variants.length > 0 && !selectedVariant} onClick={addToCart}>
+        {variants.length > 0 && !selectedVariant ? "Vælg farve først" : "Læg i kurv"}
+      </button>
     </>
   );
 }

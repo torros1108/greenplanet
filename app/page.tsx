@@ -273,6 +273,7 @@ export default function Home() {
   const [lastOrder, setLastOrder] = useState<SavedOrder | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
+  const [selectedBuilderVariants, setSelectedBuilderVariants] = useState<Record<string, string>>({});
 
   const categories = useMemo(() => ["Alle", ...Array.from(new Set(products.map((product) => product.category)))], [products]);
   const occasions = useMemo(
@@ -285,11 +286,21 @@ export default function Home() {
   const selectedProductSpecs = selectedProduct ? productSpecs(selectedProduct) : [];
   const selectedProductVariants = selectedProduct?.variants?.filter((variant) => variant.status !== "archived") || [];
   const selectedProductVariant =
-    selectedProductVariants.find((variant) => variant.id === selectedVariantId) || selectedProductVariants[0] || null;
+    selectedProductVariants.find((variant) => variant.id === selectedVariantId) || null;
   const selectedProductPrice = selectedProductVariant?.price ?? selectedProduct?.price ?? 0;
   const filteredBuilderProducts =
     occasion === "Alle" ? eligibleProducts : eligibleProducts.filter((product) => product.occasions.includes(occasion));
   const selectedProducts = selected.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[];
+  const selectedBuilderItems = selectedProducts.map((product) => {
+    const variants = product.variants?.filter((variant) => variant.status !== "archived") || [];
+    const selectedVariant = variants.find((variant) => variant.id === selectedBuilderVariants[product.id]) || null;
+    const item: CartItem = selectedVariant
+      ? { ...product, price: selectedVariant.price, stock: selectedVariant.stock, sku: selectedVariant.sku, selectedVariant }
+      : product;
+    return { product, variants, selectedVariant, item };
+  });
+  const missingBuilderVariant = selectedBuilderItems.some(({ variants, selectedVariant }) => variants.length > 0 && !selectedVariant);
+  const customGiftboxTotal = selectedBuilderItems.reduce((sum, { item }) => sum + item.price, 0) + boxPrice;
   const cartTotal = cart.reduce((sum, line) => sum + line.total, 0);
   const cartProductsTotal = cart.reduce((sum, line) => sum + line.items.reduce((itemSum, item) => itemSum + item.price, 0), 0);
   const cartPackagingTotal = Math.max(0, cartTotal - cartProductsTotal);
@@ -442,7 +453,7 @@ export default function Home() {
   }, [heroSlideCount, view]);
 
   useEffect(() => {
-    setSelectedVariantId(selectedProduct?.variants?.[0]?.id || "");
+    setSelectedVariantId("");
   }, [selectedProduct?.id]);
 
   useEffect(() => {
@@ -507,6 +518,24 @@ export default function Home() {
     return giftboxProducts(giftbox).reduce((sum, product) => sum + product.price, 0) + boxPrice;
   }
 
+  function setBuilderVariant(productId: string, variantId: string) {
+    setSelectedBuilderVariants((current) => ({ ...current, [productId]: variantId }));
+  }
+
+  function toggleBuilderProduct(product: Product) {
+    setSelected((current) => {
+      if (current.includes(product.id)) {
+        setSelectedBuilderVariants((variants) => {
+          const next = { ...variants };
+          delete next[product.id];
+          return next;
+        });
+        return current.filter((id) => id !== product.id);
+      }
+      return [...current, product.id].slice(0, 6);
+    });
+  }
+
   function addGiftboxToCart(giftbox: Giftbox) {
     const items = giftboxProducts(giftbox);
     setCart((current) => [
@@ -524,7 +553,7 @@ export default function Home() {
   }
 
   function addCustomGiftboxToCart() {
-    const total = selectedProducts.reduce((sum, product) => sum + product.price, 0) + boxPrice;
+    if (missingBuilderVariant) return;
     setCart((current) => [
       ...current,
         {
@@ -532,8 +561,8 @@ export default function Home() {
           title: "Byg-selv gaveæske",
           note: message,
           cardText: message,
-          items: selectedProducts,
-          total
+          items: selectedBuilderItems.map(({ item }) => item),
+          total: customGiftboxTotal
       }
     ]);
     setMessage("");
@@ -907,11 +936,12 @@ export default function Home() {
                 <div className="detail-price">{money(selectedProductPrice)}</div>
                 {selectedProductVariants.length > 0 && (
                   <label className="variant-picker">
-                    <span>Vælg variant</span>
+                    <span>Vælg farve</span>
                     <select value={selectedProductVariant?.id || ""} onChange={(event) => setSelectedVariantId(event.target.value)}>
+                      <option value="">Vælg farve</option>
                       {selectedProductVariants.map((variant) => (
-                        <option key={variant.id} value={variant.id}>
-                          {variant.title} · {money(variant.price)} · {variant.stock} på lager
+                        <option key={variant.id} value={variant.id} disabled={variant.stock <= 0}>
+                          {variant.title} · {money(variant.price)} · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}
                         </option>
                       ))}
                     </select>
@@ -927,11 +957,20 @@ export default function Home() {
                   {selectedProduct.occasions.map((item) => <span key={item}>{item}</span>)}
                 </div>
                 <div className="actions">
-                  <button className="btn primary" onClick={() => addProductToCart(selectedProduct, selectedProductVariant)}>Læg i kurv</button>
+                  <button
+                    className="btn primary"
+                    disabled={selectedProductVariants.length > 0 && !selectedProductVariant}
+                    onClick={() => addProductToCart(selectedProduct, selectedProductVariant)}
+                  >
+                    {selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Læg i kurv"}
+                  </button>
                   {selectedProduct.giftbox && <button className="btn" onClick={() => {
                     setSelected((current) => current.includes(selectedProduct.id) ? current : [...current, selectedProduct.id].slice(0, 6));
+                    if (selectedProductVariant) setBuilderVariant(selectedProduct.id, selectedProductVariant.id);
                     setView("builder");
-                  }}>Brug i byg-selv</button>}
+                  }} disabled={selectedProductVariants.length > 0 && !selectedProductVariant}>
+                    {selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Brug i byg-selv"}
+                  </button>}
                 </div>
               </div>
             </section>
@@ -965,7 +1004,7 @@ export default function Home() {
                   <div className="summary">
                     <div className="builder-selected-list">
                       <strong>Valgt til gaveæsken</strong>
-                      {selectedProducts.length ? selectedProducts.map((product) => (
+                      {selectedBuilderItems.length ? selectedBuilderItems.map(({ product, variants, selectedVariant, item }) => (
                         <div className="builder-selected-product" key={product.id}>
                           <div className="builder-selected-thumb">
                             {product.image ? <img alt={product.title} src={product.image} /> : <span>{product.brand.slice(0, 1)}</span>}
@@ -973,11 +1012,24 @@ export default function Home() {
                           <div>
                             <span>{product.brand}</span>
                             <b>{product.title}</b>
+                            {variants.length > 0 && (
+                              <label className="builder-variant-select">
+                                <span>Farve</span>
+                                <select value={selectedVariant?.id || ""} onChange={(event) => setBuilderVariant(product.id, event.target.value)}>
+                                  <option value="">Vælg farve</option>
+                                  {variants.map((variant) => (
+                                    <option key={variant.id} value={variant.id} disabled={variant.stock <= 0}>
+                                      {variant.title} · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            )}
                           </div>
-                          <em>{money(product.price)}</em>
+                          <em>{money(item.price)}</em>
                           <button
                             aria-label={`Fjern ${product.title}`}
-                            onClick={() => setSelected((current) => current.filter((id) => id !== product.id))}
+                            onClick={() => toggleBuilderProduct(product)}
                             type="button"
                           >
                             ×
@@ -990,14 +1042,20 @@ export default function Home() {
                     <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Korttekst..." />
                     <div className="builder-price-breakdown">
                       <strong>Prisopdeling</strong>
-                      {selectedProducts.map((product) => (
-                        <div key={product.id}><span>{product.title}</span><em>{money(product.price)}</em></div>
+                      {selectedBuilderItems.map(({ product, selectedVariant, item }) => (
+                        <div key={product.id}>
+                          <span>{selectedVariant ? `${product.title} · ${selectedVariant.title}` : product.title}</span>
+                          <em>{money(item.price)}</em>
+                        </div>
                       ))}
                       {!selectedProducts.length && <p>Vælg produkter for at se prisen.</p>}
                       <div><span>Gaveæske og kort</span><em>{money(boxPrice)}</em></div>
-                      <div className="total"><span>Total gaveæske</span><em>{money(selectedProducts.reduce((sum, product) => sum + product.price, 0) + boxPrice)}</em></div>
+                      <div className="total"><span>Total gaveæske</span><em>{money(customGiftboxTotal)}</em></div>
                     </div>
-                    <button className="btn primary" onClick={addCustomGiftboxToCart}>Læg i kurv</button>
+                    {missingBuilderVariant && <p className="builder-warning">Vælg farve på alle produkter med varianter, før gaveæsken lægges i kurven.</p>}
+                    <button className="btn primary" disabled={missingBuilderVariant} onClick={addCustomGiftboxToCart}>
+                      {missingBuilderVariant ? "Vælg farve først" : "Læg i kurv"}
+                    </button>
                   </div>
                 </aside>
                 <div className="grid">
@@ -1012,7 +1070,7 @@ export default function Home() {
                           <span className="price">{money(product.price)}</span>
                           <button
                             className={`btn ${selected.includes(product.id) ? "primary" : ""}`}
-                            onClick={() => setSelected((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id].slice(0, 6))}
+                            onClick={() => toggleBuilderProduct(product)}
                           >
                             {selected.includes(product.id) ? "Valgt" : "Vælg"}
                           </button>

@@ -38,9 +38,9 @@ on conflict (legacy_id) do update set
 
 update public.products
 set variants = '[
-  {"id":"p2-natur","title":"Natur","sku":"BABYLY-NEST-NATUR","price":815.86,"stock":1,"status":"live"},
-  {"id":"p2-rosa","title":"Rosa","sku":"BABYLY-NEST-ROSA","price":815.86,"stock":1,"status":"live"},
-  {"id":"p2-graa","title":"Grå","sku":"BABYLY-NEST-GRAA","price":815.86,"stock":0,"status":"live"}
+  {"id":"p2-beige","title":"Beige","sku":"BABYLY-NEST-BEIGE","price":815.86,"stock":1,"status":"live"},
+  {"id":"p2-sea-blue","title":"Sea blue","sku":"BABYLY-NEST-SEA-BLUE","price":815.86,"stock":1,"status":"live"},
+  {"id":"p2-forest-green","title":"Forest green","sku":"BABYLY-NEST-FOREST-GREEN","price":815.86,"stock":0,"status":"live"}
 ]'::jsonb
 where legacy_id = 'p2';
 
