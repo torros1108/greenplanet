@@ -10,6 +10,8 @@
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ADMIN_PASSWORD`
+   - `STRIPE_SECRET_KEY`
+   - `STRIPE_WEBHOOK_SECRET` (when webhooks are enabled)
 5. Keep `SUPABASE_SERVICE_ROLE_KEY` secret. It must only be used in server routes.
 
 ## 2. Vercel
@@ -18,6 +20,10 @@
 2. Create a Vercel project for `greenplanet-shop`.
 3. Add the environment variables from `.env.example`.
 4. Deploy.
+5. In Stripe Dashboard, create a webhook endpoint:
+   - `https://greenplanet.dk/api/stripe/webhook`
+   - Event: `checkout.session.completed`
+   - Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
 
 ## 3. Domain
 
@@ -36,7 +42,7 @@
 3. Create an order API route so checkout saves orders in Supabase.
 4. Create an admin view for orders.
 5. Add order e-mail notifications.
-6. Add payment through Stripe, MobilePay, or payment links.
+6. Add Stripe webhook handling so paid orders can automatically move to `paid`.
 
 ## Before Launch
 

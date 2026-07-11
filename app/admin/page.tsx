@@ -105,6 +105,8 @@ export default function AdminPage() {
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState("");
   const [error, setError] = useState("");
 
   const selectedOrder = useMemo(
@@ -233,6 +235,29 @@ export default function AdminPage() {
     );
   }
 
+  async function createPaymentLink(orderId: string) {
+    setError("");
+    setPaymentUrl("");
+    setIsCreatingPayment(true);
+
+    const response = await fetch("/api/admin/stripe-checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId })
+    });
+
+    setIsCreatingPayment(false);
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({ error: "Betalingslink kunne ikke oprettes." })) as { error?: string };
+      setError(data.error || "Betalingslink kunne ikke oprettes.");
+      return;
+    }
+
+    const data = await response.json() as { url: string };
+    setPaymentUrl(data.url);
+  }
+
   async function updateProduct(productId: string, update: { stock?: number; status?: string }) {
     setError("");
 
@@ -342,6 +367,23 @@ export default function AdminPage() {
                   <div><span>Total</span><strong>{money(selectedOrder.total)}</strong></div>
                   <div><span>Linjer</span><strong>{selectedOrder.order_lines.length}</strong></div>
                   <div><span>Status</span><strong>{statusLabels[selectedOrder.status] || selectedOrder.status}</strong></div>
+                </div>
+
+                <div className="admin-payment-box">
+                  <div>
+                    <span>Stripe</span>
+                    <strong>Betalingslink</strong>
+                    <p>Opret et Stripe Checkout-link, når fragt og ordre er godkendt.</p>
+                  </div>
+                  <button className="btn primary" disabled={isCreatingPayment} onClick={() => createPaymentLink(selectedOrder.id)}>
+                    {isCreatingPayment ? "Opretter..." : "Opret betalingslink"}
+                  </button>
+                  {paymentUrl && (
+                    <div className="admin-payment-url">
+                      <input readOnly value={paymentUrl} onFocus={(event) => event.target.select()} />
+                      <a className="btn" href={paymentUrl} rel="noreferrer" target="_blank">Åbn</a>
+                    </div>
+                  )}
                 </div>
 
                 <div className="admin-info-grid">
