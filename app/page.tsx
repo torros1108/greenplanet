@@ -823,11 +823,44 @@ export default function Home() {
                 <aside className="panel sticky">
                   <div className="box-preview">
                     <div className="selected-items">
-                      {selectedProducts.map((product, index) => <div className="selected-mini" key={product.id}>{product.brand.split(" ")[0] || index + 1}</div>)}
+                      {selectedProducts.length ? selectedProducts.map((product) => (
+                        <div className="selected-mini image-mini builder-mini" key={product.id} title={product.title}>
+                          {product.image ? <img alt={product.title} src={product.image} /> : <span>{product.brand.split(" ")[0]}</span>}
+                        </div>
+                      )) : (
+                        <div className="builder-empty-preview">
+                          <strong>Vælg produkter</strong>
+                          <span>De vises her i gaveæsken</span>
+                        </div>
+                      )}
                     </div>
                     <div className="paper" /><div className="crate" />
                   </div>
                   <div className="summary">
+                    <div className="builder-selected-list">
+                      <strong>Valgt til gaveæsken</strong>
+                      {selectedProducts.length ? selectedProducts.map((product) => (
+                        <div className="builder-selected-product" key={product.id}>
+                          <div className="builder-selected-thumb">
+                            {product.image ? <img alt={product.title} src={product.image} /> : <span>{product.brand.slice(0, 1)}</span>}
+                          </div>
+                          <div>
+                            <span>{product.brand}</span>
+                            <b>{product.title}</b>
+                          </div>
+                          <em>{money(product.price)}</em>
+                          <button
+                            aria-label={`Fjern ${product.title}`}
+                            onClick={() => setSelected((current) => current.filter((id) => id !== product.id))}
+                            type="button"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )) : (
+                        <p>Vælg op til 6 produkter fra listen.</p>
+                      )}
+                    </div>
                     <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Korttekst..." />
                     <div className="summary-row"><span>Produkter</span><strong>{money(selectedProducts.reduce((sum, product) => sum + product.price, 0))}</strong></div>
                     <div className="summary-row"><span>Æske og kort</span><strong>{money(boxPrice)}</strong></div>
