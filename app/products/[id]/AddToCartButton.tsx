@@ -42,7 +42,7 @@ export function AddToCartButton({ product }: { product: Product }) {
     }
 
     const item = selectedVariant
-      ? { ...product, price: selectedVariant.price, stock: selectedVariant.stock, sku: selectedVariant.sku, selectedVariant }
+      ? { ...product, price: selectedVariant.price, stock: selectedVariant.stock, sku: selectedVariant.sku, image: selectedVariant.image || product.image, selectedVariant }
       : product;
     const title = selectedVariant ? `${product.title} · ${selectedVariant.title}` : product.title;
 
@@ -78,6 +78,11 @@ export function AddToCartButton({ product }: { product: Product }) {
         <div className="variant-preview" style={{ ["--variant-color" as string]: variantColor(selectedVariant) || "#dfeade" }}>
           <span className="variant-swatch" />
           Valgt farve: <strong>{selectedVariant.title}</strong>
+        </div>
+      )}
+      {selectedVariant?.image && (
+        <div className="variant-photo-preview">
+          <img src={selectedVariant.image} alt={`${product.title} - ${selectedVariant.title}`} />
         </div>
       )}
       <button className="btn primary" disabled={variants.length > 0 && !selectedVariant} onClick={addToCart}>

@@ -199,6 +199,7 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
             sku: String(variant.sku || ""),
             price: Number(variant.price) || Number(row.price) || 0,
             stock: Number(variant.stock) || 0,
+            image: String(variant.image || ""),
             status: variant.status || "live"
           }))
           .filter((variant) => variant.status !== "archived")
@@ -226,6 +227,7 @@ function variantColor(variant?: ProductVariant | null) {
 
 function ProductVisual({ product, variant }: { product: Product; variant?: ProductVariant | null }) {
   const color = variantColor(variant);
+  const image = variant?.image || product.image;
 
   return (
     <div
@@ -238,11 +240,11 @@ function ProductVisual({ product, variant }: { product: Product; variant?: Produ
           {variant.title}
         </div>
       )}
-      {product.image ? (
+      {image ? (
       <img
         className="product-image"
-        src={product.image}
-        alt={product.title}
+        src={image}
+        alt={variant ? `${product.title} - ${variant.title}` : product.title}
         loading="lazy"
         onError={(event) => {
           event.currentTarget.style.display = "none";
@@ -317,7 +319,7 @@ export default function Home() {
     const variants = product.variants?.filter((variant) => variant.status !== "archived") || [];
     const selectedVariant = variants.find((variant) => variant.id === selectedBuilderVariants[product.id]) || null;
     const item: CartItem = selectedVariant
-      ? { ...product, price: selectedVariant.price, stock: selectedVariant.stock, sku: selectedVariant.sku, selectedVariant }
+      ? { ...product, price: selectedVariant.price, stock: selectedVariant.stock, sku: selectedVariant.sku, image: selectedVariant.image || product.image, selectedVariant }
       : product;
     return { product, variants, selectedVariant, item };
   });
@@ -597,7 +599,7 @@ export default function Home() {
 
   function addProductToCart(product: Product, variant?: ProductVariant | null) {
     const item: CartItem = variant
-      ? { ...product, price: variant.price, stock: variant.stock, sku: variant.sku, selectedVariant: variant }
+      ? { ...product, price: variant.price, stock: variant.stock, sku: variant.sku, image: variant.image || product.image, selectedVariant: variant }
       : product;
 
     setCart((current) => [
@@ -1010,9 +1012,9 @@ export default function Home() {
                 <aside className="panel sticky">
                   <div className="box-preview">
                     <div className="selected-items">
-                      {selectedProducts.length ? selectedProducts.map((product) => (
-                        <div className="selected-mini image-mini builder-mini" key={product.id} title={product.title}>
-                          {product.image ? <img alt={product.title} src={product.image} /> : <span>{product.brand.split(" ")[0]}</span>}
+                      {selectedBuilderItems.length ? selectedBuilderItems.map(({ product, item, selectedVariant }) => (
+                        <div className="selected-mini image-mini builder-mini" key={product.id} title={selectedVariant ? `${product.title} - ${selectedVariant.title}` : product.title}>
+                          {item.image ? <img alt={selectedVariant ? `${product.title} - ${selectedVariant.title}` : product.title} src={item.image} /> : <span>{product.brand.split(" ")[0]}</span>}
                         </div>
                       )) : (
                         <div className="builder-empty-preview">
@@ -1029,7 +1031,7 @@ export default function Home() {
                       {selectedBuilderItems.length ? selectedBuilderItems.map(({ product, variants, selectedVariant, item }) => (
                         <div className="builder-selected-product" key={product.id}>
                           <div className="builder-selected-thumb">
-                            {product.image ? <img alt={product.title} src={product.image} /> : <span>{product.brand.slice(0, 1)}</span>}
+                            {item.image ? <img alt={selectedVariant ? `${product.title} - ${selectedVariant.title}` : product.title} src={item.image} /> : <span>{product.brand.slice(0, 1)}</span>}
                             {selectedVariant && <span className="builder-variant-dot" style={{ background: variantColor(selectedVariant) || undefined }} />}
                           </div>
                           <div>

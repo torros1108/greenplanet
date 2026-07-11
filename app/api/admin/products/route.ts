@@ -55,13 +55,14 @@ export async function PATCH(request: Request) {
     }
     if (Array.isArray(payload.variants)) {
       update.variants = payload.variants.map((variant) => {
-        const item = variant as { id?: unknown; title?: unknown; sku?: unknown; price?: unknown; stock?: unknown; status?: unknown };
+        const item = variant as { id?: unknown; title?: unknown; sku?: unknown; price?: unknown; stock?: unknown; image?: unknown; status?: unknown };
         return {
           id: String(item.id || item.sku || item.title || crypto.randomUUID()),
           title: String(item.title || item.sku || "Variant"),
           sku: String(item.sku || ""),
           price: Math.max(0, Number(item.price) || 0),
           stock: Math.max(0, Math.round(Number(item.stock) || 0)),
+          image: String(item.image || ""),
           status: String(item.status || "live")
         };
       });

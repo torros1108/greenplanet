@@ -91,6 +91,8 @@ button:disabled { cursor: not-allowed; opacity: .58; }
 .variant-swatch { width: 17px; height: 17px; border-radius: 50%; background: var(--variant-color); border: 1px solid rgba(23,32,24,.2); }
 .variant-preview { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; margin: -4px 0 18px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: #fbf8f0; color: var(--muted); font-weight: 800; }
 .variant-preview strong { color: var(--ink); }
+.variant-photo-preview { display: grid; place-items: center; aspect-ratio: 4/3; margin: -4px 0 18px; border: 1px solid var(--line); border-radius: 8px; background: #fbf8f0; overflow: hidden; }
+.variant-photo-preview img { width: 100%; height: 100%; object-fit: contain; padding: 18px; mix-blend-mode: multiply; }
 .mini-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
 .shape { width: 54px; height: 92px; border-radius: 18px 18px 9px 9px; background: var(--leaf); filter: drop-shadow(0 15px 13px rgba(32,48,33,.18)); }
 .shape.jar { width: 78px; height: 72px; border-radius: 14px 14px 24px 24px; background: #f1dbbd; border: 1px solid rgba(23,59,40,.14); }
