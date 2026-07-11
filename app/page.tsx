@@ -302,7 +302,7 @@ export default function Home() {
     },
     {
       title: "Ny Mor Ro",
-      text: "Wellness til graviditet og barsel med naturlige olier, rosenvand og rolige ritualer.",
+      text: "Wellness til graviditet og barsel med naturlige olier, rosenvand og små pauser.",
       productIds: ["p4", "p13", "p15"]
     },
     {
@@ -766,7 +766,7 @@ export default function Home() {
                   <strong>Barsel</strong><span>Gaver til nye familier og nybagte mødre</span>
                 </button>
                 <button className="stat" onClick={() => { setCategory("Naturlig beauty"); setView("products"); }}>
-                  <strong>Wellness</strong><span>Naturlige olier, ler og små ritualer</span>
+                  <strong>Wellness</strong><span>Naturlige olier, ler og hudpleje</span>
                 </button>
                 <button className="stat" onClick={() => setView("giftboxes")}>
                   <strong>{giftboxCatalog.length}</strong><span>kuraterede gaveæsker</span>

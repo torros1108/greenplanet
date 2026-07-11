@@ -45,7 +45,7 @@ export const initialProducts: Product[] = [
   { id: "p10", title: "Hooded Baby Towel Rabbit Grey", brand: "Summerville organic", category: "Baby & barsel", tags: ["håndklæde", "baby"], description: "Økologisk babyhåndklæde med kanin-detalje i grå.", cost: 87.96, price: 207.97, stock: 2, sku: "600879", image: "https://cdn.faire.com/fastly/95f5cd5ac72e9298312585ebc8eab2306fdb06cc4f0e3b614205c600dadb8358.jpeg", giftbox: true, occasions: ["Barsel", "Baby gave"], shape: "box", status: "Live" },
   { id: "p11", title: "Franse Roze Klei", brand: "More", category: "Naturlig beauty", tags: ["klei", "wellness"], description: "100% naturlig fransk rosa ler til wellness-æsker.", cost: 49.58, price: 118.91, stock: 2, sku: "7442956129115", image: "https://cdn.faire.com/fastly/4c3ce9eb94878f5e25df6f9e40ddf14abd1bd592dff1df26a3d1021086d66d6a.jpeg", giftbox: true, occasions: ["Wellness", "Rolig weekend"], shape: "jar", status: "Live" },
   { id: "p12", title: "Marokkaanse Ghassoul Kleipoeder", brand: "More", category: "Naturlig beauty", tags: ["ghassoul", "wellness"], description: "100% naturlig ghassoul lerpulver.", cost: 49.58, price: 118.91, stock: 2, sku: "7442956129139", image: "https://cdn.faire.com/fastly/98491dad59eb608744f9aea983f7feeaf86a2ffb51519ecd3ab6b0b23e1238b4.jpeg", giftbox: true, occasions: ["Wellness", "Rolig weekend"], shape: "jar", status: "Live" },
-  { id: "p13", title: "Bulgaarse rozenwater", brand: "More", category: "Naturlig beauty", tags: ["rosenvand", "beauty"], description: "Økologisk bulgarsk rosenvand til ansigt og ritualer.", cost: 52.63, price: 133.82, stock: 2, sku: "8719327521557", image: "https://cdn.faire.com/fastly/86c6e142f2bc3d341345044ab2d8947dbe3cfed709927713b5abaa122da6abab.jpeg", giftbox: true, occasions: ["Wellness", "Ny mor"], shape: "bottle", status: "Live" },
+  { id: "p13", title: "Bulgaarse rozenwater", brand: "More", category: "Naturlig beauty", tags: ["rosenvand", "beauty"], description: "Økologisk bulgarsk rosenvand til ansigt og hudpleje.", cost: 52.63, price: 133.82, stock: 2, sku: "8719327521557", image: "https://cdn.faire.com/fastly/86c6e142f2bc3d341345044ab2d8947dbe3cfed709927713b5abaa122da6abab.jpeg", giftbox: true, occasions: ["Wellness", "Ny mor"], shape: "bottle", status: "Live" },
   { id: "p14", title: "Arganolie", brand: "More", category: "Naturlig beauty", tags: ["olie", "beauty"], description: "Økologisk og koldpresset arganolie.", cost: 61.95, price: 148.73, stock: 2, sku: "1", image: "https://cdn.faire.com/fastly/c1647a7becd367e3a9a01783053a3d3e20edeb286cb7ee5d3bb3d7ca5b937868.jpeg", giftbox: true, occasions: ["Wellness", "Rolig weekend"], shape: "bottle", status: "Live" },
   { id: "p15", title: "Rosehip olie", brand: "More", category: "Naturlig beauty", tags: ["olie", "beauty"], description: "Økologisk og koldpresset rosehip olie.", cost: 71.27, price: 171.09, stock: 2, sku: "8720299095168", image: "https://cdn.faire.com/fastly/0ae6cc5fc64666b88bd818d984c3c92702695f39d2d69b520ce0f0b2ffa164cd.jpeg", giftbox: true, occasions: ["Wellness", "Ny mor"], shape: "bottle", status: "Live" },
   { id: "p16", title: "Jojoba Olie", brand: "More", category: "Naturlig beauty", tags: ["olie", "beauty"], description: "Økologisk og koldpresset jojobaolie.", cost: 76.26, price: 186, stock: 2, sku: "8720299095137", image: "https://cdn.faire.com/fastly/9433451c7afbdc5e0a362368282f6decc233b05183e8f693f0402e1ae1ded286.jpeg", giftbox: true, occasions: ["Wellness", "Rolig weekend"], shape: "bottle", status: "Live" }
@@ -64,7 +64,7 @@ export const giftboxes: Giftbox[] = [
     packing: "Pakkes i Greenplanet gaveæske med silkepapir, roligt udtryk og mulighed for personlig hilsen.",
     cardText: "Skriv en kort hilsen ved checkout, så lægger vi den ved i æsken.",
     delivery: "Kan sendes direkte til modtageren eller til dig, hvis du selv vil overrække gaven.",
-    why: "Æsken samler blid kropspleje og små ritualer, som kan bruges uden at kræve meget tid eller overskud.",
+    why: "Æsken samler blid kropspleje og små pauser, som kan bruges uden at kræve meget tid eller overskud.",
     details: ["3 produkter", "Personligt kort kan tilføjes", "Velegnet til direkte gavelevering", "Naturlig beauty og barselsro"]
   },
   {
@@ -119,12 +119,12 @@ export const giftboxes: Giftbox[] = [
     description: "Naturlig beauty til en langsom weekend og lidt selvforkælelse.",
     productIds: ["p11", "p13", "p14", "p16"],
     note: "Ler, rosenvand og økologiske olier fra More.",
-    recipient: "Til hende, der elsker naturlig beauty, rolige ritualer og lidt tid for sig selv.",
+    recipient: "Til hende, der elsker naturlig beauty, hjemme-spa og lidt tid for sig selv.",
     occasion: "Fødselsdag, venindegave, tak-for-hjælpen eller selvforkælelse.",
-    packing: "Pakkes med beautyprodukterne samlet som et lille hjemme-spa ritual.",
+    packing: "Pakkes med beautyprodukterne samlet som en lille hjemme-spa gave.",
     cardText: "Korttekst kan tilføjes, så gaven føles personlig selv ved direkte levering.",
     delivery: "Kan sendes direkte til modtager eller bestilles hjem til egen overrækkelse.",
-    why: "Æsken fungerer som et samlet ritual frem for enkeltprodukter, der bare ligger ved siden af hinanden.",
+    why: "Æsken fungerer som en samlet wellness-gave frem for enkeltprodukter, der bare ligger ved siden af hinanden.",
     details: ["4 produkter", "Naturlig beauty", "Hjemme-spa følelse", "God til venindegaver"]
   }
 ];
@@ -240,14 +240,14 @@ export function productSpecs(product: Product) {
       { label: "Produkttype", value: "Ghassoul lerpulver" },
       { label: "Størrelse", value: "50 GR" },
       { label: "Indhold", value: "Marokkansk ghassoul" },
-      { label: "Brug", value: "Hudpleje, maske og wellness-ritual" },
+      { label: "Brug", value: "Hudpleje, maske og selvforkælelse" },
       { label: "Profil", value: "100% naturlig beauty" }
     ],
     p13: [
       { label: "Produkttype", value: "Rosenvand" },
       { label: "Størrelse", value: "50 ML" },
       { label: "Indhold", value: "Bulgarsk rozenwater" },
-      { label: "Brug", value: "Toner, opfriskning og beauty-ritualer" },
+      { label: "Brug", value: "Toner, opfriskning og hudpleje" },
       { label: "Hudtype", value: "Mildt produkt, egnet til alle hudtyper" },
       { label: "Profil", value: "100% biologisk/økologisk" }
     ],
@@ -264,7 +264,7 @@ export function productSpecs(product: Product) {
       { label: "Størrelse", value: "30 ML" },
       { label: "Indhold", value: "Koldpresset rosehip/rozenbottel olie" },
       { label: "Profil", value: "Uraffineret olie med omega 3, omega 6 og pro-vitamin A" },
-      { label: "Brug", value: "Ansigtspleje, glow-ritual og pigment-/ar-pleje" },
+      { label: "Brug", value: "Ansigtspleje, glød og pigment-/ar-pleje" },
       { label: "Duft", value: "Jordet og varm duft, let chokoladeagtig" }
     ],
     p16: [
