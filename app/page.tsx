@@ -827,9 +827,6 @@ export default function Home() {
           <div className="topbar-title">
             <h1>{view === "product" ? selectedProduct?.title || "Produkt" : viewTitles[view]}</h1>
           </div>
-          <button className="cart-pill" onClick={() => setView("orders")}>
-            Kurv · {cart.length} · {money(checkoutTotal)}
-          </button>
         </header>
 
         <div className="content">

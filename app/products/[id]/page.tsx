@@ -61,7 +61,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="topbar-title">
             <h1>{product.title}</h1>
           </div>
-          <Link className="cart-pill" href="/#orders">Kurv</Link>
         </header>
 
         <div className="content">

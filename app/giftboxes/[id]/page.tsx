@@ -64,7 +64,6 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
           <div className="topbar-title">
             <h1>{giftbox.title}</h1>
           </div>
-          <Link className="cart-pill" href="/#orders">Kurv</Link>
         </header>
 
         <div className="content">
