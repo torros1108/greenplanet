@@ -823,12 +823,6 @@ export default function Home() {
       </aside>
 
       <section className="main">
-        <header className="topbar">
-          <div className="topbar-title">
-            <h1>{view === "product" ? selectedProduct?.title || "Produkt" : viewTitles[view]}</h1>
-          </div>
-        </header>
-
         <div className="content">
           {view === "home" && (
             <>
@@ -1388,24 +1382,6 @@ export default function Home() {
     </main>
   );
 }
-
-const viewTitles: Record<View, string> = {
-  home: "Forside",
-  giftboxes: "Gaveæsker",
-  products: "Produkter",
-  builder: "Byg selv",
-  import: "Produktimport",
-  orders: "Kurv",
-  product: "Produkt",
-  confirmation: "Tak for din bestilling",
-  contact: "Kontakt",
-  delivery: "Levering",
-  returns: "Returnering",
-  legal: "Legal",
-  terms: "Handelsbetingelser",
-  privacy: "Privatlivspolitik",
-  cookies: "Cookiepolitik"
-};
 
 const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
   contact: {

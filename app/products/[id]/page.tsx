@@ -57,12 +57,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </aside>
 
       <section className="main">
-        <header className="topbar">
-          <div className="topbar-title">
-            <h1>{product.title}</h1>
-          </div>
-        </header>
-
         <div className="content">
           <section className="product-detail">
             <Link className="btn back-btn" href="/#products">Tilbage til produkter</Link>

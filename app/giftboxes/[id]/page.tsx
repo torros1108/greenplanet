@@ -60,12 +60,6 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
       </aside>
 
       <section className="main">
-        <header className="topbar">
-          <div className="topbar-title">
-            <h1>{giftbox.title}</h1>
-          </div>
-        </header>
-
         <div className="content">
           <section className="product-detail">
             <Link className="btn back-btn" href="/#giftboxes">Tilbage til gaveæsker</Link>
