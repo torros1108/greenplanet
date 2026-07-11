@@ -810,7 +810,7 @@ export default function Home() {
           {[
             ["home", "Forside", "01"],
             ["giftboxes", "Gaveæsker", String(giftboxCatalog.length)],
-            ["products", "Produkter", String(products.length)],
+            ["products", "Produkter", String(productCards.length)],
             ["builder", "Byg selv", String(selected.length)],
             ["orders", "Kurv", String(cart.length)]
           ].map(([id, label, count]) => (

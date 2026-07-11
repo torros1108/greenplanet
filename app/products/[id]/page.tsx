@@ -7,6 +7,13 @@ function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
 
+function visibleProductCount() {
+  return initialProducts.reduce((count, product) => {
+    const variantCount = product.variants?.filter((variant) => variant.status !== "archived").length || 0;
+    return count + (variantCount || 1);
+  }, 0);
+}
+
 export function generateStaticParams() {
   return initialProducts.map((product) => ({ id: product.id }));
 }
@@ -43,7 +50,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <nav className="nav">
           <Link href="/">Forside<span>01</span></Link>
           <Link href="/#giftboxes">Gaveæsker<span>5</span></Link>
-          <Link className="active" href="/#products">Produkter<span>{initialProducts.length}</span></Link>
+          <Link className="active" href="/#products">Produkter<span>{visibleProductCount()}</span></Link>
           <Link href="/#builder">Byg selv<span>03</span></Link>
         </nav>
         <p className="side-note">Naturlige barselsgaver, babygaver og wellnessgaver fra små brands.</p>
