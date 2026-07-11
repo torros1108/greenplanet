@@ -862,8 +862,15 @@ export default function Home() {
                       )}
                     </div>
                     <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Korttekst..." />
-                    <div className="summary-row"><span>Produkter</span><strong>{money(selectedProducts.reduce((sum, product) => sum + product.price, 0))}</strong></div>
-                    <div className="summary-row"><span>Æske og kort</span><strong>{money(boxPrice)}</strong></div>
+                    <div className="builder-price-breakdown">
+                      <strong>Prisopdeling</strong>
+                      {selectedProducts.map((product) => (
+                        <div key={product.id}><span>{product.title}</span><em>{money(product.price)}</em></div>
+                      ))}
+                      {!selectedProducts.length && <p>Vælg produkter for at se prisen.</p>}
+                      <div><span>Gaveæske og kort</span><em>{money(boxPrice)}</em></div>
+                      <div className="total"><span>Total gaveæske</span><em>{money(selectedProducts.reduce((sum, product) => sum + product.price, 0) + boxPrice)}</em></div>
+                    </div>
                     <button className="btn primary" onClick={addCustomGiftboxToCart}>Læg i kurv</button>
                   </div>
                 </aside>
@@ -925,6 +932,20 @@ export default function Home() {
                     </div>
                     <div className="cart-products">
                       {line.items.map((item) => <span key={`${line.id}-${item.id}`}>{item.brand}: {item.title}</span>)}
+                    </div>
+                    <div className="cart-breakdown">
+                      {line.items.map((item) => (
+                        <div key={`${line.id}-price-${item.id}`}>
+                          <span>{item.title}</span>
+                          <strong>{money(item.price)}</strong>
+                        </div>
+                      ))}
+                      {line.items.length > 0 && (
+                        <div>
+                          <span>Gaveæske og kort</span>
+                          <strong>{money(Math.max(0, line.total - line.items.reduce((sum, item) => sum + item.price, 0)))}</strong>
+                        </div>
+                      )}
                     </div>
                     <label className="cart-card-text">
                       <span>Korttekst til denne gave</span>
@@ -998,6 +1019,15 @@ export default function Home() {
                   <div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div>
                   <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
                   <div className="summary-total"><span>Total</span><strong>{money(checkoutTotal)}</strong></div>
+                </div>
+                <div className="summary-box price-detail-box">
+                  {cart.map((line) => (
+                    <div key={`summary-${line.id}`}>
+                      <span>{line.title}</span>
+                      <strong>{money(line.total)}</strong>
+                    </div>
+                  ))}
+                  <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
                 </div>
                 <div className="order-preview">
                   <div><span>Bestiller</span><strong>{customerName || "Ikke udfyldt"}</strong></div>
