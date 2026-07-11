@@ -212,6 +212,11 @@ textarea { min-height: 104px; resize: vertical; }
 .admin-login-card .btn { width: 100%; margin-top: 14px; }
 .admin-page { min-height: 100vh; padding: 28px; background: var(--linen); }
 .admin-header { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+.admin-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.admin-tabs button { display: inline-flex; align-items: center; gap: 9px; min-height: 42px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--cream); color: var(--ink); font-weight: 900; }
+.admin-tabs button.active { border-color: var(--forest); background: var(--forest); color: var(--cream); }
+.admin-tabs span { display: inline-flex; align-items: center; min-height: 23px; padding: 0 8px; border-radius: 999px; background: rgba(23,59,40,.1); color: inherit; font-size: 12px; }
+.admin-tabs button.active span { background: rgba(255,253,247,.18); }
 .admin-grid { display: grid; grid-template-columns: minmax(300px, .44fr) minmax(520px, 1fr); gap: 18px; align-items: start; }
 .admin-orders-list { display: grid; gap: 10px; }
 .admin-order-card { display: grid; gap: 5px; width: 100%; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--cream); color: var(--ink); text-align: left; box-shadow: 0 12px 28px rgba(24,42,29,.06); }
@@ -242,6 +247,10 @@ textarea { min-height: 104px; resize: vertical; }
 .admin-line em { color: var(--forest); font-style: normal; font-weight: 900; }
 .admin-line p, .admin-line ul { grid-column: 1 / -1; margin: 0; color: var(--muted); }
 .admin-line ul { padding-left: 18px; }
+.admin-line-button { width: 100%; border-color: var(--line); color: var(--ink); text-align: left; }
+.admin-line-button:hover { background: #eef5eb; }
+.admin-inventory-controls { display: grid; grid-template-columns: 72px minmax(120px, 1fr) 72px; gap: 10px; margin: 18px 0; }
+.admin-inventory-controls input { margin-top: 0; text-align: center; font-weight: 900; }
 .admin-error { margin: 12px 0; padding: 12px 14px; border-radius: 8px; background: #f7dfdc; color: #7b2e25; font-weight: 800; }
 .admin-empty { padding: 22px; border: 1px dashed rgba(23,59,40,.25); border-radius: 8px; background: #eef5eb; color: var(--muted); text-align: center; }
 
