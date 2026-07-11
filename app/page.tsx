@@ -5,6 +5,7 @@ import Link from "next/link";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product } from "@/lib/data";
 
 const boxPrice = 49;
+const deliveryShippingPrice = 49;
 const cartStorageKey = "greenplanet-cart";
 const orderStorageKey = "greenplanet-orders";
 const companyInfo = {
@@ -273,9 +274,11 @@ export default function Home() {
   const cartTotal = cart.reduce((sum, line) => sum + line.total, 0);
   const cartProductCount = cart.reduce((sum, line) => sum + line.items.length, 0);
   const cardTextCount = cart.filter((line) => line.cardText?.trim()).length;
-  const shippingLabel = deliveryMethod === "Afhentes / aftales" ? "Aftales" : "Beregnes efter aftale";
   const isDirectDelivery = deliveryMethod === "Send direkte til modtager";
   const isPickup = deliveryMethod === "Afhentes / aftales";
+  const shippingFee = isPickup || cart.length === 0 ? 0 : deliveryShippingPrice;
+  const checkoutTotal = cartTotal + shippingFee;
+  const shippingLabel = isPickup ? "0 kr." : money(shippingFee);
   const useBillingAsDelivery = deliveryMethod === "Send til mig" && useCustomerAddressForDelivery;
   const deliveryNameLabel = isDirectDelivery ? "Modtagers navn" : "Dit navn";
   const deliveryAddressLabel = isDirectDelivery ? "Modtagers adresse" : "Din adresse";
@@ -500,9 +503,19 @@ export default function Home() {
   async function submitOrder() {
     if (!cart.length) return;
 
+    const shippingLine: CartLine | null = shippingFee > 0 ? {
+      id: `shipping-${Date.now()}`,
+      title: "Fragt",
+      note: deliveryMethod,
+      cardText: "",
+      items: [],
+      total: shippingFee
+    } : null;
+    const orderLines = shippingLine ? [...cart, shippingLine] : cart;
+
     const orderPayload = {
-      lines: cart,
-      total: cartTotal,
+      lines: orderLines,
+      total: checkoutTotal,
       customer: {
         name: customerName,
         email: customerEmail,
@@ -890,7 +903,7 @@ export default function Home() {
                     </label>
                   </div>
                 )) : <div className="empty">Kurven er tom.</div>}
-                <div className="checkout-total-row"><span>Foreløbig total</span><strong>{money(cartTotal)}</strong></div>
+                <div className="checkout-total-row"><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
                 <div className="checkout-section">
                   <h3><span>1</span> Bestiller og fakturaadresse</h3>
                   <div className="form-grid">
@@ -937,10 +950,10 @@ export default function Home() {
                 </div>
                 <div className="checkout-section">
                   <h3><span>3</span> Bekræft</h3>
-                  <p className="checkout-help">Vi sender en personlig ordrebekræftelse med endelig fragt og betaling. Kortteksterne følger de enkelte gaver.</p>
+                  <p className="checkout-help">Du kan se fragt og samlet total, før du sender bestillingen. Kortteksterne følger de enkelte gaver.</p>
                 </div>
                 <button className="btn primary" onClick={submitOrder}>
-                  Send forespørgsel
+                  Send bestilling
                 </button>
               </div>
               <div className="panel order-summary-panel">
@@ -951,7 +964,7 @@ export default function Home() {
                   <div><span>Korttekster</span><strong>{cardTextCount}/{cart.length}</strong></div>
                   <div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div>
                   <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
-                  <div className="summary-total"><span>Total nu</span><strong>{money(cartTotal)}</strong></div>
+                  <div className="summary-total"><span>Total</span><strong>{money(checkoutTotal)}</strong></div>
                 </div>
                 <div className="order-preview">
                   <div><span>Bestiller</span><strong>{customerName || "Ikke udfyldt"}</strong></div>
@@ -961,11 +974,11 @@ export default function Home() {
                   <div><span>{deliverySummaryLabel}</span><strong>{effectiveDeliveryName || "Ikke udfyldt"}</strong></div>
                   {!isPickup && <div><span>Leveringsadresse</span><strong>{[effectiveDeliveryAddress, effectiveDeliveryPostcode, effectiveDeliveryCity].filter(Boolean).join(", ") || "Ikke udfyldt"}</strong></div>}
                   <div><span>Ønsket dato</span><strong>{deliveryDate || "Ikke angivet"}</strong></div>
-                  <div><span>Total</span><strong>{money(cartTotal)}</strong></div>
+                  <div><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
                 </div>
                 <div className="checkout-note">
                   <strong>Efter bestilling</strong>
-                  <span>Din forespørgsel gemmes sikkert, og Greenplanet vender tilbage med endelig fragt, levering og betalingsoplysninger.</span>
+                  <span>Din bestilling gemmes sikkert, og Greenplanet vender tilbage med betalingsoplysninger.</span>
                 </div>
               </div>
             </section>
@@ -974,9 +987,9 @@ export default function Home() {
           {view === "confirmation" && lastOrder && (
             <section className="split">
               <div className="panel confirmation-panel">
-                <span className="eyebrow">Forespørgsel sendt</span>
+                <span className="eyebrow">Bestilling sendt</span>
                 <h2>Tak for din bestilling</h2>
-                <p>Vi har modtaget din forespørgsel som {lastOrder.id}. Greenplanet vender tilbage med endelig fragt, levering og betalingsoplysninger.</p>
+                <p>Vi har modtaget din bestilling som {lastOrder.id}. Greenplanet vender tilbage med betalingsoplysninger.</p>
                 <div className="order-preview">
                   <div><span>Ordrenr.</span><strong>{lastOrder.id}</strong></div>
                   <div><span>Bestiller</span><strong>{lastOrder.customer.name || "Ikke udfyldt"}</strong></div>
@@ -997,7 +1010,7 @@ export default function Home() {
                 {lastOrder.lines.map((line) => (
                   <div className="cart-line" key={line.id}>
                     <div className="summary-row line">
-                      <span>{line.title}<small>{line.items.length} produkt{line.items.length === 1 ? "" : "er"}</small></span>
+                      <span>{line.title}<small>{line.items.length ? `${line.items.length} produkt${line.items.length === 1 ? "" : "er"}` : "levering"}</small></span>
                       <strong>{money(line.total)}</strong>
                     </div>
                     {line.cardText && <p className="card-note">Korttekst: {line.cardText}</p>}
@@ -1104,7 +1117,7 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     sections: [
       { title: "Levering til modtager", body: "Ved checkout kan du vælge modtagers navn, adresse, ønsket leveringsdato og en leveringsnote. Vi sender uden prisbilag, når gaven sendes direkte." },
       { title: "Leveringstid", body: "Lagervarer pakkes som udgangspunkt inden for 1-3 hverdage efter ordrebekræftelse. Den forventede leveringsdato fremgår af den bekræftelse, du modtager fra Greenplanet." },
-      { title: "Fragt og levering", body: "Fragtpris og leveringsmetode fremgår af ordrebekræftelsen, før ordren er endelig. Hvis en ønsket leveringsdato ikke kan nås, kontakter vi dig hurtigst muligt." },
+      { title: "Fragt og levering", body: "Fragtprisen vises i checkout, før du sender bestillingen. Levering koster 49 kr., mens afhentning eller særskilt aftalt levering vises som 0 kr. i checkout." },
       { title: "Forsinkelse eller fejl", body: "Hvis pakken bliver forsinket eller beskadiget under levering, hjælper vi med at finde en løsning. Kontakt os med ordrenummer og gerne billeder ved transportskade." }
     ]
   },
@@ -1136,10 +1149,10 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     intro: "Disse handelsbetingelser gælder for køb og bestillinger hos Greenplanet.",
     sections: [
       { title: "Virksomhed", body: `${companyInfo.name}, CVR ${companyInfo.cvr}, ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}, e-mail ${companyInfo.email}.` },
-      { title: "Bestilling og aftale", body: "Når du sender en bestilling, modtager Greenplanet dine ordreoplysninger og vender tilbage med ordrebekræftelse, endelig pris, fragt og betalingsoplysninger. Aftalen er bindende, når ordren er bekræftet skriftligt af Greenplanet, eller når betaling er gennemført efter de betalingsoplysninger, du har modtaget." },
-      { title: "Priser og betaling", body: "Alle priser vises i danske kroner. Eventuel fragt oplyses, før ordren bekræftes. Betaling sker efter de betalingsoplysninger, der fremgår af ordrebekræftelsen. Der reserveres eller trækkes ikke betaling automatisk på siden, medmindre der senere tilføjes en betalingsløsning." },
+      { title: "Bestilling og aftale", body: "Når du sender en bestilling, modtager Greenplanet dine ordreoplysninger og den samlede pris inkl. fragt. Aftalen er bindende, når ordren er bekræftet skriftligt af Greenplanet, eller når betaling er gennemført efter de betalingsoplysninger, du har modtaget." },
+      { title: "Priser og betaling", body: "Alle priser vises i danske kroner. Fragt vises i checkout, før bestillingen sendes. Betaling sker efter de betalingsoplysninger, der fremgår af ordrebekræftelsen. Der reserveres eller trækkes ikke betaling automatisk på siden, medmindre der senere tilføjes en betalingsløsning." },
       { title: "Produkter og gaveæsker", body: "Greenplanet sælger gaveæsker og udvalgte produkter til baby, barsel og personlig pleje. Indhold, farver og emballage kan variere en smule afhængigt af lagerstatus. Hvis et produkt ikke kan leveres, kontakter vi dig med forslag til erstatning eller ændring af ordren." },
-      { title: "Levering", body: "Gaver kan sendes direkte til modtager eller til bestiller. Ved direkte gavelevering sendes pakken uden prisbilag, når det er muligt. Leveringstid, leveringsmetode og fragtpris fremgår af ordrebekræftelsen." },
+      { title: "Levering", body: "Gaver kan sendes direkte til modtager eller til bestiller. Ved direkte gavelevering sendes pakken uden prisbilag, når det er muligt. Levering koster 49 kr., medmindre afhentning eller anden løsning er aftalt." },
       { title: "Fortrydelsesret", body: "Som forbruger har du som udgangspunkt 14 dages fortrydelsesret ved køb online. Fristen regnes normalt fra den dag, du eller en valgt modtager får varen i fysisk besiddelse. Du skal give Greenplanet besked inden fristens udløb, hvis du vil fortryde købet." },
       { title: "Returnering", body: "Ved fortrydelse skal varen returneres uden unødig forsinkelse og senest 14 dage efter, at du har givet besked om fortrydelse. Varen skal returneres forsvarligt pakket og i væsentligt samme stand. Du betaler selv returfragten, medmindre andet er aftalt." },
       { title: "Undtagelser", body: "Forseglede pleje- og hygiejneprodukter kan miste fortrydelsesretten, hvis forseglingen er brudt. Personlige korttekster, specialpakkede gaveæsker eller varer, der er fremstillet eller tilpasset efter dine specifikke ønsker, kan være undtaget fra fortrydelsesretten." },
