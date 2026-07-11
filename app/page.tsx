@@ -1038,15 +1038,6 @@ export default function Home() {
                   <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
                   <div className="summary-total"><span>Total</span><strong>{money(checkoutTotal)}</strong></div>
                 </div>
-                <div className="summary-box price-detail-box">
-                  {cart.map((line) => (
-                    <div key={`summary-${line.id}`}>
-                      <span>{line.title}</span>
-                      <strong>{money(line.total)}</strong>
-                    </div>
-                  ))}
-                  <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
-                </div>
                 <div className="order-preview">
                   <div><span>Bestiller</span><strong>{customerName || "Ikke udfyldt"}</strong></div>
                   <div><span>Kontakt</span><strong>{customerEmail || customerPhone ? [customerEmail, customerPhone].filter(Boolean).join(" · ") : "Ikke udfyldt"}</strong></div>

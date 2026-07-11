@@ -198,8 +198,6 @@ textarea { min-height: 104px; resize: vertical; }
 .summary-box strong { color: var(--ink); }
 .summary-box .summary-total { background: var(--forest); color: var(--cream); }
 .summary-box .summary-total span, .summary-box .summary-total strong { color: var(--cream); }
-.price-detail-box { margin-top: -8px; }
-.price-detail-box div { padding-block: 9px; }
 .order-preview { display: grid; gap: 8px; margin: 18px 0; }
 .order-preview div { display: grid; grid-template-columns: minmax(92px,.42fr) minmax(0,1fr); gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .order-preview span { color: var(--muted); font-size: 12px; font-weight: 900; text-transform: uppercase; }
