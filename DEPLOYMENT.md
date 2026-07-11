@@ -9,6 +9,7 @@
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `ADMIN_PASSWORD`
 5. Keep `SUPABASE_SERVICE_ROLE_KEY` secret. It must only be used in server routes.
 
 ## 2. Vercel
