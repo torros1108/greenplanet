@@ -15,6 +15,7 @@ export type Product = {
   category: string;
   tags: string[];
   description: string;
+  specs?: { label: string; value: string }[];
   cost: number;
   price: number;
   stock: number;
@@ -141,6 +142,10 @@ export const giftboxes: Giftbox[] = [
 ];
 
 export function productSpecs(product: Product) {
+  if (product.specs?.length) {
+    return product.specs;
+  }
+
   const shared = [
     { label: "Brand", value: product.brand },
     { label: "Gaveegnet", value: product.giftbox ? "Ja, passer i gaveæske" : "Bedst som enkeltprodukt" },

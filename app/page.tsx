@@ -90,6 +90,7 @@ type SupabaseProductRow = {
   occasions: string[] | null;
   shape: Product["shape"];
   status: string;
+  specs?: { label: string; value: string }[] | null;
 };
 type SupabaseGiftboxRow = {
   legacy_id: string | null;
@@ -205,6 +206,11 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
     category: row.category,
     tags: [],
     description: row.description,
+    specs: Array.isArray(row.specs)
+      ? row.specs
+          .map((spec) => ({ label: String(spec.label || ""), value: String(spec.value || "") }))
+          .filter((spec) => spec.label && spec.value)
+      : undefined,
     cost: Number(row.cost) || 0,
     price: Number(row.price) || 0,
     stock: row.stock || 0,
@@ -440,7 +446,7 @@ export default function Home() {
         async function loadProducts() {
           try {
             return await supabaseGet<SupabaseProductRow[]>(
-              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,giftbox_eligible,occasions,shape,status&status=eq.live&order=legacy_id.asc"
+              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,giftbox_eligible,occasions,shape,status,specs&status=eq.live&order=legacy_id.asc"
             );
           } catch {
             return supabaseGet<SupabaseProductRow[]>(
