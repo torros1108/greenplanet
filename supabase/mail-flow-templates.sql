@@ -6,12 +6,16 @@ values
 (
   'customer_welcome',
   'Velkommen til Greenplanet',
-  'Din kundeprofil er oprettet, så næste bestilling bliver nemmere.',
+  'Vi har gemt din kundeprofil. Du skal ikke huske et password.',
   'Hej {{customer_name}}
 
 Tak fordi du har oprettet en kundeprofil hos Greenplanet.
 
-Vi har gemt dine kontakt- og adresseoplysninger, så det bliver nemmere at bestille næste gang. Du kan altid skrive til os, hvis noget skal rettes eller slettes.
+Vi har gemt dine kontakt- og adresseoplysninger, så det bliver nemmere at bestille næste gang.
+
+Du skal ikke huske et password til Greenplanet. Når kundelogin åbner, logger du ind med din e-mailadresse og får tilsendt en engangskode eller et sikkert login-link.
+
+Indtil da kan du bare svare på denne mail, hvis du vil have rettet eller slettet dine oplysninger.
 
 Hos Greenplanet samler vi gaveæsker med udvalgte produkter til baby, barsel og velvære. Hver gave pakkes med omtanke, og vi sender gerne direkte til modtageren.
 
