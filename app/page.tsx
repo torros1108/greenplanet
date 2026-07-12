@@ -1395,8 +1395,8 @@ export default function Home() {
               <button onClick={() => setView("returns")}>Returnering</button>
             </div>
             <div>
-              <span>Legal</span>
-              <button onClick={() => setView("legal")}>Legal</button>
+              <span>Jura</span>
+              <button onClick={() => setView("legal")}>Juridisk overblik</button>
               <button onClick={() => setView("terms")}>Handelsbetingelser</button>
               <button onClick={() => setView("privacy")}>Privatlivspolitik</button>
               <button onClick={() => setView("cookies")}>Cookiepolitik</button>
@@ -1412,11 +1412,12 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
   contact: {
     eyebrow: "Kundeservice",
     title: "Kontakt Greenplanet",
-    intro: "Har du spørgsmål til en gaveæske, levering direkte til modtager eller hjælp til at sammensætte en gave, kan du kontakte os her.",
+    intro: "Har du spørgsmål til produkter, gaveæsker, levering direkte til modtager eller en konkret ordre, er du altid velkommen til at kontakte Greenplanet.",
     sections: [
-      { title: "Kontaktoplysninger", body: `E-mail: ${companyInfo.email}. CVR: ${companyInfo.cvr}. Adresse: ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}. Vi svarer normalt inden for 1-2 hverdage.` },
-      { title: "Hjælp til gavevalg", body: "Skriv gerne anledning, budget, ønsket leveringsdato og om gaven skal sendes direkte til modtager. Så kan vi foreslå en passende gaveæske eller et byg-selv udvalg." },
-      { title: "Ordre og ændringer", body: "Hvis du vil ændre en bestilling, så kontakt os hurtigst muligt. Når en gave er pakket eller afsendt, kan ændringer være begrænsede." }
+      { title: "Kontaktoplysninger", body: `Greenplanet, CVR ${companyInfo.cvr}, ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}. E-mail: ${companyInfo.email}. Vi svarer normalt inden for 1-2 hverdage.` },
+      { title: "Hjælp til gavevalg", body: "Skriv gerne anledning, budget, ønsket leveringsdato og om gaven skal sendes direkte til modtager. Så hjælper vi med at finde en passende gaveæske eller et udvalg til byg-selv." },
+      { title: "Ordre og ændringer", body: "Kontakt os hurtigst muligt, hvis du vil ændre en bestilling, leveringsadresse, korttekst eller ønsket leveringsdato. Når en gave er pakket eller afsendt, kan ændringer være begrænsede." },
+      { title: "Svar på reklamationer", body: "Ved fejl, skade eller mangler skal du sende ordrenummer, en kort beskrivelse og gerne billeder. Så vurderer vi sagen og vender tilbage med en løsning." }
     ]
   },
   delivery: {
@@ -1433,18 +1434,19 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
   returns: {
     eyebrow: "Kundeservice",
     title: "Returnering og fortrydelse",
-    intro: "Her er et udkast til returtekst for webshoppen. Den bør gennemgås før lancering, især hvis sortimentet kommer til at indeholde forseglede plejeprodukter eller speciallavede gaveæsker.",
+    intro: "Vi vil gerne gøre returnering enkel og fair. Kontakt os altid først, så vi kan registrere returneringen og hjælpe med den rigtige løsning.",
     sections: [
-      { title: "Fortrydelsesret", body: "Som udgangspunkt har private kunder 14 dages fortrydelsesret ved køb online. Fristen regnes normalt fra den dag, varen modtages." },
-      { title: "Sådan returnerer du", body: "Kontakt os først med ordrenummer, navn og hvilke varer du ønsker at returnere. Varen skal returneres forsvarligt pakket og i væsentligt samme stand." },
-      { title: "Undtagelser", body: "Forseglede pleje- og hygiejneprodukter kan miste fortrydelsesretten, hvis forseglingen brydes. Specialtilpassede gaveæsker eller personlige kort kan også være undtaget." },
-      { title: "Tilbagebetaling", body: "Når vi har modtaget og kontrolleret returneringen, tilbagebetaler vi beløbet til samme betalingsmiddel, medmindre andet er aftalt." }
+      { title: "Fortrydelsesret", body: "Private kunder har som udgangspunkt 14 dages fortrydelsesret ved køb online. Fristen regnes normalt fra den dag, du eller den valgte modtager får varen i fysisk besiddelse." },
+      { title: "Sådan returnerer du", body: "Send en mail med ordrenummer, navn og hvilke varer du ønsker at returnere. Varen skal returneres forsvarligt pakket, ubrugt og i væsentligt samme stand som ved modtagelsen." },
+      { title: "Returfragt", body: "Du betaler som udgangspunkt selv returfragten, medmindre returneringen skyldes en fejl fra Greenplanet eller andet er aftalt skriftligt." },
+      { title: "Undtagelser", body: "Forseglede pleje- og hygiejneprodukter kan miste fortrydelsesretten, hvis forseglingen brydes. Personlige korttekster, specialpakkede gaveæsker og varer tilpasset efter dine specifikke ønsker kan være undtaget fra fortrydelsesretten." },
+      { title: "Tilbagebetaling", body: "Når vi har modtaget og kontrolleret returneringen, tilbagebetaler vi beløbet til samme betalingsmiddel, som blev brugt ved købet, medmindre andet er aftalt." }
     ]
   },
   legal: {
-    eyebrow: "Legal",
-    title: "Legal",
-    intro: "Her finder du Greenplanets juridiske oplysninger, handelsbetingelser, privatlivspolitik og cookiepolitik samlet ét sted.",
+    eyebrow: "Jura",
+    title: "Juridisk overblik",
+    intro: "Her finder du Greenplanets virksomhedsoplysninger, handelsbetingelser, privatlivspolitik og cookiepolitik samlet ét sted.",
     sections: [
       { title: "Virksomhedsoplysninger", body: `${companyInfo.name}, CVR ${companyInfo.cvr}, ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}, e-mail ${companyInfo.email}.` },
       { title: "Handelsbetingelser", body: "Handelsbetingelserne gælder for køb og bestillinger hos Greenplanet. De beskriver blandt andet ordreproces, betaling, levering, fortrydelsesret, reklamation og klageadgang." },
@@ -1453,15 +1455,15 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     ]
   },
   terms: {
-    eyebrow: "Legal",
+    eyebrow: "Jura",
     title: "Handelsbetingelser",
-    intro: "Disse handelsbetingelser gælder for køb og bestillinger hos Greenplanet.",
+    intro: "Disse handelsbetingelser gælder for køb og bestillinger hos Greenplanet. Teksterne er skrevet til lancering og bør løbende opdateres, hvis sortiment, leveringsform eller betalingsflow ændres.",
     sections: [
       { title: "Virksomhed", body: `${companyInfo.name}, CVR ${companyInfo.cvr}, ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}, e-mail ${companyInfo.email}.` },
-      { title: "Bestilling og aftale", body: "Når du gennemfører betaling i checkout, modtager Greenplanet dine ordreoplysninger og den samlede pris inkl. fragt. Aftalen er bindende, når betalingen er gennemført, og du har modtaget ordrebekræftelse." },
+      { title: "Bestilling og aftale", body: "Når du gennemfører betaling i checkout, modtager Greenplanet dine ordreoplysninger og den samlede pris inkl. fragt. Aftalen er bindende, når betalingen er gennemført, og du har modtaget en ordrebekræftelse." },
       { title: "Priser og betaling", body: "Alle priser vises i danske kroner. Fragt vises i checkout, før du går til betaling. Betaling gennemføres sikkert via Stripe, og ordren behandles, når betalingen er registreret." },
       { title: "Produkter og gaveæsker", body: "Greenplanet sælger gaveæsker og udvalgte produkter til baby, barsel og personlig pleje. Indhold, farver og emballage kan variere en smule afhængigt af lagerstatus. Hvis et produkt ikke kan leveres, kontakter vi dig med forslag til erstatning eller ændring af ordren." },
-      { title: "Levering", body: "Gaver kan sendes direkte til modtager eller til bestiller. Ved direkte gavelevering sendes pakken uden prisbilag, når det er muligt. Levering koster 49 kr., medmindre afhentning eller anden løsning er aftalt." },
+      { title: "Levering", body: "Gaver kan sendes direkte til modtager eller til bestiller. Ved direkte gavelevering sendes pakken uden prisbilag, når det er muligt. Levering koster 49 kr., medmindre afhentning eller anden løsning er aftalt. Ønsket leveringsdato er et ønske og ikke en garanti, medmindre det er særskilt bekræftet." },
       { title: "Fortrydelsesret", body: "Som forbruger har du som udgangspunkt 14 dages fortrydelsesret ved køb online. Fristen regnes normalt fra den dag, du eller en valgt modtager får varen i fysisk besiddelse. Du skal give Greenplanet besked inden fristens udløb, hvis du vil fortryde købet." },
       { title: "Returnering", body: "Ved fortrydelse skal varen returneres uden unødig forsinkelse og senest 14 dage efter, at du har givet besked om fortrydelse. Varen skal returneres forsvarligt pakket og i væsentligt samme stand. Du betaler selv returfragten, medmindre andet er aftalt." },
       { title: "Undtagelser", body: "Forseglede pleje- og hygiejneprodukter kan miste fortrydelsesretten, hvis forseglingen er brudt. Personlige korttekster, specialpakkede gaveæsker eller varer, der er fremstillet eller tilpasset efter dine specifikke ønsker, kan være undtaget fra fortrydelsesretten." },
@@ -1470,21 +1472,21 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     ]
   },
   privacy: {
-    eyebrow: "Legal",
+    eyebrow: "Jura",
     title: "Privatlivspolitik",
     intro: "Vi behandler personoplysninger for at kunne håndtere bestillinger, levering, kundeservice og drift af webshoppen.",
     sections: [
       { title: "Dataansvarlig", body: `${companyInfo.name}, CVR ${companyInfo.cvr}, ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}, e-mail ${companyInfo.email}, er dataansvarlig for behandlingen af personoplysninger på webshoppen.` },
-      { title: "Hvilke oplysninger vi behandler", body: "Vi kan behandle navn, e-mail, telefonnummer, fakturaadresse, leveringsadresse, modtagernavn, korttekst, ordreindhold og eventuelle leveringsnoter." },
+      { title: "Hvilke oplysninger vi behandler", body: "Vi kan behandle navn, e-mail, telefonnummer, fakturaadresse, leveringsadresse, modtagernavn, korttekst, ordreindhold, betalingsstatus og eventuelle leveringsnoter." },
       { title: "Formål og grundlag", body: "Oplysninger bruges til at behandle bestillinger, pakke og levere gaver, sende ordrebekræftelser, yde kundeservice, håndtere reklamationer og opfylde bogførings- og dokumentationskrav. Behandlingen sker blandt andet for at kunne opfylde en aftale, overholde retlige forpligtelser og varetage Greenplanets legitime interesse i drift og kundeservice." },
       { title: "Modtageroplysninger", body: "Hvis du sender en gave direkte til en anden person, behandler vi modtagerens navn, adresse og eventuelle leveringsnoter for at kunne levere gaven. Skriv ikke følsomme oplysninger i korttekst eller leveringsnote." },
       { title: "Deling", body: "Nødvendige oplysninger kan deles med fragtleverandører, betalingsudbydere, regnskabssystemer, hostingudbydere og tekniske leverandører, der hjælper med drift af webshoppen. Leverandører må kun behandle oplysninger efter aftale og til de relevante formål." },
       { title: "Opbevaring", body: "Oplysninger opbevares kun så længe det er nødvendigt for formålet eller påkrævet efter lovgivning. Regnskabsoplysninger opbevares som udgangspunkt i 5 år efter bogføringsreglerne." },
-      { title: "Dine rettigheder", body: "Du kan kontakte Greenplanet for at anmode om indsigt, rettelse, sletning, begrænsning, dataportabilitet eller indsigelse, når betingelserne for det er opfyldt. Du kan også klage til Datatilsynet." }
+      { title: "Dine rettigheder", body: "Du kan kontakte Greenplanet for at anmode om indsigt, rettelse, sletning, begrænsning, dataportabilitet eller indsigelse, når betingelserne for det er opfyldt. Du kan også klage til Datatilsynet via datatilsynet.dk." }
     ]
   },
   cookies: {
-    eyebrow: "Legal",
+    eyebrow: "Jura",
     title: "Cookiepolitik",
     intro: "Cookiepolitikken beskriver, hvordan Greenplanet kan bruge cookies og lignende teknologier på webshoppen.",
     sections: [
