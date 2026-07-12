@@ -62,17 +62,27 @@ export function AddToCartButton({ product }: { product: Product }) {
   return (
     <>
       {variants.length > 0 && (
-        <label className="variant-picker">
+        <div className="variant-picker">
           <span>Vælg farve</span>
-          <select value={selectedVariant?.id || ""} onChange={(event) => setVariantId(event.target.value)}>
-            <option value="">Vælg farve</option>
+          <div className="variant-options" role="listbox" aria-label="Vælg farve">
             {variants.map((variant) => (
-              <option key={variant.id} value={variant.id} disabled={variant.stock <= 0}>
-                {variant.title} · {Math.round(variant.price)} kr. · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}
-              </option>
+              <button
+                className={`variant-option ${selectedVariant?.id === variant.id ? "active" : ""}`}
+                key={variant.id}
+                onClick={() => setVariantId(variant.id)}
+                disabled={variant.stock <= 0}
+                type="button"
+                role="option"
+                aria-selected={selectedVariant?.id === variant.id}
+                style={{ ["--variant-color" as string]: variantColor(variant) || "#dfeade" }}
+              >
+                <span className="variant-swatch" />
+                <strong>{variant.title}</strong>
+                <em>{Math.round(variant.price)} kr. · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}</em>
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
       )}
       {selectedVariant && (
         <div className="variant-preview" style={{ ["--variant-color" as string]: variantColor(selectedVariant) || "#dfeade" }}>

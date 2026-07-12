@@ -990,17 +990,27 @@ export default function Home() {
                 <p className="lead">{selectedProduct.description}</p>
                 <div className="detail-price">{money(selectedProductPrice)}</div>
                 {selectedProductVariants.length > 0 && (
-                  <label className="variant-picker">
+                  <div className="variant-picker">
                     <span>Vælg farve</span>
-                    <select value={selectedProductVariant?.id || ""} onChange={(event) => setSelectedVariantId(event.target.value)}>
-                      <option value="">Vælg farve</option>
+                    <div className="variant-options" role="listbox" aria-label="Vælg farve">
                       {selectedProductVariants.map((variant) => (
-                        <option key={variant.id} value={variant.id} disabled={variant.stock <= 0}>
-                          {variant.title} · {money(variant.price)} · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}
-                        </option>
+                        <button
+                          className={`variant-option ${selectedProductVariant?.id === variant.id ? "active" : ""}`}
+                          key={variant.id}
+                          onClick={() => setSelectedVariantId(variant.id)}
+                          disabled={variant.stock <= 0}
+                          type="button"
+                          role="option"
+                          aria-selected={selectedProductVariant?.id === variant.id}
+                          style={{ ["--variant-color" as string]: variantColor(variant) || "#dfeade" }}
+                        >
+                          <span className="variant-swatch" />
+                          <strong>{variant.title}</strong>
+                          <em>{money(variant.price)} · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}</em>
+                        </button>
                       ))}
-                    </select>
-                  </label>
+                    </div>
+                  </div>
                 )}
                 <h3 className="spec-title">Produkt egenskaber</h3>
                 <div className="detail-list">
