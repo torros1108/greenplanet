@@ -963,7 +963,7 @@ export default function Home() {
               <section className="hero">
                 <div className="hero-copy">
                   <span className="eyebrow">Gaveæsker til baby, barsel og ny mor</span>
-                  <h2 className="big-title">Gaver til baby og barsel.</h2>
+                  <h2 className="big-title">Barselsgaver og babygaver, pakket smukt.</h2>
                   <p className="lead">
                     Smukke gaveæsker til nye familier, nybagte mødre og de første små øjeblikke. Håndplukket fra små brands
                     og pakket pænt, så gaven kan sendes direkte til den, du vil glæde.
