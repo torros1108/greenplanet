@@ -84,6 +84,7 @@ export async function POST(request: Request) {
         customer_address: payload.customer?.address || "",
         customer_postcode: payload.customer?.postcode || "",
         customer_city: payload.customer?.city || "",
+        create_customer_profile: !!payload.customer?.createProfile,
         delivery_method: payload.delivery?.method || "",
         recipient_name: payload.delivery?.recipientName || "",
         delivery_address: payload.delivery?.address || "",

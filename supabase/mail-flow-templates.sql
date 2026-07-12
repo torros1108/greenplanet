@@ -78,6 +78,33 @@ Tak fordi du valgte Greenplanet. Vi håber, gaven skaber glæde hos modtageren.
 
 Kærlig hilsen
 Greenplanet'
+),
+(
+  'admin_order_notification',
+  'Ny betalt ordre {{order_number}}',
+  'Der er kommet en ny betalt ordre i Greenplanet.',
+  'Ny betalt ordre i Greenplanet
+
+Ordre: {{order_number}}
+Total: {{order_total}} kr.
+
+Kunde:
+{{customer_name}}
+{{customer_email}}
+{{customer_phone}}
+{{customer_address}}
+
+Ordren indeholder:
+{{order_lines}}
+
+Levering:
+{{delivery_method}}
+{{delivery_name}}
+{{delivery_address}}
+{{delivery_date}}
+{{delivery_note}}
+
+Log ind i admin for at pakke og opdatere status.'
 )
 on conflict (slug) do update set
   subject = excluded.subject,

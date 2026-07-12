@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { sendOrderPaidEmails, type MailOrder } from "@/lib/mail";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 
 type StripeCheckoutSession = {
@@ -107,6 +108,13 @@ async function decrementInventory(orderId: string) {
   }
 }
 
+async function loadMailOrder(orderId: string) {
+  const [order] = await supabaseAdminRequest<MailOrder[]>(
+    `orders?id=eq.${encodeURIComponent(orderId)}&select=*,order_lines(title,note,card_text,total,items)`
+  );
+  return order || null;
+}
+
 export async function POST(request: Request) {
   try {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -131,6 +139,10 @@ export async function POST(request: Request) {
           method: "PATCH",
           body: JSON.stringify({ status: "paid" })
         });
+        const order = await loadMailOrder(orderId);
+        if (order) {
+          await sendOrderPaidEmails(order);
+        }
       }
     }
 
