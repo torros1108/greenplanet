@@ -128,6 +128,31 @@ function orderVariables(order: MailOrder) {
   };
 }
 
+async function createPaidCustomerProfile(order: MailOrder) {
+  if (!order.customer_email) return false;
+
+  try {
+    await supabaseAdminRequest("customers?on_conflict=email", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify({
+        email: order.customer_email,
+        name: order.customer_name || "",
+        phone: order.customer_phone || "",
+        address: order.customer_address || "",
+        postcode: order.customer_postcode || "",
+        city: order.customer_city || "",
+        source: "paid_order",
+        last_order_number: order.order_number
+      })
+    });
+    return true;
+  } catch (error) {
+    console.warn("Kundeprofil kunne ikke oprettes efter betaling.", error);
+    return false;
+  }
+}
+
 async function sendResendEmail({ to, subject, text, html }: SendEmailInput) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.MAIL_FROM || "Greenplanet <hello@greenplanet.dk>";
@@ -185,8 +210,11 @@ export async function sendOrderPaidEmails(order: MailOrder) {
     order.create_customer_profile &&
     !order.customer_welcome_sent_at
   ) {
-    const sent = await sendTemplateEmail("customer_welcome", order.customer_email, variables);
-    if (sent) updates.customer_welcome_sent_at = new Date().toISOString();
+    const customerCreated = await createPaidCustomerProfile(order);
+    if (customerCreated) {
+      const sent = await sendTemplateEmail("customer_welcome", order.customer_email, variables);
+      if (sent) updates.customer_welcome_sent_at = new Date().toISOString();
+    }
   }
 
   const adminEmail = process.env.ORDER_NOTIFICATION_EMAIL;
