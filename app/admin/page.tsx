@@ -33,6 +33,17 @@ type AdminOrder = {
   order_lines: OrderLine[];
 };
 
+type AdminCustomer = {
+  id: string;
+  email: string;
+  name: string | null;
+  phone: string | null;
+  address: string | null;
+  postcode: string | null;
+  city: string | null;
+  created_at: string;
+};
+
 type AdminProduct = {
   id: string;
   legacy_id: string | null;
@@ -61,10 +72,13 @@ type AdminVariant = {
 
 type Customer = {
   key: string;
+  id?: string;
   name: string;
   email: string;
   phone: string;
   address: string;
+  postcode: string;
+  city: string;
   orders: AdminOrder[];
   total: number;
   latestOrder: string;
@@ -135,6 +149,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState<AdminTab>("orders");
   const [orders, setOrders] = useState<AdminOrder[]>([]);
+  const [customerProfiles, setCustomerProfiles] = useState<AdminCustomer[]>([]);
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [selectedCustomerKey, setSelectedCustomerKey] = useState("");
@@ -152,6 +167,23 @@ export default function AdminPage() {
 
   const customers = useMemo(() => {
     const grouped = new Map<string, Customer>();
+
+    customerProfiles.forEach((profile) => {
+      const key = profile.email || profile.phone || profile.id;
+      grouped.set(key, {
+        key,
+        id: profile.id,
+        name: profile.name || "Ukendt kunde",
+        email: profile.email || "",
+        phone: profile.phone || "",
+        address: orderAddress(profile.address || "", profile.postcode || "", profile.city || ""),
+        postcode: profile.postcode || "",
+        city: profile.city || "",
+        orders: [],
+        total: 0,
+        latestOrder: profile.created_at
+      });
+    });
 
     orders.forEach((order) => {
       const key = customerKey(order);
@@ -171,6 +203,8 @@ export default function AdminPage() {
         email: order.customer_email,
         phone: order.customer_phone,
         address,
+        postcode: order.customer_postcode,
+        city: order.customer_city,
         orders: [order],
         total: Number(order.total) || 0,
         latestOrder: order.created_at
@@ -178,7 +212,7 @@ export default function AdminPage() {
     });
 
     return Array.from(grouped.values()).sort((a, b) => new Date(b.latestOrder).getTime() - new Date(a.latestOrder).getTime());
-  }, [orders]);
+  }, [orders, customerProfiles]);
 
   const filteredOrders = useMemo(() => {
     const term = searchable(orderSearch);
@@ -265,11 +299,20 @@ export default function AdminPage() {
       return;
     }
 
+    const customersResponse = await fetch("/api/admin/customers");
+    if (!customersResponse.ok) {
+      setError("Kundedata kunne ikke hentes.");
+      setIsLoading(false);
+      return;
+    }
+
     const ordersData = await ordersResponse.json() as { orders: AdminOrder[] };
     const productsData = await productsResponse.json() as { products: AdminProduct[] };
+    const customersData = await customersResponse.json() as { customers: AdminCustomer[] };
 
     setOrders(ordersData.orders);
     setProducts(productsData.products);
+    setCustomerProfiles(customersData.customers);
     setSelectedOrderId((current) => current || ordersData.orders[0]?.id || "");
     setSelectedProductId((current) => current || productsData.products[0]?.id || "");
     setIsLoggedIn(true);
@@ -296,6 +339,15 @@ export default function AdminPage() {
     await loadAdminData();
   }
 
+  async function logout() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    setIsLoggedIn(false);
+    setOrders([]);
+    setProducts([]);
+    setCustomerProfiles([]);
+    setPassword("");
+  }
+
   async function updateStatus(orderId: string, status: string) {
     setError("");
 
@@ -311,6 +363,64 @@ export default function AdminPage() {
     }
 
     setOrders((current) => current.map((order) => order.id === orderId ? { ...order, status } : order));
+  }
+
+  async function deleteOrder(orderId: string) {
+    if (!window.confirm("Vil du slette ordren? Ordrelinjer slettes også.")) return;
+    setError("");
+
+    const response = await fetch(`/api/admin/orders?id=${encodeURIComponent(orderId)}`, { method: "DELETE" });
+    if (!response.ok) {
+      setError("Ordren kunne ikke slettes.");
+      return;
+    }
+
+    setOrders((current) => current.filter((order) => order.id !== orderId));
+    setSelectedOrderId("");
+  }
+
+  async function updateCustomer(customer: Customer, update: { name: string; email: string; phone: string; address: string; postcode: string; city: string }) {
+    setError("");
+
+    const response = await fetch("/api/admin/customers", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: customer.id,
+        key: customer.key,
+        originalEmail: customer.email,
+        originalPhone: customer.phone,
+        originalName: customer.name,
+        ...update
+      })
+    });
+
+    if (!response.ok) {
+      setError("Kunden kunne ikke opdateres.");
+      return;
+    }
+
+    await loadAdminData();
+  }
+
+  async function deleteCustomer(customer: Customer) {
+    if (!window.confirm("Vil du slette kunden? Kundens persondata fjernes fra kundeprofil og ordreoversigt, men ordrelinjer beholdes.")) return;
+    setError("");
+
+    const params = new URLSearchParams({
+      id: customer.id || "",
+      email: customer.email || "",
+      phone: customer.phone || "",
+      name: customer.name || ""
+    });
+    const response = await fetch(`/api/admin/customers?${params.toString()}`, { method: "DELETE" });
+    if (!response.ok) {
+      setError("Kunden kunne ikke slettes.");
+      return;
+    }
+
+    await loadAdminData();
+    setSelectedCustomerKey("");
   }
 
   async function createPaymentLink(orderId: string) {
@@ -392,7 +502,10 @@ export default function AdminPage() {
           <span className="eyebrow">Greenplanet admin</span>
           <h1>{activeTab === "orders" ? "Ordrestyring" : activeTab === "customers" ? "Kundestyring" : "Lagerstyring"}</h1>
         </div>
-        <button className="btn" onClick={loadAdminData}>Opdater</button>
+        <div className="admin-header-actions">
+          <button className="btn" onClick={loadAdminData}>Opdater</button>
+          <button className="btn" onClick={logout}>Log ud</button>
+        </div>
       </header>
 
       <nav className="admin-tabs" aria-label="Admin navigation">
@@ -443,7 +556,7 @@ export default function AdminPage() {
                     </button>
                   ))}
                 </div>
-                {selectedOrder && <OrderDetail order={selectedOrder} paymentUrl={paymentUrl} isCreatingPayment={isCreatingPayment} onStatus={updateStatus} onPayment={createPaymentLink} />}
+                {selectedOrder && <OrderDetail order={selectedOrder} paymentUrl={paymentUrl} isCreatingPayment={isCreatingPayment} onStatus={updateStatus} onPayment={createPaymentLink} onDelete={deleteOrder} />}
               </section>
             )}
           </>
@@ -479,6 +592,8 @@ export default function AdminPage() {
                       setSelectedOrderId(orderId);
                       setActiveTab("orders");
                     }}
+                    onCustomerUpdate={updateCustomer}
+                    onCustomerDelete={deleteCustomer}
                   />
                 )}
               </section>
@@ -534,13 +649,15 @@ function OrderDetail({
   paymentUrl,
   isCreatingPayment,
   onStatus,
-  onPayment
+  onPayment,
+  onDelete
 }: {
   order: AdminOrder;
   paymentUrl: string;
   isCreatingPayment: boolean;
   onStatus: (orderId: string, status: string) => void;
   onPayment: (orderId: string) => void;
+  onDelete: (orderId: string) => void;
 }) {
   return (
     <article className="admin-detail panel">
@@ -553,6 +670,9 @@ function OrderDetail({
         <select value={order.status} onChange={(event) => onStatus(order.id, event.target.value)}>
           {statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
         </select>
+      </div>
+      <div className="admin-danger-row">
+        <button className="btn danger" onClick={() => onDelete(order.id)}>Slet ordre</button>
       </div>
 
       <div className="admin-summary-row">
@@ -627,7 +747,37 @@ function OrderDetail({
   );
 }
 
-function CustomerDetail({ customer, onOpenOrder }: { customer: Customer; onOpenOrder: (orderId: string) => void }) {
+function CustomerDetail({
+  customer,
+  onOpenOrder,
+  onCustomerUpdate,
+  onCustomerDelete
+}: {
+  customer: Customer;
+  onOpenOrder: (orderId: string) => void;
+  onCustomerUpdate: (customer: Customer, update: { name: string; email: string; phone: string; address: string; postcode: string; city: string }) => void;
+  onCustomerDelete: (customer: Customer) => void;
+}) {
+  const [form, setForm] = useState({
+    name: customer.name === "Ukendt kunde" ? "" : customer.name,
+    email: customer.email || "",
+    phone: customer.phone || "",
+    address: customer.address && customer.address !== "Ingen adresse" ? customer.address.split(", ")[0] || "" : "",
+    postcode: customer.postcode || "",
+    city: customer.city || ""
+  });
+
+  useEffect(() => {
+    setForm({
+      name: customer.name === "Ukendt kunde" ? "" : customer.name,
+      email: customer.email || "",
+      phone: customer.phone || "",
+      address: customer.address && customer.address !== "Ingen adresse" ? customer.address.split(", ")[0] || "" : "",
+      postcode: customer.postcode || "",
+      city: customer.city || ""
+    });
+  }, [customer.key, customer.name, customer.email, customer.phone, customer.address, customer.postcode, customer.city]);
+
   return (
     <article className="admin-detail panel">
       <div className="admin-detail-head">
@@ -654,6 +804,18 @@ function CustomerDetail({ customer, onOpenOrder }: { customer: Customer; onOpenO
           <h3>Adresse</h3>
           <p>{customer.address || "Ingen adresse"}</p>
         </section>
+      </div>
+
+      <h3 className="admin-section-title">Rediger kunde</h3>
+      <div className="admin-customer-form">
+        <input value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))} placeholder="Navn" />
+        <input value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} placeholder="E-mail" />
+        <input value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} placeholder="Telefon" />
+        <input value={form.address} onChange={(event) => setForm((current) => ({ ...current, address: event.target.value }))} placeholder="Adresse" />
+        <input value={form.postcode} onChange={(event) => setForm((current) => ({ ...current, postcode: event.target.value }))} placeholder="Postnr." />
+        <input value={form.city} onChange={(event) => setForm((current) => ({ ...current, city: event.target.value }))} placeholder="By" />
+        <button className="btn primary" onClick={() => onCustomerUpdate(customer, form)}>Gem kunde</button>
+        <button className="btn danger" onClick={() => onCustomerDelete(customer)}>Slet kunde</button>
       </div>
 
       <h3 className="admin-section-title">Kundens ordrer</h3>

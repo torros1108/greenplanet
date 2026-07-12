@@ -47,3 +47,27 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Ordrestatus kunne ikke opdateres" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: "Ikke logget ind" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Ordre mangler" }, { status: 400 });
+    }
+
+    await supabaseAdminRequest(`orders?id=eq.${encodeURIComponent(id)}`, {
+      method: "DELETE",
+      headers: { Prefer: "return=minimal" }
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Ordren kunne ikke slettes" }, { status: 500 });
+  }
+}
