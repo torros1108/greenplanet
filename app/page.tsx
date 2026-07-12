@@ -86,6 +86,7 @@ type SupabaseProductRow = {
   sku: string | null;
   variants?: ProductVariant[] | null;
   image_url: string | null;
+  images?: string[] | null;
   giftbox_eligible: boolean;
   occasions: string[] | null;
   shape: Product["shape"];
@@ -229,6 +230,7 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
           .filter((variant) => variant.status !== "archived")
       : [],
     image: row.image_url || "",
+    images: Array.isArray(row.images) ? row.images.filter(Boolean) : undefined,
     giftbox: row.giftbox_eligible,
     occasions: row.occasions || [],
     shape: row.shape || "box",
@@ -276,6 +278,54 @@ function ProductVisual({ product, variant }: { product: Product; variant?: Produ
       />
       ) : (
         <ProductShape shape={product.shape} />
+      )}
+    </div>
+  );
+}
+
+function productGalleryImages(product: Product, variant?: ProductVariant | null) {
+  const images = [variant?.image, product.image, ...(product.images || []), ...(product.variants || []).map((item) => item.image)]
+    .filter(Boolean) as string[];
+  return Array.from(new Set(images));
+}
+
+function ProductGallery({ product, variant }: { product: Product; variant?: ProductVariant | null }) {
+  const images = productGalleryImages(product, variant);
+  const [activeImage, setActiveImage] = useState(images[0] || "");
+
+  useEffect(() => {
+    setActiveImage(images[0] || "");
+  }, [images[0], variant?.id, product.id]);
+
+  if (!images.length) return <ProductVisual product={product} variant={variant} />;
+
+  return (
+    <div className="product-gallery">
+      <div className="gallery-main visual-frame">
+        <img
+          className="product-image"
+          src={activeImage}
+          alt={product.title}
+          loading="lazy"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+      {images.length > 1 && (
+        <div className="gallery-thumbs" aria-label="Produktbilleder">
+          {images.map((image, index) => (
+            <button
+              className={`gallery-thumb ${image === activeImage ? "active" : ""}`}
+              key={image}
+              onClick={() => setActiveImage(image)}
+              type="button"
+              aria-label={`Vis produktbillede ${index + 1}`}
+            >
+              <img src={image} alt="" loading="lazy" />
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
@@ -446,7 +496,7 @@ export default function Home() {
         async function loadProducts() {
           try {
             return await supabaseGet<SupabaseProductRow[]>(
-              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,giftbox_eligible,occasions,shape,status,specs&status=eq.live&order=legacy_id.asc"
+              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,status,specs&status=eq.live&order=legacy_id.asc"
             );
           } catch {
             return supabaseGet<SupabaseProductRow[]>(
@@ -1110,7 +1160,7 @@ export default function Home() {
             <section className="product-detail">
               <button className="btn back-btn" onClick={() => setView("products")}>Tilbage til produkter</button>
               <div className="product-detail-media panel">
-                <ProductVisual product={selectedProduct} variant={selectedProductVariant} />
+                <ProductGallery product={selectedProduct} variant={selectedProductVariant} />
               </div>
               <div className="product-detail-info panel">
                 <div className="meta">{selectedProduct.brand} · {selectedProduct.category}</div>

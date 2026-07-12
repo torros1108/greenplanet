@@ -17,6 +17,12 @@ function visibleProductCount() {
   }, 0);
 }
 
+function productGalleryImages(product: (typeof initialProducts)[number]) {
+  const images = [product.image, ...(product.images || []), ...(product.variants || []).map((variant) => variant.image)]
+    .filter(Boolean) as string[];
+  return Array.from(new Set(images));
+}
+
 export function generateStaticParams() {
   return initialProducts.map((product) => ({ id: product.id }));
 }
@@ -61,6 +67,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const product = initialProducts.find((item) => item.id === id);
   if (!product) notFound();
   const specs = productSpecs(product);
+  const images = productGalleryImages(product);
 
   return (
     <main className="app-shell product-page-shell">
@@ -84,7 +91,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <section className="product-detail">
             <Link className="btn back-btn" href="/#products">Tilbage til produkter</Link>
             <div className="product-detail-media panel">
-              {product.image ? <img className="product-image" src={product.image} alt={product.title} /> : <span className={`shape ${product.shape}`} />}
+              {images.length ? (
+                <div className="product-gallery">
+                  <div className="gallery-main visual-frame">
+                    <img className="product-image" src={images[0]} alt={product.title} />
+                  </div>
+                  {images.length > 1 && (
+                    <div className="gallery-thumbs" aria-label="Produktbilleder">
+                      {images.map((image, index) => (
+                        <span className={`gallery-thumb ${index === 0 ? "active" : ""}`} key={image}>
+                          <img src={image} alt="" />
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : <span className={`shape ${product.shape}`} />}
             </div>
             <div className="product-detail-info panel">
               <div className="meta">{product.brand} · {product.category}</div>

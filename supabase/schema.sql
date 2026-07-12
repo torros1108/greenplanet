@@ -17,6 +17,7 @@ create table if not exists public.products (
   sku text,
   variants jsonb default '[]'::jsonb not null,
   image_url text,
+  images text[] default '{}'::text[] not null,
   giftbox_eligible boolean default true not null,
   occasions text[] default '{}'::text[] not null,
   shape text default 'box' not null,
