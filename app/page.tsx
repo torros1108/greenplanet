@@ -1302,9 +1302,9 @@ export default function Home() {
                     </button>
                   </div>
                 </aside>
-                <div className="grid">
+                <div className="grid builder-product-grid">
                   {filteredBuilderProducts.map((product) => (
-                    <article className="card" key={product.id}>
+                    <article className="card builder-product-card" key={product.id}>
                       <div className="product-visual"><ProductVisual product={product} /></div>
                       <div className="card-body">
                         <div className="meta">{product.brand}</div>
