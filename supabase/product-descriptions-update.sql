@@ -7,11 +7,11 @@ with product_copy(legacy_id, description, specs) as (
     'p1',
     $$Blød babysleeper i hør, der kan bruges som svøb, sovepose, første sengetøj eller i barnevognen. Den omslutter babyen nænsomt, holder på varmen og giver en tryg fornemmelse i den første tid. Produktet er håndsyet og fyldt med certificeret silikonefyld.$$,
     $$[
-      {"label":"Produkttype","value":"Babysleeper / wrap sleeping sack"},
+      {"label":"Produkttype","value":"Babysleeper / svøbepose"},
       {"label":"Materiale","value":"100% hør"},
       {"label":"Fyld","value":"Silikonefyld med OekoTex Standard 100-certifikat"},
       {"label":"Størrelse","value":"36 x 78 cm (+/- 2 cm)"},
-      {"label":"Farver","value":"Beige / powder pink"},
+      {"label":"Farver","value":"Beige / pudderrosa"},
       {"label":"Produktion","value":"Håndsyet i Krakow"}
     ]$$::jsonb
   ),
@@ -23,7 +23,7 @@ with product_copy(legacy_id, description, specs) as (
       {"label":"Materiale","value":"100% blødgjort hør"},
       {"label":"Fyld","value":"Kuglefyld og skummadras med OekoTex Standard 100-certifikat"},
       {"label":"Indvendige mål","value":"Ca. 34 x 67 cm"},
-      {"label":"Farver","value":"Beige / sea blue / forest green"},
+      {"label":"Farver","value":"Beige / havblå / skovgrøn"},
       {"label":"Brug","value":"Seng, sofa, Moses basket eller tryg hvileplads under opsyn"}
     ]$$::jsonb
   ),
@@ -32,11 +32,11 @@ with product_copy(legacy_id, description, specs) as (
     $$Hudplejekit med fire produkter til babyens sarte hud. Produkterne er baseret på naturlige ingredienser som avocado-, mandel-, hvede- og jojobaolie, der plejer, beskytter og holder huden blød. Leveres i en FSC-godkendt lille kuffert, som også kan bruges til opbevaring.$$,
     $$[
       {"label":"Produkttype","value":"Baby hudplejekit"},
-      {"label":"Indhold","value":"4 head-to-toe produkter"},
+      {"label":"Indhold","value":"4 produkter til pleje fra top til tå"},
       {"label":"Nøgleingredienser","value":"Avocado-, mandel-, hvede- og jojobaolie"},
-      {"label":"Certificering","value":"AllergyCertified"},
+      {"label":"Certificering","value":"AllergyCertified-certificeret"},
       {"label":"Uden","value":"Parfume og fragrance"},
-      {"label":"Emballage","value":"FSC-godkendt baby suitcase"}
+      {"label":"Emballage","value":"FSC-godkendt lille babykuffert"}
     ]$$::jsonb
   ),
   (
@@ -46,7 +46,7 @@ with product_copy(legacy_id, description, specs) as (
       {"label":"Produkttype","value":"Belly sheet masks"},
       {"label":"Indhold","value":"4 nourishing belly sheet masks"},
       {"label":"Nøgleingredienser","value":"Aloe vera, kokos-ekstrakt og agurk"},
-      {"label":"Certificering","value":"AllergyCertified"},
+      {"label":"Certificering","value":"AllergyCertified-certificeret"},
       {"label":"Uden","value":"Parfume og fragrance"},
       {"label":"Brug","value":"Fugt og kølende pleje til gravid mave og efter graviditet"}
     ]$$::jsonb
@@ -58,7 +58,7 @@ with product_copy(legacy_id, description, specs) as (
       {"label":"Produkttype","value":"Baby shampoo og body wash"},
       {"label":"Nøgleingredienser","value":"Havre, jojobaolie og aloe vera"},
       {"label":"Rens","value":"Naturlig detergent fra kokos"},
-      {"label":"Certificering","value":"AllergyCertified"},
+      {"label":"Certificering","value":"AllergyCertified-certificeret"},
       {"label":"Uden","value":"Parfume og fragrance"},
       {"label":"Brug","value":"Mild rens til babyens hud og hår"}
     ]$$::jsonb
@@ -71,7 +71,7 @@ with product_copy(legacy_id, description, specs) as (
       {"label":"Materiale","value":"100% økologisk bomuld"},
       {"label":"Fyld","value":"Kaninens hoved har 100% genanvendt polyesterfyld"},
       {"label":"Størrelse","value":"Ca. 47 x 30 cm"},
-      {"label":"Farve","value":"White"},
+      {"label":"Farve","value":"Hvid"},
       {"label":"Vask","value":"40 grader"},
       {"label":"Certificering","value":"GOTS-certificeret produkt"}
     ]$$::jsonb
@@ -84,7 +84,7 @@ with product_copy(legacy_id, description, specs) as (
       {"label":"Materiale","value":"100% økologisk bomuld"},
       {"label":"Fyld","value":"Kaninens hoved har 100% genanvendt polyesterfyld"},
       {"label":"Størrelse","value":"Ca. 47 x 30 cm"},
-      {"label":"Farve","value":"Ice blue"},
+      {"label":"Farve","value":"Isblå"},
       {"label":"Vask","value":"40 grader"},
       {"label":"Certificering","value":"GOTS-certificeret produkt"}
     ]$$::jsonb
@@ -96,7 +96,7 @@ with product_copy(legacy_id, description, specs) as (
       {"label":"Produkttype","value":"Babyhåndklæde med hætte"},
       {"label":"Materiale","value":"100% økologisk bomuld"},
       {"label":"Størrelse","value":"75 x 75 cm"},
-      {"label":"Farve","value":"White"},
+      {"label":"Farve","value":"Hvid"},
       {"label":"Vask","value":"40 eller 60 grader"},
       {"label":"Detalje","value":"Ophæng på bagsiden"},
       {"label":"Certificering","value":"GOTS-certificeret produkt"}
@@ -135,10 +135,10 @@ with product_copy(legacy_id, description, specs) as (
       {"label":"Produkttype","value":"Rosa ler"},
       {"label":"Størrelse","value":"50 g"},
       {"label":"Indhold","value":"Fransk rosa ler"},
-      {"label":"INCI","value":"Pink clay"},
+      {"label":"INCI","value":"Pink clay / rosa ler"},
       {"label":"Hudtype","value":"Særligt velegnet til sensitiv hud"},
       {"label":"Brug","value":"Bland 1-2 spsk. ler med rosenvand, lad virke ca. 15 min."},
-      {"label":"Profil","value":"100% naturlig beauty"}
+      {"label":"Profil","value":"100% naturlig hudpleje"}
     ]$$::jsonb
   ),
   (
@@ -209,3 +209,27 @@ set
   updated_at = now()
 from product_copy
 where products.legacy_id = product_copy.legacy_id;
+
+update public.products
+set
+  title = case legacy_id
+    when 'p1' then 'Babysleeper i hør'
+    when 'p2' then 'Babynest i hør'
+    when 'p3' then 'Baby hudplejekit'
+    when 'p4' then 'Mavemasker til graviditet'
+    when 'p5' then 'Babyshampoo og kropsvask'
+    when 'p6' then 'Økologisk nussekanin hvid'
+    when 'p7' then 'Økologisk nussekanin isblå'
+    when 'p8' then 'Babyhåndklæde med hætte hvid'
+    when 'p9' then 'Babyhåndklæde med kaninører rosa'
+    when 'p10' then 'Babyhåndklæde med kaninører grå'
+    when 'p11' then 'Fransk rosa ler'
+    when 'p12' then 'Marokkansk ghassoul lerpulver'
+    when 'p13' then 'Bulgarsk rosenvand'
+    when 'p14' then 'Arganolie'
+    when 'p15' then 'Rosehip olie'
+    when 'p16' then 'Jojobaolie'
+    else title
+  end,
+  updated_at = now()
+where legacy_id in ('p1','p2','p3','p4','p5','p6','p7','p8','p9','p10','p11','p12','p13','p14','p15','p16');
