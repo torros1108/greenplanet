@@ -99,6 +99,15 @@ create table if not exists public.pages (
   updated_at timestamptz default now() not null
 );
 
+create table if not exists public.newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  name text,
+  status text default 'active' not null check (status in ('active', 'unsubscribed')),
+  created_at timestamptz default now() not null,
+  updated_at timestamptz default now() not null
+);
+
 create or replace function public.set_updated_at()
 returns trigger as $$
 begin
@@ -127,12 +136,18 @@ create trigger pages_updated_at
 before update on public.pages
 for each row execute function public.set_updated_at();
 
+drop trigger if exists newsletter_subscribers_updated_at on public.newsletter_subscribers;
+create trigger newsletter_subscribers_updated_at
+before update on public.newsletter_subscribers
+for each row execute function public.set_updated_at();
+
 alter table public.products enable row level security;
 alter table public.giftboxes enable row level security;
 alter table public.giftbox_products enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_lines enable row level security;
 alter table public.pages enable row level security;
+alter table public.newsletter_subscribers enable row level security;
 
 drop policy if exists "Public can read live products" on public.products;
 create policy "Public can read live products"

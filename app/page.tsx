@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
@@ -304,6 +305,8 @@ export default function Home() {
   const [useCustomerAddressForDelivery, setUseCustomerAddressForDelivery] = useState(true);
   const [shipping, setShipping] = useState("");
   const [message, setMessage] = useState("");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterStatus, setNewsletterStatus] = useState("");
   const [lastOrder, setLastOrder] = useState<SavedOrder | null>(null);
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
@@ -809,6 +812,32 @@ export default function Home() {
     setProducts((current) => [...imported, ...current]);
     setCsvText("");
     setView("products");
+  }
+
+  async function subscribeNewsletter(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+    if (!email) return;
+
+    setNewsletterStatus("Tilmelder...");
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: "Tilmelding kunne ikke gemmes." })) as { error?: string };
+        setNewsletterStatus(data.error || "Tilmelding kunne ikke gemmes.");
+        return;
+      }
+
+      setNewsletterEmail("");
+      setNewsletterStatus("Tak, du er skrevet op.");
+    } catch {
+      setNewsletterStatus("Tilmelding kunne ikke gemmes lige nu.");
+    }
   }
 
   return (
@@ -1380,6 +1409,21 @@ export default function Home() {
               <a href="#" aria-label="Facebook">fb</a>
               <a href="#" aria-label="E-mail">@</a>
             </div>
+            <form className="newsletter-form" onSubmit={subscribeNewsletter}>
+              <span>Nyhedsbrev</span>
+              <label htmlFor="newsletter-email">Få nyt om gaveæsker, produkter og små lanceringer.</label>
+              <div>
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  value={newsletterEmail}
+                  onChange={(event) => setNewsletterEmail(event.target.value)}
+                  placeholder="Din e-mail"
+                />
+                <button className="btn" type="submit">Tilmeld</button>
+              </div>
+              {newsletterStatus && <p>{newsletterStatus}</p>}
+            </form>
           </div>
           <div className="footer-links">
             <div>

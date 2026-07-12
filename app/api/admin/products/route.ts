@@ -41,14 +41,20 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Ikke logget ind" }, { status: 401 });
     }
 
-    const payload = (await request.json()) as { id?: string; stock?: number; status?: string; variants?: unknown[] };
+    const payload = (await request.json()) as { id?: string; stock?: number; price?: number; cost?: number; status?: string; variants?: unknown[] };
     if (!payload.id) {
       return NextResponse.json({ error: "Produkt mangler" }, { status: 400 });
     }
 
-    const update: { stock?: number; status?: string; variants?: unknown[] } = {};
+    const update: { stock?: number; price?: number; cost?: number; status?: string; variants?: unknown[] } = {};
     if (typeof payload.stock === "number" && Number.isFinite(payload.stock) && payload.stock >= 0) {
       update.stock = Math.round(payload.stock);
+    }
+    if (typeof payload.price === "number" && Number.isFinite(payload.price) && payload.price >= 0) {
+      update.price = Math.round(payload.price * 100) / 100;
+    }
+    if (typeof payload.cost === "number" && Number.isFinite(payload.cost) && payload.cost >= 0) {
+      update.cost = Math.round(payload.cost * 100) / 100;
     }
     if (payload.status && validStatuses.includes(payload.status)) {
       update.status = payload.status;

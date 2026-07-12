@@ -336,7 +336,7 @@ export default function AdminPage() {
     setPaymentUrl(data.url);
   }
 
-  async function updateProduct(productId: string, update: { stock?: number; status?: string; variants?: AdminVariant[] }) {
+  async function updateProduct(productId: string, update: { stock?: number; price?: number; cost?: number; status?: string; variants?: AdminVariant[] }) {
     setError("");
 
     const response = await fetch("/api/admin/products", {
@@ -678,7 +678,7 @@ function InventoryDetail({
   onVariantUpdate
 }: {
   product: AdminProduct;
-  onProductUpdate: (productId: string, update: { stock?: number; status?: string; variants?: AdminVariant[] }) => void;
+  onProductUpdate: (productId: string, update: { stock?: number; price?: number; cost?: number; status?: string; variants?: AdminVariant[] }) => void;
   onVariantUpdate: (product: AdminProduct, variantId: string, update: Partial<AdminVariant>) => void;
 }) {
   const lowVariantCount = (product.variants || []).filter((variant) => variant.status !== "archived" && variant.stock <= 2).length;
@@ -708,6 +708,17 @@ function InventoryDetail({
         <button className="btn" onClick={() => onProductUpdate(product.id, { stock: product.stock + 1 })}>+1</button>
       </div>
 
+      <div className="admin-price-controls">
+        <label>
+          <span>Salgspris</span>
+          <input min="0" step="0.01" type="number" value={Number(product.price) || 0} onChange={(event) => onProductUpdate(product.id, { price: Math.max(0, Number(event.target.value) || 0) })} />
+        </label>
+        <label>
+          <span>Kostpris</span>
+          <input min="0" step="0.01" type="number" value={Number(product.cost) || 0} onChange={(event) => onProductUpdate(product.id, { cost: Math.max(0, Number(event.target.value) || 0) })} />
+        </label>
+      </div>
+
       {!!product.variants?.length && (
         <div className="admin-variant-list">
           <strong>Variantlager</strong>
@@ -720,6 +731,10 @@ function InventoryDetail({
               <button className="btn" onClick={() => onVariantUpdate(product, variant.id, { stock: Math.max(0, variant.stock - 1) })}>-1</button>
               <input min="0" type="number" value={variant.stock} onChange={(event) => onVariantUpdate(product, variant.id, { stock: Math.max(0, Number(event.target.value) || 0) })} />
               <button className="btn" onClick={() => onVariantUpdate(product, variant.id, { stock: variant.stock + 1 })}>+1</button>
+              <label className="admin-variant-price">
+                <span>Variantpris</span>
+                <input min="0" step="0.01" type="number" value={Number(variant.price) || 0} onChange={(event) => onVariantUpdate(product, variant.id, { price: Math.max(0, Number(event.target.value) || 0) })} />
+              </label>
             </div>
           ))}
         </div>
