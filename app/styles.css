@@ -228,6 +228,9 @@ textarea { min-height: 104px; resize: vertical; }
 .order-preview strong { color: var(--ink); text-align: right; line-height: 1.4; }
 .cart-line { padding: 12px 0 14px; border-bottom: 1px solid var(--line); }
 .cart-line .line { border-bottom: 0; padding: 0; }
+.cart-line .summary-row strong { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.cart-line-actions { display: inline-flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.cart-line-actions .chip { min-height: 32px; padding-inline: 10px; font-size: 12px; }
 .cart-products { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
 .cart-products span { padding: 6px 8px; border-radius: 999px; background: #eef5eb; color: var(--forest); font-size: 12px; font-weight: 800; }
 .cart-breakdown { display: grid; gap: 0; margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbf8f0; overflow: hidden; }

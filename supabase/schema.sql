@@ -57,6 +57,20 @@ create table if not exists public.giftbox_products (
   primary key (giftbox_id, product_id)
 );
 
+create table if not exists public.customers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  name text,
+  phone text,
+  address text,
+  postcode text,
+  city text,
+  source text default 'checkout' not null,
+  last_order_number text,
+  created_at timestamptz default now() not null,
+  updated_at timestamptz default now() not null
+);
+
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   order_number text unique not null,
@@ -108,6 +122,15 @@ create table if not exists public.newsletter_subscribers (
   updated_at timestamptz default now() not null
 );
 
+create table if not exists public.mail_templates (
+  slug text primary key,
+  subject text not null,
+  preheader text,
+  body text not null,
+  created_at timestamptz default now() not null,
+  updated_at timestamptz default now() not null
+);
+
 create or replace function public.set_updated_at()
 returns trigger as $$
 begin
@@ -126,6 +149,11 @@ create trigger giftboxes_updated_at
 before update on public.giftboxes
 for each row execute function public.set_updated_at();
 
+drop trigger if exists customers_updated_at on public.customers;
+create trigger customers_updated_at
+before update on public.customers
+for each row execute function public.set_updated_at();
+
 drop trigger if exists orders_updated_at on public.orders;
 create trigger orders_updated_at
 before update on public.orders
@@ -141,13 +169,20 @@ create trigger newsletter_subscribers_updated_at
 before update on public.newsletter_subscribers
 for each row execute function public.set_updated_at();
 
+drop trigger if exists mail_templates_updated_at on public.mail_templates;
+create trigger mail_templates_updated_at
+before update on public.mail_templates
+for each row execute function public.set_updated_at();
+
 alter table public.products enable row level security;
 alter table public.giftboxes enable row level security;
 alter table public.giftbox_products enable row level security;
+alter table public.customers enable row level security;
 alter table public.orders enable row level security;
 alter table public.order_lines enable row level security;
 alter table public.pages enable row level security;
 alter table public.newsletter_subscribers enable row level security;
+alter table public.mail_templates enable row level security;
 
 drop policy if exists "Public can read live products" on public.products;
 create policy "Public can read live products"
@@ -169,5 +204,6 @@ create policy "Public can read pages"
 on public.pages for select
 using (true);
 
--- Orders should be inserted through a server route using SUPABASE_SERVICE_ROLE_KEY.
+-- Customers, orders, newsletter signups and mail templates should be handled through
+-- server routes using SUPABASE_SERVICE_ROLE_KEY.
 -- Do not expose service role keys in browser code.

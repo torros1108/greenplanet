@@ -24,6 +24,7 @@ type OrderInput = {
     address?: string;
     postcode?: string;
     city?: string;
+    createProfile?: boolean;
   };
   delivery: {
     method?: string;
@@ -106,6 +107,23 @@ export async function POST(request: Request) {
         }))
       )
     });
+
+    if (payload.customer?.createProfile && payload.customer.email) {
+      await supabaseRequest("customers?on_conflict=email", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+        body: JSON.stringify({
+          email: payload.customer.email,
+          name: payload.customer.name || "",
+          phone: payload.customer.phone || "",
+          address: payload.customer.address || "",
+          postcode: payload.customer.postcode || "",
+          city: payload.customer.city || "",
+          source: "checkout",
+          last_order_number: order.order_number
+        })
+      });
+    }
 
     return NextResponse.json({ id: order.order_number, supabaseId: order.id });
   } catch (error) {

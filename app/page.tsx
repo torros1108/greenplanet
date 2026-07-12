@@ -30,6 +30,12 @@ type CartLine = {
   cardText: string;
   items: CartItem[];
   total: number;
+  source?: {
+    type: "giftbox" | "custom" | "product";
+    giftboxId?: string;
+    selectedIds?: string[];
+    selectedVariants?: Record<string, string>;
+  };
 };
 type ProductCardItem = {
   key: string;
@@ -53,6 +59,7 @@ type SavedOrder = {
     address: string;
     postcode: string;
     city: string;
+    createProfile?: boolean;
   };
   delivery: {
     method: string;
@@ -303,6 +310,7 @@ export default function Home() {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState("Send direkte til modtager");
   const [useCustomerAddressForDelivery, setUseCustomerAddressForDelivery] = useState(true);
+  const [createCustomerProfile, setCreateCustomerProfile] = useState(false);
   const [shipping, setShipping] = useState("");
   const [message, setMessage] = useState("");
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -615,7 +623,13 @@ export default function Home() {
           note: giftbox.note,
           cardText: "",
           items,
-          total: giftboxTotal(giftbox)
+          total: giftboxTotal(giftbox),
+          source: {
+            type: "giftbox",
+            giftboxId: giftbox.id,
+            selectedIds: items.map((item) => item.id),
+            selectedVariants: {}
+          }
       }
     ]);
     setView("orders");
@@ -631,11 +645,30 @@ export default function Home() {
           note: message,
           cardText: message,
           items: selectedBuilderItems.map(({ item }) => item),
-          total: customGiftboxTotal
+          total: customGiftboxTotal,
+          source: {
+            type: "custom",
+            selectedIds: selectedBuilderItems.map(({ product }) => product.id),
+            selectedVariants: selectedBuilderVariants
+          }
       }
     ]);
     setMessage("");
     setView("orders");
+  }
+
+  function editCartGiftbox(line: CartLine) {
+    const selectedIds = Array.from(new Set(line.source?.selectedIds?.length ? line.source.selectedIds : line.items.map((item) => item.id)));
+    const variantsFromItems = line.items.reduce<Record<string, string>>((acc, item) => {
+      if (item.selectedVariant?.id) acc[item.id] = item.selectedVariant.id;
+      return acc;
+    }, {});
+
+    setSelected(selectedIds);
+    setSelectedBuilderVariants({ ...variantsFromItems, ...(line.source?.selectedVariants || {}) });
+    setMessage(line.cardText || line.note || "");
+    setCart((current) => current.filter((item) => item.id !== line.id));
+    setView("builder");
   }
 
   function cartItemLabel(item: CartItem) {
@@ -663,7 +696,12 @@ export default function Home() {
           note: product.brand,
           cardText: "",
           items: [item],
-          total: item.price
+          total: item.price,
+          source: {
+            type: "product",
+            selectedIds: [product.id],
+            selectedVariants: variant ? { [product.id]: variant.id } : {}
+          }
       }
     ]);
   }
@@ -687,6 +725,7 @@ export default function Home() {
     setDeliveryDate("");
     setDeliveryMethod("Send direkte til modtager");
     setUseCustomerAddressForDelivery(true);
+    setCreateCustomerProfile(false);
     setShipping("");
   }
 
@@ -712,7 +751,8 @@ export default function Home() {
         phone: customerPhone,
         address: customerAddress,
         postcode: customerPostcode,
-        city: customerCity
+        city: customerCity,
+        createProfile: createCustomerProfile
       },
       delivery: {
         method: deliveryMethod,
@@ -1216,7 +1256,13 @@ export default function Home() {
                   <div className="cart-line" key={line.id}>
                     <div className="summary-row line">
                       <span>{line.title}<small>{line.items.length} produkt{line.items.length === 1 ? "" : "er"}</small></span>
-                      <strong>{money(line.total)} <button className="chip" onClick={() => setCart((current) => current.filter((item) => item.id !== line.id))}>Fjern</button></strong>
+                      <strong>
+                        {money(line.total)}
+                        <span className="cart-line-actions">
+                          {line.items.length > 1 && <button className="chip" onClick={() => editCartGiftbox(line)}>Rediger</button>}
+                          <button className="chip" onClick={() => setCart((current) => current.filter((item) => item.id !== line.id))}>Fjern</button>
+                        </span>
+                      </strong>
                     </div>
                     <div className="cart-products">
                       {line.items.map((item) => <span key={`${line.id}-${item.id}-${item.selectedVariant?.id || "standard"}`}>{item.brand}: {cartItemLabel(item)}</span>)}
@@ -1267,6 +1313,14 @@ export default function Home() {
                     <input className="wide-field" value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="Bestillers adresse" />
                     <input value={customerPostcode} onChange={(event) => setCustomerPostcode(event.target.value)} placeholder="Postnr." />
                     <input value={customerCity} onChange={(event) => setCustomerCity(event.target.value)} placeholder="By" />
+                    <label className="checkbox-row wide-field">
+                      <input
+                        type="checkbox"
+                        checked={createCustomerProfile}
+                        onChange={(event) => setCreateCustomerProfile(event.target.checked)}
+                      />
+                      <span>Opret kundeprofil og gem mine oplysninger til næste ordre</span>
+                    </label>
                   </div>
                 </div>
                 <div className="checkout-section">
