@@ -64,6 +64,45 @@ async function supabaseRequest<T>(path: string, init: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+function orderBody(orderNumber: string, payload: OrderInput, includeCustomerProfile = true) {
+  return {
+    order_number: orderNumber,
+    total: payload.total,
+    customer_name: payload.customer?.name || "",
+    customer_email: payload.customer?.email || "",
+    customer_phone: payload.customer?.phone || "",
+    customer_address: payload.customer?.address || "",
+    customer_postcode: payload.customer?.postcode || "",
+    customer_city: payload.customer?.city || "",
+    ...(includeCustomerProfile ? { create_customer_profile: !!payload.customer?.createProfile } : {}),
+    delivery_method: payload.delivery?.method || "",
+    recipient_name: payload.delivery?.recipientName || "",
+    delivery_address: payload.delivery?.address || "",
+    delivery_postcode: payload.delivery?.postcode || "",
+    delivery_city: payload.delivery?.city || "",
+    requested_delivery_date: payload.delivery?.requestedDate || "",
+    delivery_note: payload.delivery?.note || ""
+  };
+}
+
+async function createOrder(orderNumber: string, payload: OrderInput) {
+  try {
+    return await supabaseRequest<Array<{ id: string; order_number: string }>>("orders", {
+      method: "POST",
+      body: JSON.stringify(orderBody(orderNumber, payload))
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("create_customer_profile")) {
+      console.warn("Supabase mangler create_customer_profile på orders. Opretter ordre uden feltet.");
+      return supabaseRequest<Array<{ id: string; order_number: string }>>("orders", {
+        method: "POST",
+        body: JSON.stringify(orderBody(orderNumber, payload, false))
+      });
+    }
+    throw error;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as OrderInput;
@@ -73,27 +112,7 @@ export async function POST(request: Request) {
     }
 
     const orderNumber = `GP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const [order] = await supabaseRequest<Array<{ id: string; order_number: string }>>("orders", {
-      method: "POST",
-      body: JSON.stringify({
-        order_number: orderNumber,
-        total: payload.total,
-        customer_name: payload.customer?.name || "",
-        customer_email: payload.customer?.email || "",
-        customer_phone: payload.customer?.phone || "",
-        customer_address: payload.customer?.address || "",
-        customer_postcode: payload.customer?.postcode || "",
-        customer_city: payload.customer?.city || "",
-        create_customer_profile: !!payload.customer?.createProfile,
-        delivery_method: payload.delivery?.method || "",
-        recipient_name: payload.delivery?.recipientName || "",
-        delivery_address: payload.delivery?.address || "",
-        delivery_postcode: payload.delivery?.postcode || "",
-        delivery_city: payload.delivery?.city || "",
-        requested_delivery_date: payload.delivery?.requestedDate || "",
-        delivery_note: payload.delivery?.note || ""
-      })
-    });
+    const [order] = await createOrder(orderNumber, payload);
 
     await supabaseRequest("order_lines", {
       method: "POST",
@@ -110,20 +129,24 @@ export async function POST(request: Request) {
     });
 
     if (payload.customer?.createProfile && payload.customer.email) {
-      await supabaseRequest("customers?on_conflict=email", {
-        method: "POST",
-        headers: { Prefer: "resolution=merge-duplicates,return=representation" },
-        body: JSON.stringify({
-          email: payload.customer.email,
-          name: payload.customer.name || "",
-          phone: payload.customer.phone || "",
-          address: payload.customer.address || "",
-          postcode: payload.customer.postcode || "",
-          city: payload.customer.city || "",
-          source: "checkout",
-          last_order_number: order.order_number
-        })
-      });
+      try {
+        await supabaseRequest("customers?on_conflict=email", {
+          method: "POST",
+          headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+          body: JSON.stringify({
+            email: payload.customer.email,
+            name: payload.customer.name || "",
+            phone: payload.customer.phone || "",
+            address: payload.customer.address || "",
+            postcode: payload.customer.postcode || "",
+            city: payload.customer.city || "",
+            source: "checkout",
+            last_order_number: order.order_number
+          })
+        });
+      } catch (error) {
+        console.warn("Kundeprofil kunne ikke gemmes, men ordre fortsætter.", error);
+      }
     }
 
     return NextResponse.json({ id: order.order_number, supabaseId: order.id });
