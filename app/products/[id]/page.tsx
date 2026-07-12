@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { initialProducts, productSpecs } from "@/lib/data";
 import { AddToCartButton } from "./AddToCartButton";
+
+const siteUrl = "https://www.greenplanet.dk";
 
 function money(value: number) {
   return `${Math.round(value)} kr.`;
@@ -22,14 +25,34 @@ type ProductPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export async function generateMetadata({ params }: ProductPageProps) {
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
   const product = initialProducts.find((item) => item.id === id);
-  if (!product) return { title: "Produkt | Greenplanet" };
+  if (!product) return { title: "Produkt", robots: { index: false, follow: false } };
+
+  const title = `${product.title} fra ${product.brand}`;
+  const description = `${product.description} Køb som enkeltprodukt eller brug det i en personlig Greenplanet gaveæske.`;
+  const url = `/products/${product.id}`;
 
   return {
-    title: `${product.title} | Greenplanet`,
-    description: product.description
+    title,
+    description,
+    alternates: {
+      canonical: url
+    },
+    openGraph: {
+      type: "website",
+      url: `${siteUrl}${url}`,
+      title: `${title} | Greenplanet`,
+      description,
+      images: product.image ? [{ url: product.image, alt: product.title }] : ["/brand/greenplanet-logo-mint.png"]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Greenplanet`,
+      description,
+      images: product.image ? [product.image] : ["/brand/greenplanet-logo-mint.png"]
+    }
   };
 }
 

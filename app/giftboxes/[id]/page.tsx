@@ -1,9 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { giftboxes, initialProducts, type Product } from "@/lib/data";
 import { AddGiftboxToCartButton } from "./AddGiftboxToCartButton";
 
 const boxPrice = 49;
+const siteUrl = "https://www.greenplanet.dk";
 
 function money(value: number) {
   return `${Math.round(value)} kr.`;
@@ -23,14 +25,35 @@ type GiftboxPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export async function generateMetadata({ params }: GiftboxPageProps) {
+export async function generateMetadata({ params }: GiftboxPageProps): Promise<Metadata> {
   const { id } = await params;
   const giftbox = giftboxes.find((item) => item.id === id);
-  if (!giftbox) return { title: "Gaveæske | Greenplanet" };
+  const items = giftbox ? giftboxItems(giftbox.productIds) : [];
+  const image = items.find((item) => item.image)?.image;
+  const title = giftbox ? `${giftbox.title} gaveæske` : "Gaveæske";
+  const description = giftbox ? `${giftbox.description} Pakkes som gaveæske med personlig hilsen og mulighed for direkte levering.` : "Naturlige gaveæsker fra Greenplanet.";
+  const url = giftbox ? `/giftboxes/${giftbox.id}` : "/giftboxes";
+  if (!giftbox) return { title: "Gaveæske", robots: { index: false, follow: false } };
 
   return {
-    title: `${giftbox.title} | Greenplanet`,
-    description: giftbox.description
+    title,
+    description,
+    alternates: {
+      canonical: url
+    },
+    openGraph: {
+      type: "website",
+      url: `${siteUrl}${url}`,
+      title: `${title} | Greenplanet`,
+      description,
+      images: image ? [{ url: image, alt: giftbox.title }] : ["/brand/greenplanet-logo-mint.png"]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Greenplanet`,
+      description,
+      images: image ? [image] : ["/brand/greenplanet-logo-mint.png"]
+    }
   };
 }
 
