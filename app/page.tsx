@@ -976,6 +976,50 @@ export default function Home() {
                   <strong>{giftboxCatalog.length}</strong><span>kuraterede gaveæsker</span>
                 </button>
               </section>
+              <section className="seo-gift-guide" aria-labelledby="gift-guide-title">
+                <div className="seo-gift-guide-head">
+                  <span className="eyebrow">Find den rigtige gave</span>
+                  <h2 id="gift-guide-title">Barselsgaver, babygaver og personlige gaveæsker</h2>
+                  <p>
+                    Greenplanet er til dig, der vil sende en gave, som føles gennemtænkt uden at være svær at vælge.
+                    Vi pakker gaveæsker med produkter til baby, barsel, nybagte mødre og små øjeblikke med ro.
+                  </p>
+                </div>
+                <div className="seo-gift-grid">
+                  <article>
+                    <h3>Barselsgave til nye forældre</h3>
+                    <p>
+                      En barselsgave må gerne være både praktisk og personlig. Vælg en færdig gaveæske med babypleje,
+                      bløde tekstiler og en personlig hilsen, eller sammensæt din egen gave til familien.
+                    </p>
+                    <button className="text-link" onClick={() => setView("giftboxes")}>Se barselsgaver</button>
+                  </article>
+                  <article>
+                    <h3>Babygave til den første tid</h3>
+                    <p>
+                      Babygaver fra Greenplanet samler milde produkter, økologiske tekstiler og små brugbare gaver,
+                      der passer til babyshower, barselsbesøg, dåb og velkommen-til-verden gaver.
+                    </p>
+                    <button className="text-link" onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>Se babygaver</button>
+                  </article>
+                  <article>
+                    <h3>Gaveæske til nybagt mor</h3>
+                    <p>
+                      Til den gravide eller nybagte mor kan du vælge en gaveæske med naturlig hudpleje, rosenvand,
+                      olier og små produkter, der giver en rolig pause i en ny hverdag.
+                    </p>
+                    <button className="text-link" onClick={() => setView("giftboxes")}>Find gave til ny mor</button>
+                  </article>
+                  <article>
+                    <h3>Byg selv gaveæske</h3>
+                    <p>
+                      Når gaven skal være mere personlig, kan du bygge din egen gaveæske, vælge produkter,
+                      skrive korttekst og sende gaven direkte til modtageren uden prisbilag.
+                    </p>
+                    <button className="text-link" onClick={() => setView("builder")}>Byg din gaveæske</button>
+                  </article>
+                </div>
+              </section>
             </>
           )}
 
