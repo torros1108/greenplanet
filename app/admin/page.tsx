@@ -8,7 +8,7 @@ type OrderLine = {
   note: string;
   card_text: string;
   total: number | string;
-  items: Array<{ title: string; brand?: string; price?: number; sku?: string }>;
+  items: Array<{ title: string; brand?: string; price?: number; sku?: string; selectedVariant?: { title?: string; sku?: string } }>;
 };
 
 type AdminOrder = {
@@ -95,6 +95,7 @@ function money(value: number | string) {
 }
 
 function formatDate(value: string) {
+  if (!value) return "Ingen dato";
   return new Intl.DateTimeFormat("da-DK", {
     dateStyle: "medium",
     timeStyle: "short"
@@ -105,24 +106,49 @@ function customerKey(order: AdminOrder) {
   return order.customer_email || order.customer_phone || order.customer_name || order.id;
 }
 
+function searchable(value: unknown) {
+  return String(value || "").toLowerCase();
+}
+
+function productTotalStock(product: AdminProduct) {
+  if (!product.variants?.length) return product.stock;
+  return product.variants
+    .filter((variant) => variant.status !== "archived")
+    .reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0);
+}
+
+function productHasLowStock(product: AdminProduct) {
+  if (product.status !== "live") return false;
+  if (!product.variants?.length) return product.stock <= 2;
+  return product.variants.some((variant) => variant.status !== "archived" && variant.stock <= 2);
+}
+
+function orderContact(order: AdminOrder) {
+  return [order.customer_email, order.customer_phone].filter(Boolean).join(" · ") || "Ingen kontaktoplysninger";
+}
+
+function orderAddress(street: string, postcode: string, city: string) {
+  return [street, postcode, city].filter(Boolean).join(", ") || "Ingen adresse";
+}
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [activeTab, setActiveTab] = useState<AdminTab>("orders");
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [selectedOrderId, setSelectedOrderId] = useState<string>("");
-  const [selectedCustomerKey, setSelectedCustomerKey] = useState<string>("");
-  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [selectedOrderId, setSelectedOrderId] = useState("");
+  const [selectedCustomerKey, setSelectedCustomerKey] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [orderSearch, setOrderSearch] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [productStatusFilter, setProductStatusFilter] = useState("all");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [error, setError] = useState("");
-
-  const selectedOrder = useMemo(
-    () => orders.find((order) => order.id === selectedOrderId) || orders[0],
-    [orders, selectedOrderId]
-  );
 
   const customers = useMemo(() => {
     const grouped = new Map<string, Customer>();
@@ -130,14 +156,12 @@ export default function AdminPage() {
     orders.forEach((order) => {
       const key = customerKey(order);
       const existing = grouped.get(key);
-      const address = [order.customer_address, order.customer_postcode, order.customer_city].filter(Boolean).join(", ");
+      const address = orderAddress(order.customer_address, order.customer_postcode, order.customer_city);
 
       if (existing) {
         existing.orders.push(order);
         existing.total += Number(order.total) || 0;
-        if (new Date(order.created_at) > new Date(existing.latestOrder)) {
-          existing.latestOrder = order.created_at;
-        }
+        if (new Date(order.created_at) > new Date(existing.latestOrder)) existing.latestOrder = order.created_at;
         return;
       }
 
@@ -156,20 +180,66 @@ export default function AdminPage() {
     return Array.from(grouped.values()).sort((a, b) => new Date(b.latestOrder).getTime() - new Date(a.latestOrder).getTime());
   }, [orders]);
 
+  const filteredOrders = useMemo(() => {
+    const term = searchable(orderSearch);
+    return orders.filter((order) => {
+      const matchesStatus = orderStatusFilter === "all" || order.status === orderStatusFilter;
+      const matchesSearch = !term || [
+        order.order_number,
+        order.customer_name,
+        order.customer_email,
+        order.customer_phone,
+        order.recipient_name,
+        order.delivery_city
+      ].some((value) => searchable(value).includes(term));
+      return matchesStatus && matchesSearch;
+    });
+  }, [orders, orderSearch, orderStatusFilter]);
+
+  const filteredCustomers = useMemo(() => {
+    const term = searchable(customerSearch);
+    return customers.filter((customer) => !term || [
+      customer.name,
+      customer.email,
+      customer.phone,
+      customer.address
+    ].some((value) => searchable(value).includes(term)));
+  }, [customers, customerSearch]);
+
+  const filteredProducts = useMemo(() => {
+    const term = searchable(productSearch);
+    return products.filter((product) => {
+      const matchesStatus = productStatusFilter === "all" || product.status === productStatusFilter;
+      const matchesSearch = !term || [
+        product.title,
+        product.brand,
+        product.category,
+        product.sku,
+        ...(product.variants || []).flatMap((variant) => [variant.title, variant.sku])
+      ].some((value) => searchable(value).includes(term));
+      return matchesStatus && matchesSearch;
+    });
+  }, [products, productSearch, productStatusFilter]);
+
+  const selectedOrder = useMemo(
+    () => orders.find((order) => order.id === selectedOrderId) || filteredOrders[0] || orders[0],
+    [orders, filteredOrders, selectedOrderId]
+  );
+
   const selectedCustomer = useMemo(
-    () => customers.find((customer) => customer.key === selectedCustomerKey) || customers[0],
-    [customers, selectedCustomerKey]
+    () => customers.find((customer) => customer.key === selectedCustomerKey) || filteredCustomers[0] || customers[0],
+    [customers, filteredCustomers, selectedCustomerKey]
   );
 
   const selectedProduct = useMemo(
-    () => products.find((product) => product.id === selectedProductId) || products[0],
-    [products, selectedProductId]
+    () => products.find((product) => product.id === selectedProductId) || filteredProducts[0] || products[0],
+    [products, filteredProducts, selectedProductId]
   );
 
-  const lowStockProducts = useMemo(
-    () => products.filter((product) => product.stock <= 2 && product.status === "live"),
-    [products]
-  );
+  const lowStockProducts = useMemo(() => products.filter(productHasLowStock), [products]);
+  const newOrdersCount = orders.filter((order) => order.status === "new").length;
+  const unpaidOrdersCount = orders.filter((order) => ["new", "confirmed"].includes(order.status)).length;
+  const liveProductCount = products.filter((product) => product.status === "live").length;
 
   async function loadAdminData() {
     setIsLoading(true);
@@ -240,9 +310,7 @@ export default function AdminPage() {
       return;
     }
 
-    setOrders((current) =>
-      current.map((order) => order.id === orderId ? { ...order, status } : order)
-    );
+    setOrders((current) => current.map((order) => order.id === orderId ? { ...order, status } : order));
   }
 
   async function createPaymentLink(orderId: string) {
@@ -282,9 +350,7 @@ export default function AdminPage() {
       return;
     }
 
-    setProducts((current) =>
-      current.map((product) => product.id === productId ? { ...product, ...update } : product)
-    );
+    setProducts((current) => current.map((product) => product.id === productId ? { ...product, ...update } : product));
   }
 
   function updateProductVariant(product: AdminProduct, variantId: string, update: Partial<AdminVariant>) {
@@ -341,282 +407,336 @@ export default function AdminPage() {
         </button>
       </nav>
 
+      <section className="admin-kpi-grid" aria-label="Admin nøgletal">
+        <div><span>Nye ordrer</span><strong>{newOrdersCount}</strong></div>
+        <div><span>Afventer betaling</span><strong>{unpaidOrdersCount}</strong></div>
+        <div><span>Lavt lager</span><strong>{lowStockProducts.length}</strong></div>
+        <div><span>Live produkter</span><strong>{liveProductCount}</strong></div>
+      </section>
+
       {error && <div className="admin-error">{error}</div>}
       {isLoading && <div className="admin-empty">Henter admin-data...</div>}
 
       {!isLoading && activeTab === "orders" && (
         orders.length === 0 ? <div className="admin-empty">Der er ingen ordrer endnu.</div> : (
-          <section className="admin-grid">
-            <div className="admin-orders-list">
-              {orders.map((order) => (
-                <button
-                  className={`admin-order-card ${selectedOrder?.id === order.id ? "active" : ""}`}
-                  key={order.id}
-                  onClick={() => setSelectedOrderId(order.id)}
-                >
-                  <span>{formatDate(order.created_at)}</span>
-                  <strong>{order.order_number}</strong>
-                  <em>{order.customer_name || "Ukendt kunde"} · {money(order.total)}</em>
-                  <b>{statusLabels[order.status] || order.status}</b>
-                </button>
-              ))}
+          <>
+            <div className="admin-filter-bar">
+              <input value={orderSearch} onChange={(event) => setOrderSearch(event.target.value)} placeholder="Søg ordre, kunde, mail, telefon eller by" />
+              <select value={orderStatusFilter} onChange={(event) => setOrderStatusFilter(event.target.value)}>
+                <option value="all">Alle statusser</option>
+                {statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
+              </select>
             </div>
-
-            {selectedOrder && (
-              <article className="admin-detail panel">
-                <div className="admin-detail-head">
-                  <div>
-                    <span className="eyebrow">Ordre</span>
-                    <h2>{selectedOrder.order_number}</h2>
-                    <p>{formatDate(selectedOrder.created_at)}</p>
-                  </div>
-                  <select
-                    value={selectedOrder.status}
-                    onChange={(event) => updateStatus(selectedOrder.id, event.target.value)}
-                  >
-                    {statuses.map((status) => (
-                      <option key={status} value={status}>{statusLabels[status]}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="admin-summary-row">
-                  <div><span>Total</span><strong>{money(selectedOrder.total)}</strong></div>
-                  <div><span>Linjer</span><strong>{selectedOrder.order_lines.length}</strong></div>
-                  <div><span>Status</span><strong>{statusLabels[selectedOrder.status] || selectedOrder.status}</strong></div>
-                </div>
-
-                <div className="admin-payment-box">
-                  <div>
-                    <span>Stripe</span>
-                    <strong>Betalingslink</strong>
-                    <p>Opret et Stripe Checkout-link, når fragt og ordre er godkendt.</p>
-                  </div>
-                  <button className="btn primary" disabled={isCreatingPayment} onClick={() => createPaymentLink(selectedOrder.id)}>
-                    {isCreatingPayment ? "Opretter..." : "Opret betalingslink"}
-                  </button>
-                  {paymentUrl && (
-                    <div className="admin-payment-url">
-                      <input readOnly value={paymentUrl} onFocus={(event) => event.target.select()} />
-                      <a className="btn" href={paymentUrl} rel="noreferrer" target="_blank">Åbn</a>
-                    </div>
-                  )}
-                </div>
-
-                <div className="admin-info-grid">
-                  <section>
-                    <h3>Bestiller</h3>
-                    <p><strong>{selectedOrder.customer_name || "Ikke udfyldt"}</strong></p>
-                    <p>{[selectedOrder.customer_email, selectedOrder.customer_phone].filter(Boolean).join(" · ") || "Ingen kontaktoplysninger"}</p>
-                    <p>{[selectedOrder.customer_address, selectedOrder.customer_postcode, selectedOrder.customer_city].filter(Boolean).join(", ") || "Ingen adresse"}</p>
-                  </section>
-                  <section>
-                    <h3>Levering</h3>
-                    <p><strong>{selectedOrder.delivery_method || "Ikke valgt"}</strong></p>
-                    <p>{selectedOrder.recipient_name || "Ingen modtager"}</p>
-                    <p>{[selectedOrder.delivery_address, selectedOrder.delivery_postcode, selectedOrder.delivery_city].filter(Boolean).join(", ") || "Ingen leveringsadresse"}</p>
-                    <p>{selectedOrder.requested_delivery_date ? `Ønsket dato: ${selectedOrder.requested_delivery_date}` : "Ingen ønsket dato"}</p>
-                  </section>
-                </div>
-
-                {selectedOrder.delivery_note && (
-                  <div className="admin-note">
-                    <span>Leveringsnote</span>
-                    <p>{selectedOrder.delivery_note}</p>
-                  </div>
-                )}
-
-                <h3 className="admin-section-title">Ordrelinjer</h3>
-                <div className="admin-lines">
-                  {selectedOrder.order_lines.map((line) => (
-                    <div className="admin-line" key={line.id}>
-                      <div>
-                        <strong>{line.title}</strong>
-                        <span>{line.note}</span>
-                      </div>
-                      <em>{money(line.total)}</em>
-                      {line.card_text && (
-                        <p><b>Korttekst:</b> {line.card_text}</p>
-                      )}
-                      <ul>
-                        {line.items?.map((item, index) => (
-                          <li key={`${line.id}-${index}`}>
-                            {item.title}{item.brand ? ` · ${item.brand}` : ""}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+            {filteredOrders.length === 0 ? <div className="admin-empty">Ingen ordrer matcher filteret.</div> : (
+              <section className="admin-grid">
+                <div className="admin-orders-list">
+                  {filteredOrders.map((order) => (
+                    <button
+                      className={`admin-order-card ${selectedOrder?.id === order.id ? "active" : ""}`}
+                      key={order.id}
+                      onClick={() => setSelectedOrderId(order.id)}
+                    >
+                      <span>{formatDate(order.created_at)}</span>
+                      <strong>{order.order_number}</strong>
+                      <em>{order.customer_name || "Ukendt kunde"} · {money(order.total)}</em>
+                      <b>{statusLabels[order.status] || order.status}</b>
+                    </button>
                   ))}
                 </div>
-              </article>
+                {selectedOrder && <OrderDetail order={selectedOrder} paymentUrl={paymentUrl} isCreatingPayment={isCreatingPayment} onStatus={updateStatus} onPayment={createPaymentLink} />}
+              </section>
             )}
-          </section>
+          </>
         )
       )}
 
       {!isLoading && activeTab === "customers" && (
         customers.length === 0 ? <div className="admin-empty">Der er ingen kunder endnu.</div> : (
-          <section className="admin-grid">
-            <div className="admin-orders-list">
-              {customers.map((customer) => (
-                <button
-                  className={`admin-order-card ${selectedCustomer?.key === customer.key ? "active" : ""}`}
-                  key={customer.key}
-                  onClick={() => setSelectedCustomerKey(customer.key)}
-                >
-                  <span>{formatDate(customer.latestOrder)}</span>
-                  <strong>{customer.name}</strong>
-                  <em>{customer.orders.length} ordre · {money(customer.total)}</em>
-                  <b>{customer.email || customer.phone || "Ingen kontakt"}</b>
-                </button>
-              ))}
+          <>
+            <div className="admin-filter-bar">
+              <input value={customerSearch} onChange={(event) => setCustomerSearch(event.target.value)} placeholder="Søg kunde, mail, telefon eller adresse" />
             </div>
-
-            {selectedCustomer && (
-              <article className="admin-detail panel">
-                <div className="admin-detail-head">
-                  <div>
-                    <span className="eyebrow">Kunde</span>
-                    <h2>{selectedCustomer.name}</h2>
-                    <p>{selectedCustomer.email || selectedCustomer.phone || "Ingen kontaktoplysninger"}</p>
-                  </div>
-                </div>
-
-                <div className="admin-summary-row">
-                  <div><span>Ordrer</span><strong>{selectedCustomer.orders.length}</strong></div>
-                  <div><span>Omsætning</span><strong>{money(selectedCustomer.total)}</strong></div>
-                  <div><span>Seneste</span><strong>{formatDate(selectedCustomer.latestOrder)}</strong></div>
-                </div>
-
-                <div className="admin-info-grid">
-                  <section>
-                    <h3>Kontakt</h3>
-                    <p>{selectedCustomer.email || "Ingen e-mail"}</p>
-                    <p>{selectedCustomer.phone || "Intet telefonnummer"}</p>
-                  </section>
-                  <section>
-                    <h3>Adresse</h3>
-                    <p>{selectedCustomer.address || "Ingen adresse"}</p>
-                  </section>
-                </div>
-
-                <h3 className="admin-section-title">Kundens ordrer</h3>
-                <div className="admin-lines">
-                  {selectedCustomer.orders.map((order) => (
+            {filteredCustomers.length === 0 ? <div className="admin-empty">Ingen kunder matcher filteret.</div> : (
+              <section className="admin-grid">
+                <div className="admin-orders-list">
+                  {filteredCustomers.map((customer) => (
                     <button
-                      className="admin-line admin-line-button"
-                      key={order.id}
-                      onClick={() => {
-                        setSelectedOrderId(order.id);
-                        setActiveTab("orders");
-                      }}
+                      className={`admin-order-card ${selectedCustomer?.key === customer.key ? "active" : ""}`}
+                      key={customer.key}
+                      onClick={() => setSelectedCustomerKey(customer.key)}
                     >
-                      <div>
-                        <strong>{order.order_number}</strong>
-                        <span>{formatDate(order.created_at)} · {statusLabels[order.status] || order.status}</span>
-                      </div>
-                      <em>{money(order.total)}</em>
+                      <span>{formatDate(customer.latestOrder)}</span>
+                      <strong>{customer.name}</strong>
+                      <em>{customer.orders.length} ordre · {money(customer.total)}</em>
+                      <b>{customer.email || customer.phone || "Ingen kontakt"}</b>
                     </button>
                   ))}
                 </div>
-              </article>
+                {selectedCustomer && (
+                  <CustomerDetail
+                    customer={selectedCustomer}
+                    onOpenOrder={(orderId) => {
+                      setSelectedOrderId(orderId);
+                      setActiveTab("orders");
+                    }}
+                  />
+                )}
+              </section>
             )}
-          </section>
+          </>
         )
       )}
 
       {!isLoading && activeTab === "inventory" && (
         products.length === 0 ? <div className="admin-empty">Der er ingen produkter i lageret.</div> : (
-          <section className="admin-grid">
-            <div className="admin-orders-list">
-              {products.map((product) => (
-                <button
-                  className={`admin-order-card ${selectedProduct?.id === product.id ? "active" : ""}`}
-                  key={product.id}
-                  onClick={() => setSelectedProductId(product.id)}
-                >
-                  <span>{product.brand} · {product.category}</span>
-                  <strong>{product.title}</strong>
-                  <em>{product.sku || "Ingen SKU"} · {money(product.price)}</em>
-                  <b>{product.stock <= 2 ? `${product.stock} på lager` : `${product.stock} stk.`}</b>
-                </button>
-              ))}
+          <>
+            <div className="admin-filter-bar">
+              <input value={productSearch} onChange={(event) => setProductSearch(event.target.value)} placeholder="Søg produkt, brand, SKU eller variant" />
+              <select value={productStatusFilter} onChange={(event) => setProductStatusFilter(event.target.value)}>
+                <option value="all">Alle produktstatusser</option>
+                {productStatuses.map((status) => <option key={status} value={status}>{productStatusLabels[status]}</option>)}
+              </select>
             </div>
-
-            {selectedProduct && (
-              <article className="admin-detail panel">
-                <div className="admin-detail-head">
-                  <div>
-                    <span className="eyebrow">Lager</span>
-                    <h2>{selectedProduct.title}</h2>
-                    <p>{selectedProduct.brand} · {selectedProduct.category}</p>
-                  </div>
-                  <select
-                    value={selectedProduct.status}
-                    onChange={(event) => updateProduct(selectedProduct.id, { status: event.target.value })}
-                  >
-                    {productStatuses.map((status) => (
-                      <option key={status} value={status}>{productStatusLabels[status]}</option>
-                    ))}
-                  </select>
+            {filteredProducts.length === 0 ? <div className="admin-empty">Ingen produkter matcher filteret.</div> : (
+              <section className="admin-grid">
+                <div className="admin-orders-list">
+                  {filteredProducts.map((product) => (
+                    <button
+                      className={`admin-order-card ${selectedProduct?.id === product.id ? "active" : ""}`}
+                      key={product.id}
+                      onClick={() => setSelectedProductId(product.id)}
+                    >
+                      <span>{product.brand} · {product.category}</span>
+                      <strong>{product.title}</strong>
+                      <em>{product.sku || "Ingen SKU"} · {money(product.price)}</em>
+                      <b>{productHasLowStock(product) ? `${productTotalStock(product)} på lager` : `${productTotalStock(product)} stk.`}</b>
+                    </button>
+                  ))}
                 </div>
-
-                <div className="admin-summary-row">
-                  <div><span>Lager</span><strong>{selectedProduct.stock}</strong></div>
-                  <div><span>Pris</span><strong>{money(selectedProduct.price)}</strong></div>
-                  <div><span>Kost</span><strong>{money(selectedProduct.cost)}</strong></div>
-                </div>
-
-                <div className="admin-inventory-controls">
-                  <button className="btn" onClick={() => updateProduct(selectedProduct.id, { stock: Math.max(0, selectedProduct.stock - 1) })}>-1</button>
-                  <input
-                    min="0"
-                    type="number"
-                    value={selectedProduct.stock}
-                    onChange={(event) => updateProduct(selectedProduct.id, { stock: Number(event.target.value) })}
+                {selectedProduct && (
+                  <InventoryDetail
+                    product={selectedProduct}
+                    onProductUpdate={updateProduct}
+                    onVariantUpdate={updateProductVariant}
                   />
-                  <button className="btn" onClick={() => updateProduct(selectedProduct.id, { stock: selectedProduct.stock + 1 })}>+1</button>
-                </div>
-
-                {!!selectedProduct.variants?.length && (
-                  <div className="admin-variant-list">
-                    <strong>Variantlager</strong>
-                    {selectedProduct.variants.map((variant) => (
-                      <div className="admin-variant-row" key={variant.id}>
-                        <div>
-                          <span>{variant.title}</span>
-                          <em>{variant.sku || "Ingen SKU"} · {money(variant.price)}</em>
-                        </div>
-                        <button className="btn" onClick={() => updateProductVariant(selectedProduct, variant.id, { stock: Math.max(0, variant.stock - 1) })}>-1</button>
-                        <input
-                          min="0"
-                          type="number"
-                          value={variant.stock}
-                          onChange={(event) => updateProductVariant(selectedProduct, variant.id, { stock: Math.max(0, Number(event.target.value) || 0) })}
-                        />
-                        <button className="btn" onClick={() => updateProductVariant(selectedProduct, variant.id, { stock: variant.stock + 1 })}>+1</button>
-                      </div>
-                    ))}
-                  </div>
                 )}
-
-                <div className="admin-info-grid">
-                  <section>
-                    <h3>Produktdata</h3>
-                    <p>SKU: {selectedProduct.sku || "Ingen SKU"}</p>
-                    <p>Status: {productStatusLabels[selectedProduct.status] || selectedProduct.status}</p>
-                    <p>Gaveæske-egnet: {selectedProduct.giftbox_eligible ? "Ja" : "Nej"}</p>
-                  </section>
-                  <section>
-                    <h3>Lageralarm</h3>
-                    <p>{selectedProduct.stock <= 2 ? "Lav lagerbeholdning. Overvej genbestilling." : "Lagerbeholdningen ser fin ud."}</p>
-                  </section>
-                </div>
-              </article>
+              </section>
             )}
-          </section>
+          </>
         )
       )}
     </main>
+  );
+}
+
+function OrderDetail({
+  order,
+  paymentUrl,
+  isCreatingPayment,
+  onStatus,
+  onPayment
+}: {
+  order: AdminOrder;
+  paymentUrl: string;
+  isCreatingPayment: boolean;
+  onStatus: (orderId: string, status: string) => void;
+  onPayment: (orderId: string) => void;
+}) {
+  return (
+    <article className="admin-detail panel">
+      <div className="admin-detail-head">
+        <div>
+          <span className="eyebrow">Ordre</span>
+          <h2>{order.order_number}</h2>
+          <p>{formatDate(order.created_at)}</p>
+        </div>
+        <select value={order.status} onChange={(event) => onStatus(order.id, event.target.value)}>
+          {statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
+        </select>
+      </div>
+
+      <div className="admin-summary-row">
+        <div><span>Total</span><strong>{money(order.total)}</strong></div>
+        <div><span>Linjer</span><strong>{order.order_lines.length}</strong></div>
+        <div><span>Status</span><strong>{statusLabels[order.status] || order.status}</strong></div>
+      </div>
+
+      <div className="admin-payment-box">
+        <div>
+          <span>Stripe</span>
+          <strong>Betalingslink</strong>
+          <p>Opret et Stripe Checkout-link, når fragt og ordre er godkendt.</p>
+        </div>
+        <button className="btn primary" disabled={isCreatingPayment} onClick={() => onPayment(order.id)}>
+          {isCreatingPayment ? "Opretter..." : "Opret betalingslink"}
+        </button>
+        {paymentUrl && (
+          <div className="admin-payment-url">
+            <input readOnly value={paymentUrl} onFocus={(event) => event.target.select()} />
+            <a className="btn" href={paymentUrl} rel="noreferrer" target="_blank">Åbn</a>
+          </div>
+        )}
+      </div>
+
+      <div className="admin-info-grid">
+        <section>
+          <h3>Bestiller</h3>
+          <p><strong>{order.customer_name || "Ikke udfyldt"}</strong></p>
+          <p>{orderContact(order)}</p>
+          <p>{orderAddress(order.customer_address, order.customer_postcode, order.customer_city)}</p>
+        </section>
+        <section>
+          <h3>Levering</h3>
+          <p><strong>{order.delivery_method || "Ikke valgt"}</strong></p>
+          <p>{order.recipient_name || "Ingen modtager"}</p>
+          <p>{orderAddress(order.delivery_address, order.delivery_postcode, order.delivery_city)}</p>
+          <p>{order.requested_delivery_date ? `Ønsket dato: ${order.requested_delivery_date}` : "Ingen ønsket dato"}</p>
+        </section>
+      </div>
+
+      {order.delivery_note && (
+        <div className="admin-note">
+          <span>Leveringsnote</span>
+          <p>{order.delivery_note}</p>
+        </div>
+      )}
+
+      <h3 className="admin-section-title">Ordrelinjer</h3>
+      <div className="admin-lines">
+        {order.order_lines.map((line) => (
+          <div className="admin-line" key={line.id}>
+            <div>
+              <strong>{line.title}</strong>
+              <span>{line.note}</span>
+            </div>
+            <em>{money(line.total)}</em>
+            {line.card_text && <p><b>Korttekst:</b> {line.card_text}</p>}
+            {!!line.items?.length && (
+              <ul>
+                {line.items.map((item, index) => (
+                  <li key={`${line.id}-${index}`}>
+                    {item.title}{item.selectedVariant?.title ? ` · ${item.selectedVariant.title}` : ""}{item.brand ? ` · ${item.brand}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function CustomerDetail({ customer, onOpenOrder }: { customer: Customer; onOpenOrder: (orderId: string) => void }) {
+  return (
+    <article className="admin-detail panel">
+      <div className="admin-detail-head">
+        <div>
+          <span className="eyebrow">Kunde</span>
+          <h2>{customer.name}</h2>
+          <p>{customer.email || customer.phone || "Ingen kontaktoplysninger"}</p>
+        </div>
+      </div>
+
+      <div className="admin-summary-row">
+        <div><span>Ordrer</span><strong>{customer.orders.length}</strong></div>
+        <div><span>Omsætning</span><strong>{money(customer.total)}</strong></div>
+        <div><span>Seneste</span><strong>{formatDate(customer.latestOrder)}</strong></div>
+      </div>
+
+      <div className="admin-info-grid">
+        <section>
+          <h3>Kontakt</h3>
+          <p>{customer.email || "Ingen e-mail"}</p>
+          <p>{customer.phone || "Intet telefonnummer"}</p>
+        </section>
+        <section>
+          <h3>Adresse</h3>
+          <p>{customer.address || "Ingen adresse"}</p>
+        </section>
+      </div>
+
+      <h3 className="admin-section-title">Kundens ordrer</h3>
+      <div className="admin-lines">
+        {customer.orders.map((order) => (
+          <button className="admin-line admin-line-button" key={order.id} onClick={() => onOpenOrder(order.id)}>
+            <div>
+              <strong>{order.order_number}</strong>
+              <span>{formatDate(order.created_at)} · {statusLabels[order.status] || order.status}</span>
+            </div>
+            <em>{money(order.total)}</em>
+          </button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function InventoryDetail({
+  product,
+  onProductUpdate,
+  onVariantUpdate
+}: {
+  product: AdminProduct;
+  onProductUpdate: (productId: string, update: { stock?: number; status?: string; variants?: AdminVariant[] }) => void;
+  onVariantUpdate: (product: AdminProduct, variantId: string, update: Partial<AdminVariant>) => void;
+}) {
+  const lowVariantCount = (product.variants || []).filter((variant) => variant.status !== "archived" && variant.stock <= 2).length;
+
+  return (
+    <article className="admin-detail panel">
+      <div className="admin-detail-head">
+        <div>
+          <span className="eyebrow">Lager</span>
+          <h2>{product.title}</h2>
+          <p>{product.brand} · {product.category}</p>
+        </div>
+        <select value={product.status} onChange={(event) => onProductUpdate(product.id, { status: event.target.value })}>
+          {productStatuses.map((status) => <option key={status} value={status}>{productStatusLabels[status]}</option>)}
+        </select>
+      </div>
+
+      <div className="admin-summary-row">
+        <div><span>Samlet lager</span><strong>{productTotalStock(product)}</strong></div>
+        <div><span>Pris</span><strong>{money(product.price)}</strong></div>
+        <div><span>Kost</span><strong>{money(product.cost)}</strong></div>
+      </div>
+
+      <div className="admin-inventory-controls">
+        <button className="btn" onClick={() => onProductUpdate(product.id, { stock: Math.max(0, product.stock - 1) })}>-1</button>
+        <input min="0" type="number" value={product.stock} onChange={(event) => onProductUpdate(product.id, { stock: Math.max(0, Number(event.target.value) || 0) })} />
+        <button className="btn" onClick={() => onProductUpdate(product.id, { stock: product.stock + 1 })}>+1</button>
+      </div>
+
+      {!!product.variants?.length && (
+        <div className="admin-variant-list">
+          <strong>Variantlager</strong>
+          {product.variants.map((variant) => (
+            <div className="admin-variant-row" key={variant.id}>
+              <div>
+                <span>{variant.title}</span>
+                <em>{variant.sku || "Ingen SKU"} · {money(variant.price)}</em>
+              </div>
+              <button className="btn" onClick={() => onVariantUpdate(product, variant.id, { stock: Math.max(0, variant.stock - 1) })}>-1</button>
+              <input min="0" type="number" value={variant.stock} onChange={(event) => onVariantUpdate(product, variant.id, { stock: Math.max(0, Number(event.target.value) || 0) })} />
+              <button className="btn" onClick={() => onVariantUpdate(product, variant.id, { stock: variant.stock + 1 })}>+1</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="admin-info-grid">
+        <section>
+          <h3>Produktdata</h3>
+          <p>SKU: {product.sku || "Ingen SKU"}</p>
+          <p>Status: {productStatusLabels[product.status] || product.status}</p>
+          <p>Gaveæske-egnet: {product.giftbox_eligible ? "Ja" : "Nej"}</p>
+        </section>
+        <section>
+          <h3>Lageralarm</h3>
+          <p>{productHasLowStock(product) ? `Lav lagerbeholdning${lowVariantCount ? ` på ${lowVariantCount} variant${lowVariantCount === 1 ? "" : "er"}` : ""}. Overvej genbestilling.` : "Lagerbeholdningen ser fin ud."}</p>
+        </section>
+      </div>
+    </article>
   );
 }
