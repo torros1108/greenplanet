@@ -5,6 +5,7 @@ import Link from "next/link";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 
 const boxPrice = 49;
+const cardPrice = 0;
 const deliveryShippingPrice = 49;
 const cartStorageKey = "greenplanet-cart";
 const orderStorageKey = "greenplanet-orders";
@@ -638,6 +639,14 @@ export default function Home() {
     return item.selectedVariant ? `${item.title} · ${item.selectedVariant.title}` : item.title;
   }
 
+  function lineProductsTotal(line: CartLine) {
+    return line.items.reduce((sum, item) => sum + item.price, 0);
+  }
+
+  function lineBoxTotal(line: CartLine) {
+    return Math.max(0, line.total - lineProductsTotal(line) - cardPrice);
+  }
+
   function addProductToCart(product: Product, variant?: ProductVariant | null) {
     const item: CartItem = variant
       ? { ...product, price: variant.price, stock: variant.stock, sku: variant.sku, image: variant.image || product.image, selectedVariant: variant }
@@ -1190,10 +1199,16 @@ export default function Home() {
                           <strong>{money(item.price)}</strong>
                         </div>
                       ))}
+                      {lineBoxTotal(line) > 0 && (
+                        <div>
+                          <span>Gaveæske/kasse</span>
+                          <strong>{money(lineBoxTotal(line))}</strong>
+                        </div>
+                      )}
                       {line.items.length > 0 && (
                         <div>
-                          <span>Gaveæske/kasse og kort</span>
-                          <strong>{money(Math.max(0, line.total - line.items.reduce((sum, item) => sum + item.price, 0)))}</strong>
+                          <span>Kort</span>
+                          <strong>{cardPrice > 0 ? money(cardPrice) : "Inkluderet"}</strong>
                         </div>
                       )}
                     </div>
@@ -1209,8 +1224,8 @@ export default function Home() {
                 )) : <div className="empty">Kurven er tom.</div>}
                 <div className="checkout-totals">
                   <div><span>Produkter</span><strong>{money(cartProductsTotal)}</strong></div>
-                  <div><span>Gaveæske/kasse og kort</span><strong>{money(cartPackagingTotal)}</strong></div>
-                  <div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div>
+                  <div><span>Gaveæske/kasse</span><strong>{money(cartPackagingTotal)}</strong></div>
+                  <div><span>Kort</span><strong>{cardPrice > 0 ? money(cardPrice * cart.length) : "Inkluderet"}</strong></div>
                   <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
                   <div className="checkout-total-row"><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
                 </div>
@@ -1260,10 +1275,10 @@ export default function Home() {
                 </div>
                 <div className="checkout-section">
                   <h3><span>3</span> Bekræft</h3>
-                  <p className="checkout-help">Du kan se fragt og samlet total, før du går til sikker betaling. Kortteksterne følger de enkelte gaver.</p>
+                  <p className="checkout-help">Du kan se produkter, gaveæske/kasse, kort, fragt og samlet total, før du går til sikker betaling. Kortteksterne følger de enkelte gaver.</p>
                 </div>
                 <button className="btn primary" onClick={submitOrder}>
-                  Gå til betaling
+                  Gå til sikker betaling
                 </button>
               </div>
               <div className="panel order-summary-panel">
@@ -1273,8 +1288,8 @@ export default function Home() {
                   <div><span>Produkter i alt</span><strong>{cartProductCount}</strong></div>
                   <div><span>Korttekster</span><strong>{cardTextCount}/{cart.length}</strong></div>
                   <div><span>Produkter</span><strong>{money(cartProductsTotal)}</strong></div>
-                  <div><span>Gaveæske/kasse og kort</span><strong>{money(cartPackagingTotal)}</strong></div>
-                  <div><span>Subtotal</span><strong>{money(cartTotal)}</strong></div>
+                  <div><span>Gaveæske/kasse</span><strong>{money(cartPackagingTotal)}</strong></div>
+                  <div><span>Kort</span><strong>{cardPrice > 0 ? money(cardPrice * cart.length) : "Inkluderet"}</strong></div>
                   <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
                   <div className="summary-total"><span>Total</span><strong>{money(checkoutTotal)}</strong></div>
                 </div>
