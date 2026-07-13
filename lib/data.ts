@@ -67,7 +67,7 @@ export const initialProducts: Product[] = [
 export const giftboxes: Giftbox[] = [
   {
     id: "g1",
-    title: "Ny Mor Ro",
+    title: "Mors Timeout",
     category: "Ny mor",
     description: "En gave med blid hudpleje til den gravide eller nybagte mor.",
     productIds: ["p4", "p13", "p15"],

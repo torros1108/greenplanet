@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const adminCookieName = "greenplanet_admin";
-const maxAgeSeconds = 60 * 60 * 8;
+const maxAgeSeconds = 60 * 60 * 2;
 
 function getAdminSecret() {
   const secret = process.env.ADMIN_PASSWORD;

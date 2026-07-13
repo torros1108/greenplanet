@@ -456,7 +456,7 @@ export default function Home() {
       productIds: ["p3", "p5", "p6"]
     },
     {
-      title: "Ny Mor Ro",
+      title: "Mors Timeout",
       text: "En gave med blid hudpleje til den gravide eller nybagte mor.",
       productIds: ["p4", "p13", "p15"]
     },
