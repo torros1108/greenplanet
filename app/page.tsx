@@ -10,6 +10,7 @@ const cardPrice = 0;
 const deliveryShippingPrice = 49;
 const cartStorageKey = "greenplanet-cart";
 const orderStorageKey = "greenplanet-orders";
+const visitorSessionStorageKey = "greenplanet-visitor-session";
 const companyInfo = {
   name: "Greenplanet",
   cvr: "44640376",
@@ -70,6 +71,12 @@ type SavedOrder = {
     requestedDate: string;
     note: string;
   };
+};
+type TrackingCartItem = {
+  title: string;
+  total: number;
+  products: string[];
+  source: string;
 };
 
 type PolicyPage = { eyebrow: string; title: string; intro: string; sections: { title: string; body: string }[] };
@@ -345,6 +352,7 @@ function GreenplanetLogo({ compact = false }: { compact?: boolean }) {
 
 export default function Home() {
   const [view, setView] = useState<View>("home");
+  const [visitorSessionId, setVisitorSessionId] = useState("");
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [giftboxCatalog, setGiftboxCatalog] = useState<Giftbox[]>(initialGiftboxes);
   const [policyCatalog, setPolicyCatalog] = useState<Record<PolicyView, PolicyPage>>(defaultPolicyPages);
@@ -471,6 +479,62 @@ export default function Home() {
   const activeHeroProducts = activeHeroSlide.productIds
     .map((id) => products.find((item) => item.id === id))
     .filter(Boolean) as Product[];
+  const cartTrackingItems: TrackingCartItem[] = useMemo(
+    () => cart.map((line) => ({
+      title: line.title,
+      total: line.total,
+      products: line.items.map((item) => cartItemLabel(item)),
+      source: line.source?.type || "ukendt"
+    })),
+    [cart]
+  );
+
+  async function trackActivity(event: "view" | "cart" | "checkout_started" | "converted" = "view", orderNumber = "") {
+    if (!visitorSessionId) return;
+
+    const payload = {
+      sessionId: visitorSessionId,
+      view,
+      path: window.location.pathname + window.location.search + window.location.hash,
+      referrer: document.referrer,
+      event,
+      orderNumber,
+      cart: {
+        giftCount: cart.length,
+        itemCount: cartProductCount,
+        total: checkoutTotal,
+        items: cartTrackingItems
+      },
+      contact: {
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone
+      }
+    };
+
+    try {
+      await fetch("/api/activity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true
+      });
+    } catch {
+      // Tracking må aldrig blokere køb eller navigation.
+    }
+  }
+
+  useEffect(() => {
+    const storedSessionId = window.localStorage.getItem(visitorSessionStorageKey);
+    if (storedSessionId) {
+      setVisitorSessionId(storedSessionId);
+      return;
+    }
+
+    const nextSessionId = `v-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+    window.localStorage.setItem(visitorSessionStorageKey, nextSessionId);
+    setVisitorSessionId(nextSessionId);
+  }, []);
 
   useEffect(() => {
     const storedCart = window.localStorage.getItem(cartStorageKey);
@@ -487,6 +551,24 @@ export default function Home() {
   useEffect(() => {
     window.localStorage.setItem(cartStorageKey, JSON.stringify(cart));
   }, [cart]);
+
+  useEffect(() => {
+    if (!visitorSessionId) return;
+    const timeout = window.setTimeout(() => {
+      void trackActivity(cart.length ? "cart" : "view");
+    }, 650);
+    return () => window.clearTimeout(timeout);
+  }, [
+    visitorSessionId,
+    view,
+    cartTrackingItems,
+    cart.length,
+    cartProductCount,
+    checkoutTotal,
+    customerName,
+    customerEmail,
+    customerPhone
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -584,6 +666,8 @@ export default function Home() {
   }, [selectedProduct?.id, selectedProduct?.variants, selectedVariantId]);
 
   useEffect(() => {
+    if (!visitorSessionId) return;
+
     const params = new URLSearchParams(window.location.search);
     const payment = params.get("payment");
     const orderNumber = params.get("order");
@@ -614,6 +698,7 @@ export default function Home() {
       }
 
       resetCheckout();
+      void trackActivity("converted", orderNumber || "");
       setView("confirmation");
       window.history.replaceState({}, "", "/");
     }
@@ -622,7 +707,7 @@ export default function Home() {
       setView("orders");
       window.history.replaceState({}, "", "/#orders");
     }
-  }, []);
+  }, [visitorSessionId]);
 
   useEffect(() => {
     function applyHash() {
@@ -851,6 +936,7 @@ export default function Home() {
         }
 
         window.localStorage.setItem(orderStorageKey, JSON.stringify([order, ...orders]));
+        void trackActivity("checkout_started", orderId);
 
         if (saved.url) {
           window.location.href = saved.url;

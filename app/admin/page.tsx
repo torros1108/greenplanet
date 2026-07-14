@@ -70,6 +70,27 @@ type AdminVariant = {
   status?: string;
 };
 
+type AdminActivity = {
+  session_id: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  page_views: number;
+  current_view: string | null;
+  current_path: string | null;
+  referrer: string | null;
+  user_agent: string | null;
+  cart_gift_count: number;
+  cart_item_count: number;
+  cart_total: number | string;
+  cart_items: Array<{ title?: string; total?: number; products?: string[]; source?: string }>;
+  cart_updated_at: string | null;
+  checkout_started_at: string | null;
+  converted_order_number: string | null;
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+};
+
 type Customer = {
   key: string;
   id?: string;
@@ -84,7 +105,7 @@ type Customer = {
   latestOrder: string;
 };
 
-type AdminTab = "orders" | "customers" | "inventory";
+type AdminTab = "orders" | "customers" | "inventory" | "activity";
 
 const statusLabels: Record<string, string> = {
   new: "Ny",
@@ -114,6 +135,37 @@ function formatDate(value: string) {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
+}
+
+function minutesSince(value: string | null) {
+  if (!value) return Number.POSITIVE_INFINITY;
+  return Math.floor((Date.now() - new Date(value).getTime()) / 60000);
+}
+
+function relativeActivity(value: string | null) {
+  const minutes = minutesSince(value);
+  if (!Number.isFinite(minutes)) return "Ingen aktivitet";
+  if (minutes < 1) return "Lige nu";
+  if (minutes < 60) return `${minutes} min. siden`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} t. siden`;
+  return `${Math.floor(hours / 24)} dage siden`;
+}
+
+function hasCart(activity: AdminActivity) {
+  return Number(activity.cart_gift_count) > 0 || Number(activity.cart_item_count) > 0;
+}
+
+function isActiveVisitor(activity: AdminActivity) {
+  return minutesSince(activity.last_seen_at) <= 10;
+}
+
+function isActiveCart(activity: AdminActivity) {
+  return hasCart(activity) && !activity.converted_order_number && minutesSince(activity.last_seen_at) <= 30;
+}
+
+function isAbandonedCart(activity: AdminActivity) {
+  return hasCart(activity) && !activity.converted_order_number && minutesSince(activity.last_seen_at) > 30;
 }
 
 function customerKey(order: AdminOrder) {
@@ -151,14 +203,17 @@ export default function AdminPage() {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [customerProfiles, setCustomerProfiles] = useState<AdminCustomer[]>([]);
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [activities, setActivities] = useState<AdminActivity[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState("");
   const [selectedCustomerKey, setSelectedCustomerKey] = useState("");
   const [selectedProductId, setSelectedProductId] = useState("");
+  const [selectedActivityId, setSelectedActivityId] = useState("");
   const [orderSearch, setOrderSearch] = useState("");
   const [orderStatusFilter, setOrderStatusFilter] = useState("all");
   const [customerSearch, setCustomerSearch] = useState("");
   const [productSearch, setProductSearch] = useState("");
   const [productStatusFilter, setProductStatusFilter] = useState("all");
+  const [activityFilter, setActivityFilter] = useState("all");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
@@ -255,6 +310,16 @@ export default function AdminPage() {
     });
   }, [products, productSearch, productStatusFilter]);
 
+  const filteredActivities = useMemo(() => {
+    return activities.filter((activity) => {
+      if (activityFilter === "active") return isActiveVisitor(activity);
+      if (activityFilter === "active-carts") return isActiveCart(activity);
+      if (activityFilter === "abandoned-carts") return isAbandonedCart(activity);
+      if (activityFilter === "converted") return !!activity.converted_order_number;
+      return true;
+    });
+  }, [activities, activityFilter]);
+
   const selectedOrder = useMemo(
     () => orders.find((order) => order.id === selectedOrderId) || filteredOrders[0] || orders[0],
     [orders, filteredOrders, selectedOrderId]
@@ -270,10 +335,17 @@ export default function AdminPage() {
     [products, filteredProducts, selectedProductId]
   );
 
+  const selectedActivity = useMemo(
+    () => activities.find((activity) => activity.session_id === selectedActivityId) || filteredActivities[0] || activities[0],
+    [activities, filteredActivities, selectedActivityId]
+  );
+
   const lowStockProducts = useMemo(() => products.filter(productHasLowStock), [products]);
   const newOrdersCount = orders.filter((order) => order.status === "new").length;
   const unpaidOrdersCount = orders.filter((order) => ["new", "confirmed"].includes(order.status)).length;
-  const liveProductCount = products.filter((product) => product.status === "live").length;
+  const activeVisitorCount = activities.filter(isActiveVisitor).length;
+  const activeCartCount = activities.filter(isActiveCart).length;
+  const abandonedCartCount = activities.filter(isAbandonedCart).length;
 
   async function loadAdminData() {
     setIsLoading(true);
@@ -306,15 +378,22 @@ export default function AdminPage() {
       return;
     }
 
+    const activityResponse = await fetch("/api/admin/activity");
+
     const ordersData = await ordersResponse.json() as { orders: AdminOrder[] };
     const productsData = await productsResponse.json() as { products: AdminProduct[] };
     const customersData = await customersResponse.json() as { customers: AdminCustomer[] };
+    const activityData = activityResponse.ok
+      ? await activityResponse.json() as { sessions: AdminActivity[] }
+      : { sessions: [] };
 
     setOrders(ordersData.orders);
     setProducts(productsData.products);
     setCustomerProfiles(customersData.customers);
+    setActivities(activityData.sessions);
     setSelectedOrderId((current) => current || ordersData.orders[0]?.id || "");
     setSelectedProductId((current) => current || productsData.products[0]?.id || "");
+    setSelectedActivityId((current) => current || activityData.sessions[0]?.session_id || "");
     setIsLoggedIn(true);
     setIsLoading(false);
   }
@@ -345,6 +424,7 @@ export default function AdminPage() {
     setOrders([]);
     setProducts([]);
     setCustomerProfiles([]);
+    setActivities([]);
     setPassword("");
   }
 
@@ -500,7 +580,7 @@ export default function AdminPage() {
       <header className="admin-header">
         <div>
           <span className="eyebrow">Greenplanet admin</span>
-          <h1>{activeTab === "orders" ? "Ordrestyring" : activeTab === "customers" ? "Kundestyring" : "Lagerstyring"}</h1>
+          <h1>{activeTab === "orders" ? "Ordrestyring" : activeTab === "customers" ? "Kundestyring" : activeTab === "inventory" ? "Lagerstyring" : "Besøgsaktivitet"}</h1>
         </div>
         <div className="admin-header-actions">
           <button className="btn" onClick={loadAdminData}>Opdater</button>
@@ -518,13 +598,17 @@ export default function AdminPage() {
         <button className={activeTab === "inventory" ? "active" : ""} onClick={() => setActiveTab("inventory")}>
           Lager <span>{lowStockProducts.length} lav</span>
         </button>
+        <button className={activeTab === "activity" ? "active" : ""} onClick={() => setActiveTab("activity")}>
+          Aktivitet <span>{activeCartCount} kurve</span>
+        </button>
       </nav>
 
       <section className="admin-kpi-grid" aria-label="Admin nøgletal">
         <div><span>Nye ordrer</span><strong>{newOrdersCount}</strong></div>
         <div><span>Afventer betaling</span><strong>{unpaidOrdersCount}</strong></div>
         <div><span>Lavt lager</span><strong>{lowStockProducts.length}</strong></div>
-        <div><span>Live produkter</span><strong>{liveProductCount}</strong></div>
+        <div><span>Aktive besøgende</span><strong>{activeVisitorCount}</strong></div>
+        <div><span>Forladte kurve</span><strong>{abandonedCartCount}</strong></div>
       </section>
 
       {error && <div className="admin-error">{error}</div>}
@@ -640,7 +724,118 @@ export default function AdminPage() {
           </>
         )
       )}
+
+      {!isLoading && activeTab === "activity" && (
+        activities.length === 0 ? <div className="admin-empty">Der er ingen besøgsaktivitet endnu. Kør SQL-filen i Supabase, og besøg derefter webshoppen.</div> : (
+          <>
+            <div className="admin-filter-bar">
+              <select value={activityFilter} onChange={(event) => setActivityFilter(event.target.value)}>
+                <option value="all">Alle besøg</option>
+                <option value="active">Aktive besøgende</option>
+                <option value="active-carts">Aktive kurve</option>
+                <option value="abandoned-carts">Forladte kurve</option>
+                <option value="converted">Konverterede</option>
+              </select>
+            </div>
+            {filteredActivities.length === 0 ? <div className="admin-empty">Ingen sessioner matcher filteret.</div> : (
+              <section className="admin-grid">
+                <div className="admin-orders-list">
+                  {filteredActivities.map((activity) => (
+                    <button
+                      className={`admin-order-card ${selectedActivity?.session_id === activity.session_id ? "active" : ""}`}
+                      key={activity.session_id}
+                      onClick={() => setSelectedActivityId(activity.session_id)}
+                    >
+                      <span>{relativeActivity(activity.last_seen_at)} · {activity.current_view || "ukendt side"}</span>
+                      <strong>{hasCart(activity) ? `${activity.cart_gift_count} gave${activity.cart_gift_count === 1 ? "" : "r"} i kurv` : "Besøgende uden kurv"}</strong>
+                      <em>{hasCart(activity) ? money(activity.cart_total) : `${activity.page_views} sidevisninger`}</em>
+                      <b>{activity.converted_order_number ? "Blev til ordre" : isAbandonedCart(activity) ? "Forladt kurv" : isActiveCart(activity) ? "Aktiv kurv" : isActiveVisitor(activity) ? "Aktiv" : "Inaktiv"}</b>
+                    </button>
+                  ))}
+                </div>
+                {selectedActivity && <ActivityDetail activity={selectedActivity} />}
+              </section>
+            )}
+          </>
+        )
+      )}
     </main>
+  );
+}
+
+function ActivityDetail({ activity }: { activity: AdminActivity }) {
+  const status = activity.converted_order_number
+    ? "Blev til ordre"
+    : isAbandonedCart(activity)
+      ? "Forladt kurv"
+      : isActiveCart(activity)
+        ? "Aktiv kurv"
+        : isActiveVisitor(activity)
+          ? "Aktiv besøgende"
+          : "Inaktiv";
+  const contact = [activity.customer_email, activity.customer_phone].filter(Boolean).join(" · ");
+
+  return (
+    <article className="admin-detail panel">
+      <div className="admin-detail-head">
+        <div>
+          <span className="eyebrow">Besøg</span>
+          <h2>{status}</h2>
+          <p>Sidst aktiv: {relativeActivity(activity.last_seen_at)}</p>
+        </div>
+        <div className="activity-status-pill">{status}</div>
+      </div>
+
+      <div className="admin-summary-row">
+        <div><span>Gaver i kurv</span><strong>{activity.cart_gift_count}</strong></div>
+        <div><span>Produkter</span><strong>{activity.cart_item_count}</strong></div>
+        <div><span>Kurvsum</span><strong>{money(activity.cart_total)}</strong></div>
+      </div>
+
+      <div className="admin-info-grid">
+        <section>
+          <h3>Session</h3>
+          <p>Første besøg: {formatDate(activity.first_seen_at)}</p>
+          <p>Seneste aktivitet: {formatDate(activity.last_seen_at)}</p>
+          <p>Sidevisninger: {activity.page_views}</p>
+          <p>Nuværende side: {activity.current_view || "Ukendt"}</p>
+        </section>
+        <section>
+          <h3>Kontakt i checkout</h3>
+          <p><strong>{activity.customer_name || "Ikke udfyldt"}</strong></p>
+          <p>{contact || "Ingen kontaktoplysninger tastet"}</p>
+          {activity.converted_order_number && <p>Ordre: {activity.converted_order_number}</p>}
+        </section>
+      </div>
+
+      <div className="admin-note">
+        <span>Side</span>
+        <p>{activity.current_path || "Ingen side registreret"}</p>
+      </div>
+
+      <h3 className="admin-section-title">Kurvindhold</h3>
+      <div className="admin-lines">
+        {activity.cart_items?.length ? activity.cart_items.map((item, index) => (
+          <div className="admin-line" key={`${activity.session_id}-${index}`}>
+            <div>
+              <strong>{item.title || "Kurvlinje"}</strong>
+              <span>{item.source || "Ukendt type"}</span>
+            </div>
+            <em>{money(item.total || 0)}</em>
+            {!!item.products?.length && (
+              <ul>
+                {item.products.map((product) => <li key={product}>{product}</li>)}
+              </ul>
+            )}
+          </div>
+        )) : <div className="admin-empty">Der er ingen varer i kurven.</div>}
+      </div>
+
+      <div className="checkout-note">
+        <strong>Forladt kurv</strong>
+        <span>Brug visningen til drift og forståelse af flowet. Kontakt kun kunder om en forladt kurv, hvis der er et lovligt grundlag og passende samtykke.</span>
+      </div>
+    </article>
   );
 }
 
