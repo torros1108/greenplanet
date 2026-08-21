@@ -503,6 +503,20 @@ export default function AdminPage() {
     setSelectedCustomerKey("");
   }
 
+  async function deleteActivity(sessionId: string) {
+    if (!window.confirm("Vil du slette denne besøgsaktivitet og kurvsession fra admin?")) return;
+    setError("");
+
+    const response = await fetch(`/api/admin/activity?sessionId=${encodeURIComponent(sessionId)}`, { method: "DELETE" });
+    if (!response.ok) {
+      setError("Besøgsaktiviteten kunne ikke slettes.");
+      return;
+    }
+
+    setActivities((current) => current.filter((activity) => activity.session_id !== sessionId));
+    setSelectedActivityId("");
+  }
+
   async function createPaymentLink(orderId: string) {
     setError("");
     setPaymentUrl("");
@@ -753,7 +767,7 @@ export default function AdminPage() {
                     </button>
                   ))}
                 </div>
-                {selectedActivity && <ActivityDetail activity={selectedActivity} />}
+                {selectedActivity && <ActivityDetail activity={selectedActivity} onDelete={deleteActivity} />}
               </section>
             )}
           </>
@@ -763,7 +777,7 @@ export default function AdminPage() {
   );
 }
 
-function ActivityDetail({ activity }: { activity: AdminActivity }) {
+function ActivityDetail({ activity, onDelete }: { activity: AdminActivity; onDelete: (sessionId: string) => void }) {
   const status = activity.converted_order_number
     ? "Blev til ordre"
     : isAbandonedCart(activity)
@@ -785,6 +799,9 @@ function ActivityDetail({ activity }: { activity: AdminActivity }) {
         </div>
         <div className="activity-status-pill">{status}</div>
       </div>
+      <div className="admin-danger-row">
+        <button className="btn danger" onClick={() => onDelete(activity.session_id)}>Slet aktivitet</button>
+      </div>
 
       <div className="admin-summary-row">
         <div><span>Gaver i kurv</span><strong>{activity.cart_gift_count}</strong></div>
@@ -802,7 +819,7 @@ function ActivityDetail({ activity }: { activity: AdminActivity }) {
         </section>
         <section>
           <h3>Kontakt i checkout</h3>
-          <p><strong>{activity.customer_name || "Ikke udfyldt"}</strong></p>
+          <p><strong>{activity.customer_name || "Anonym besøgende"}</strong></p>
           <p>{contact || "Ingen kontaktoplysninger tastet"}</p>
           {activity.converted_order_number && <p>Ordre: {activity.converted_order_number}</p>}
         </section>
@@ -833,7 +850,7 @@ function ActivityDetail({ activity }: { activity: AdminActivity }) {
 
       <div className="checkout-note">
         <strong>Forladt kurv</strong>
-        <span>Brug visningen til drift og forståelse af flowet. Kontakt kun kunder om en forladt kurv, hvis der er et lovligt grundlag og passende samtykke.</span>
+        <span>Dette er en besøgs- og kurvsession, ikke nødvendigvis en oprettet kunde. Kontakt kun personer om en forladt kurv, hvis der er et lovligt grundlag og passende samtykke.</span>
       </div>
     </article>
   );
