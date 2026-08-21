@@ -23,6 +23,16 @@ function productGalleryImages(product: (typeof initialProducts)[number]) {
   return Array.from(new Set(images));
 }
 
+function absoluteUrl(url?: string) {
+  if (!url) return `${siteUrl}/brand/greenplanet-logo-mint.png`;
+  if (url.startsWith("http")) return url;
+  return `${siteUrl}${url}`;
+}
+
+function availability(stock: number) {
+  return stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock";
+}
+
 export function generateStaticParams() {
   return initialProducts.map((product) => ({ id: product.id }));
 }
@@ -68,9 +78,82 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
   const specs = productSpecs(product);
   const images = productGalleryImages(product);
+  const liveVariants = product.variants?.filter((variant) => variant.status !== "archived") || [];
+  const productStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${siteUrl}/products/${product.id}#product`,
+        name: product.title,
+        description: product.description,
+        sku: product.sku,
+        image: images.length ? images.map(absoluteUrl) : [absoluteUrl(product.image)],
+        brand: {
+          "@type": "Brand",
+          name: product.brand
+        },
+        category: product.category,
+        additionalProperty: specs.map((spec) => ({
+          "@type": "PropertyValue",
+          name: spec.label,
+          value: spec.value
+        })),
+        offers: liveVariants.length
+          ? liveVariants.map((variant) => ({
+              "@type": "Offer",
+              sku: variant.sku,
+              name: `${product.title} - ${variant.title}`,
+              price: variant.price.toFixed(2),
+              priceCurrency: "DKK",
+              availability: availability(variant.stock),
+              itemCondition: "https://schema.org/NewCondition",
+              url: `${siteUrl}/products/${product.id}`
+            }))
+          : {
+              "@type": "Offer",
+              sku: product.sku,
+              price: product.price.toFixed(2),
+              priceCurrency: "DKK",
+              availability: availability(product.stock),
+              itemCondition: "https://schema.org/NewCondition",
+              url: `${siteUrl}/products/${product.id}`
+            }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${siteUrl}/products/${product.id}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Forside",
+            item: siteUrl
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Produkter",
+            item: `${siteUrl}/#products`
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: product.title,
+            item: `${siteUrl}/products/${product.id}`
+          }
+        ]
+      }
+    ]
+  };
 
   return (
     <main className="app-shell product-page-shell">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productStructuredData) }}
+      />
       <aside className="sidebar">
         <div className="brand">
           <Link className="logo-lockup" href="/" aria-label="Greenplanet forside">

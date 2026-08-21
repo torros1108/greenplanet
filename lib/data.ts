@@ -84,7 +84,7 @@ export const giftboxes: Giftbox[] = [
     id: "g2",
     title: "Baby First Care",
     category: "Barsel",
-    description: "Blid babypleje og en lille økologisk ven til den forste gave.",
+    description: "Blid babypleje og en lille økologisk ven til den første gave.",
     productIds: ["p3", "p5", "p6"],
     note: "SoKind plejekit, babyvask og nussekanin.",
     recipient: "Til nybagte forældre, der gerne vil have en praktisk og smuk startpakke.",

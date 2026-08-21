@@ -17,6 +17,12 @@ function giftboxItems(productIds: string[]) {
     .filter((product): product is Product => Boolean(product));
 }
 
+function absoluteUrl(url?: string) {
+  if (!url) return `${siteUrl}/brand/greenplanet-logo-mint.png`;
+  if (url.startsWith("http")) return url;
+  return `${siteUrl}${url}`;
+}
+
 export function generateStaticParams() {
   return giftboxes.map((giftbox) => ({ id: giftbox.id }));
 }
@@ -64,9 +70,85 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
 
   const items = giftboxItems(giftbox.productIds);
   const total = items.reduce((sum, product) => sum + product.price, 0) + boxPrice;
+  const image = items.find((item) => item.image)?.image;
+  const giftboxStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Product",
+        "@id": `${siteUrl}/giftboxes/${giftbox.id}#product`,
+        name: `${giftbox.title} gaveæske`,
+        description: giftbox.description,
+        image: [absoluteUrl(image)],
+        brand: {
+          "@type": "Brand",
+          name: "Greenplanet"
+        },
+        category: giftbox.category,
+        isRelatedTo: items.map((product) => ({
+          "@type": "Product",
+          name: product.title,
+          sku: product.sku,
+          brand: {
+            "@type": "Brand",
+            name: product.brand
+          },
+          url: `${siteUrl}/products/${product.id}`
+        })),
+        offers: {
+          "@type": "Offer",
+          price: total.toFixed(2),
+          priceCurrency: "DKK",
+          availability: "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+          url: `${siteUrl}/giftboxes/${giftbox.id}`
+        }
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${siteUrl}/giftboxes/${giftbox.id}#contents`,
+        name: `Indhold i ${giftbox.title}`,
+        itemListElement: items.map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${siteUrl}/products/${product.id}`,
+          name: product.title
+        }))
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${siteUrl}/giftboxes/${giftbox.id}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Forside",
+            item: siteUrl
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Gaveæsker",
+            item: `${siteUrl}/#giftboxes`
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: giftbox.title,
+            item: `${siteUrl}/giftboxes/${giftbox.id}`
+          }
+        ]
+      }
+    ]
+  };
 
   return (
     <main className="app-shell product-page-shell">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(giftboxStructuredData) }}
+      />
       <aside className="sidebar">
         <div className="brand">
           <Link className="logo-lockup" href="/" aria-label="Greenplanet forside">

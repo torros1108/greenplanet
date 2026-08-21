@@ -24,10 +24,19 @@ const structuredData = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Greenplanet | Barselsgaver, babygaver og naturlig wellness",
+    default: "Greenplanet | Barsels- og babygaver i flotte gaveæsker",
     template: "%s | Greenplanet"
   },
-  description: "Greenplanet samler naturlige barselsgaver, babygaver og wellnessgaver i gaveæsker med personlig hilsen og direkte levering.",
+  description: "Greenplanet samler barselsgaver, babygaver og gaveæsker til nybagte mødre med personlig hilsen, gavekasse og direkte levering.",
+  keywords: [
+    "barselsgave",
+    "babygave",
+    "gaveæske",
+    "gaveæske til nybagt mor",
+    "barselsgave til mor",
+    "babyshower gave",
+    "Greenplanet"
+  ],
   applicationName: "Greenplanet",
   authors: [{ name: "Greenplanet" }],
   creator: "Greenplanet",
@@ -40,8 +49,8 @@ export const metadata: Metadata = {
     locale: "da_DK",
     url: siteUrl,
     siteName: "Greenplanet",
-    title: "Greenplanet | Barselsgaver, babygaver og naturlig wellness",
-    description: "Naturlige gaveæsker til baby, barsel og velvære med personlig hilsen og direkte levering.",
+    title: "Greenplanet | Barsels- og babygaver i flotte gaveæsker",
+    description: "Barselsgaver, babygaver og gaveæsker til nybagte mødre med personlig hilsen og direkte levering.",
     images: [
       {
         url: "/brand/greenplanet-logo-mint.png",
@@ -53,8 +62,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Greenplanet | Barselsgaver, babygaver og naturlig wellness",
-    description: "Naturlige gaveæsker til baby, barsel og velvære med personlig hilsen og direkte levering.",
+    title: "Greenplanet | Barsels- og babygaver i flotte gaveæsker",
+    description: "Barselsgaver, babygaver og gaveæsker til nybagte mødre med personlig hilsen og direkte levering.",
     images: ["/brand/greenplanet-logo-mint.png"]
   },
   robots: {
