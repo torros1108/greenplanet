@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import AnalyticsConsent from "./AnalyticsConsent";
 import "./styles.css";
 
 const siteUrl = "https://www.greenplanet.dk";
-const googleAnalyticsId = "G-53L8K46EHN";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "Store",
@@ -75,21 +74,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="da">
       <body>
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`} strategy="afterInteractive" />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){window.dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${googleAnalyticsId}');
-          `}
-        </Script>
         <script
           type="application/ld+json"
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         {children}
+        <AnalyticsConsent />
       </body>
     </html>
   );

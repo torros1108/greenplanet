@@ -12,7 +12,11 @@
    - `ADMIN_PASSWORD`
    - `STRIPE_SECRET_KEY`
    - `STRIPE_WEBHOOK_SECRET` (when webhooks are enabled)
+   - `RESEND_API_KEY`
+   - `MAIL_FROM`
+   - `ORDER_NOTIFICATION_EMAIL`
 5. Keep `SUPABASE_SERVICE_ROLE_KEY` secret. It must only be used in server routes.
+6. Run `supabase/activity-schema.sql` if the project already exists and you only need to add visitor/cart activity.
 
 ## 2. Vercel
 
@@ -50,3 +54,5 @@
 - Confirm shipping prices and delivery provider.
 - Review terms, privacy policy, cookie policy, and return policy.
 - Add a real cookie consent banner if analytics or marketing scripts are used.
+- Confirm that cookie/privacy texts mention Google Analytics and visitor/cart activity.
+- Verify `/api/activity` returns `{"ok":true}` after `supabase/activity-schema.sql` is installed.

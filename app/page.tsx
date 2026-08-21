@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { hasAnalyticsConsent } from "./AnalyticsConsent";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 
 const boxPrice = 49;
@@ -491,6 +492,7 @@ export default function Home() {
 
   async function trackActivity(event: "view" | "cart" | "checkout_started" | "converted" = "view", orderNumber = "") {
     if (!visitorSessionId) return;
+    if (!hasAnalyticsConsent()) return;
 
     const payload = {
       sessionId: visitorSessionId,
@@ -569,6 +571,15 @@ export default function Home() {
     customerEmail,
     customerPhone
   ]);
+
+  useEffect(() => {
+    function handleConsentChange() {
+      void trackActivity(cart.length ? "cart" : "view");
+    }
+
+    window.addEventListener("greenplanet-consent-change", handleConsentChange);
+    return () => window.removeEventListener("greenplanet-consent-change", handleConsentChange);
+  }, [visitorSessionId, cart.length, cartProductCount, checkoutTotal, view, customerName, customerEmail, customerPhone]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1761,8 +1772,9 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     intro: "Vi behandler personoplysninger for at kunne håndtere bestillinger, levering, kundeservice og drift af webshoppen.",
     sections: [
       { title: "Dataansvarlig", body: `${companyInfo.name}, CVR ${companyInfo.cvr}, ${companyInfo.address}, ${companyInfo.postcode} ${companyInfo.city}, e-mail ${companyInfo.email}, er dataansvarlig for behandlingen af personoplysninger på webshoppen.` },
-      { title: "Hvilke oplysninger vi behandler", body: "Vi kan behandle navn, e-mail, telefonnummer, fakturaadresse, leveringsadresse, modtagernavn, korttekst, ordreindhold, betalingsstatus og eventuelle leveringsnoter." },
-      { title: "Formål og grundlag", body: "Oplysninger bruges til at behandle bestillinger, pakke og levere gaver, sende ordrebekræftelser, yde kundeservice, håndtere reklamationer og opfylde bogførings- og dokumentationskrav. Behandlingen sker blandt andet for at kunne opfylde en aftale, overholde retlige forpligtelser og varetage Greenplanets legitime interesse i drift og kundeservice." },
+      { title: "Hvilke oplysninger vi behandler", body: "Vi kan behandle navn, e-mail, telefonnummer, fakturaadresse, leveringsadresse, modtagernavn, korttekst, ordreindhold, betalingsstatus, eventuelle leveringsnoter og tekniske oplysninger om brug af webshoppen, fx sidevisninger og kurvaktivitet, hvis du giver samtykke til statistik." },
+      { title: "Formål og grundlag", body: "Oplysninger bruges til at behandle bestillinger, pakke og levere gaver, sende ordrebekræftelser, yde kundeservice, håndtere reklamationer, opfylde bogførings- og dokumentationskrav og forbedre webshoppen. Behandlingen sker blandt andet for at kunne opfylde en aftale, overholde retlige forpligtelser, varetage Greenplanets legitime interesse i drift og kundeservice og, for statistik, på baggrund af samtykke." },
+      { title: "Statistik og kurvaktivitet", body: "Hvis du accepterer statistikcookies, kan Greenplanet registrere anonym besøgsaktivitet, hvilke sider der ses, og om der ligger varer i kurven. Hvis du selv indtaster kontaktoplysninger i checkout, kan disse blive vist i admin sammen med kurven for at forstå ordreflowet. Oplysningerne bruges ikke til automatisk markedsføring uden relevant grundlag." },
       { title: "Modtageroplysninger", body: "Hvis du sender en gave direkte til en anden person, behandler vi modtagerens navn, adresse og eventuelle leveringsnoter for at kunne levere gaven. Skriv ikke følsomme oplysninger i korttekst eller leveringsnote." },
       { title: "Deling", body: "Nødvendige oplysninger kan deles med fragtleverandører, betalingsudbydere, regnskabssystemer, hostingudbydere og tekniske leverandører, der hjælper med drift af webshoppen. Leverandører må kun behandle oplysninger efter aftale og til de relevante formål." },
       { title: "Opbevaring", body: "Oplysninger opbevares kun så længe det er nødvendigt for formålet eller påkrævet efter lovgivning. Regnskabsoplysninger opbevares som udgangspunkt i 5 år efter bogføringsreglerne." },
@@ -1776,7 +1788,8 @@ const defaultPolicyPages: Record<PolicyView, PolicyPage> = {
     sections: [
       { title: "Hvad er cookies?", body: "Cookies er små tekstfiler, der gemmes på din enhed, når du besøger en hjemmeside. De kan bruges til at få siden til at fungere, huske valg eller måle brug af siden." },
       { title: "Nødvendige cookies", body: "Greenplanet kan bruge nødvendige cookies og lokal lagring til grundlæggende funktioner som kurv, checkout, sikkerhed og teknisk drift. Disse er nødvendige for, at webshoppen kan fungere." },
-      { title: "Statistik og analyse", body: "Hvis Greenplanet bruger statistik- eller analyseværktøjer, sker det for at forstå besøg, populære produkter og tekniske fejl. Ikke-nødvendige cookies bruges kun, når det relevante samtykke er indhentet." },
+      { title: "Statistik og analyse", body: "Greenplanet bruger kun Google Analytics og intern besøgs-/kurvstatistik, hvis du accepterer statistik. Statistik bruges til at forstå besøg, populære produkter, kurve, checkout-flow og tekniske fejl." },
+      { title: "Forladte kurve", body: "Hvis du accepterer statistik, kan vi gemme anonym session og kurvindhold for at se aktive og forladte kurve i admin. Hvis du indtaster kontaktoplysninger i checkout, kan de blive gemt sammen med kurvaktiviteten, men bruges ikke til automatisk markedsføring uden relevant grundlag." },
       { title: "Marketing", body: "Marketingcookies bruges kun, hvis Greenplanet senere tilføjer annoncering, tracking eller sociale medier-integrationer, og kun efter relevant samtykke." },
       { title: "Ændring af samtykke", body: "Du skal kunne ændre eller trække dit samtykke tilbage igen, hvis der bruges samtykkekrævende cookies. Nødvendige cookies kan normalt ikke fravælges, fordi de får siden til at fungere." }
     ]

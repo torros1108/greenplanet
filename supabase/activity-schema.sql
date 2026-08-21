@@ -28,6 +28,14 @@ create index if not exists visitor_sessions_cart_updated_at_idx
 on public.visitor_sessions (cart_updated_at desc)
 where cart_gift_count > 0;
 
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
 drop trigger if exists visitor_sessions_updated_at on public.visitor_sessions;
 create trigger visitor_sessions_updated_at
 before update on public.visitor_sessions

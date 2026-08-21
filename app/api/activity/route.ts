@@ -46,35 +46,36 @@ export async function POST(request: Request) {
     const current = existing[0];
     const cartItems = Array.isArray(payload.cart?.items) ? payload.cart.items.slice(0, 20) : [];
     const event = payload.event || "view";
+    const sessionUpdate = {
+      session_id: sessionId,
+      last_seen_at: now,
+      page_views: (Number(current?.page_views) || 0) + 1,
+      current_view: cleanText(payload.view, 80),
+      current_path: cleanText(payload.path, 400),
+      referrer: cleanText(payload.referrer, 500),
+      user_agent: cleanText(request.headers.get("user-agent"), 500),
+      cart_gift_count: Math.round(cleanNumber(payload.cart?.giftCount)),
+      cart_item_count: Math.round(cleanNumber(payload.cart?.itemCount)),
+      cart_total: cleanNumber(payload.cart?.total),
+      cart_items: cartItems,
+      cart_updated_at: cartItems.length ? now : null,
+      checkout_started_at: event === "checkout_started" ? now : current?.checkout_started_at || null,
+      converted_order_number: event === "converted" ? cleanText(payload.orderNumber, 80) : current?.converted_order_number || null,
+      customer_name: cleanText(payload.contact?.name, 160),
+      customer_email: cleanText(payload.contact?.email, 180).toLowerCase(),
+      customer_phone: cleanText(payload.contact?.phone, 80),
+      ...(!current ? { first_seen_at: now } : {})
+    };
 
     await supabaseAdminRequest("visitor_sessions?on_conflict=session_id", {
       method: "POST",
       headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify([{
-        session_id: sessionId,
-        first_seen_at: current ? undefined : now,
-        last_seen_at: now,
-        page_views: (Number(current?.page_views) || 0) + 1,
-        current_view: cleanText(payload.view, 80),
-        current_path: cleanText(payload.path, 400),
-        referrer: cleanText(payload.referrer, 500),
-        user_agent: cleanText(request.headers.get("user-agent"), 500),
-        cart_gift_count: Math.round(cleanNumber(payload.cart?.giftCount)),
-        cart_item_count: Math.round(cleanNumber(payload.cart?.itemCount)),
-        cart_total: cleanNumber(payload.cart?.total),
-        cart_items: cartItems,
-        cart_updated_at: cartItems.length ? now : null,
-        checkout_started_at: event === "checkout_started" ? now : current?.checkout_started_at || null,
-        converted_order_number: event === "converted" ? cleanText(payload.orderNumber, 80) : current?.converted_order_number || null,
-        customer_name: cleanText(payload.contact?.name, 160),
-        customer_email: cleanText(payload.contact?.email, 180).toLowerCase(),
-        customer_phone: cleanText(payload.contact?.phone, 80)
-      }])
+      body: JSON.stringify([sessionUpdate])
     });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error(error);
+    console.error("Aktivitet kunne ikke gemmes.", error);
     return NextResponse.json({ ok: false });
   }
 }
