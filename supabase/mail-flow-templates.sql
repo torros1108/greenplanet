@@ -46,7 +46,7 @@ Levering:
 
 Hvis gaven sendes direkte til modtageren, lægger vi ikke prisbilag i pakken. Eventuelle korttekster følger de enkelte gaver.
 
-Du får en ny besked, når ordren er pakket eller sendt.
+Vi kontakter dig, hvis der er spørgsmål til levering, korttekst eller produkter.
 
 Kærlig hilsen
 Greenplanet'

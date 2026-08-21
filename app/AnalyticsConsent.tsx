@@ -69,7 +69,7 @@ export default function AnalyticsConsent() {
     <div className="cookie-consent" role="dialog" aria-live="polite" aria-label="Cookievalg">
       <div>
         <strong>Cookies og statistik</strong>
-        <p>Vi bruger nødvendige funktioner til kurv og checkout. Med dit samtykke bruger vi også statistik til at forstå besøg og kurve.</p>
+        <p>Vi bruger nødvendige funktioner til kurv og checkout. Med dit samtykke bruger vi statistik til at forstå, hvilke sider og kurve der fungerer bedst.</p>
       </div>
       <div className="cookie-consent-actions">
         <button className="btn" onClick={() => choose("declined")}>Kun nødvendige</button>

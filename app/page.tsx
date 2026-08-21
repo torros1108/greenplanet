@@ -1092,8 +1092,8 @@ export default function Home() {
                   <span className="eyebrow">Gaveæsker til baby, barsel og ny mor</span>
                   <h2 className="big-title">Barsels- og babygaver i flotte gaveæsker</h2>
                   <p className="lead">
-                    Smukke gaveæsker til nye familier, nybagte mødre og de første små øjeblikke. Håndplukket fra små brands
-                    og pakket pænt, så gaven kan sendes direkte til den, du vil glæde.
+                    Vælg en færdig gaveæske eller byg din egen med udvalgte produkter til baby, barsel og ny mor.
+                    Vi pakker gaven pænt, lægger kortet ved og sender direkte til modtageren uden prisbilag.
                   </p>
                   <div className="actions">
                     <button className="btn primary" onClick={() => setView("giftboxes")}>Find en gaveæske</button>
@@ -1164,8 +1164,8 @@ export default function Home() {
                   <span className="eyebrow">Find den rigtige gave</span>
                   <h2 id="gift-guide-title">Barselsgaver, babygaver og personlige gaveæsker</h2>
                   <p>
-                    Greenplanet er til dig, der vil sende en gave, som føles gennemtænkt uden at være svær at vælge.
-                    Vi pakker gaveæsker med produkter til baby, barsel, nybagte mødre og små øjeblikke med ro.
+                    Greenplanet er til dig, der vil sende en barselsgave eller babygave uden at skulle sammensætte alt selv.
+                    Vælg en færdig gaveæske eller byg din egen med produkter, personlig hilsen og direkte levering.
                   </p>
                 </div>
                 <div className="seo-gift-grid">
@@ -1189,7 +1189,7 @@ export default function Home() {
                     <h3>Gaveæske til nybagt mor</h3>
                     <p>
                       Til den gravide eller nybagte mor kan du vælge en gaveæske med naturlig hudpleje, rosenvand,
-                      olier og små produkter, der giver en rolig pause i en ny hverdag.
+                      olier og produkter, der passer til graviditet, barsel og lidt ekstra pleje i hverdagen.
                     </p>
                     <button className="text-link" onClick={() => setView("giftboxes")}>Find gave til ny mor</button>
                   </article>
@@ -1208,7 +1208,7 @@ export default function Home() {
 
           {view === "giftboxes" && (
             <section>
-              <div className="section-head"><h2>Gaveæsker</h2><p>Købsklare gaver til baby, barsel og små øjeblikke med ekstra omsorg.</p></div>
+              <div className="section-head"><h2>Gaveæsker</h2><p>Færdige gaveæsker med udvalgte produkter, gavekasse og mulighed for personlig korttekst.</p></div>
               <div className="grid">
                 {giftboxCatalog.map((giftbox) => {
                   const items = giftboxProducts(giftbox);
@@ -1350,6 +1350,7 @@ export default function Home() {
             <section>
               <div className="section-head">
                 <h2>Byg selv</h2>
+                <p>Vælg produkter, skriv en personlig hilsen og se prisen på produkter, gaveæske og fragt, før du går til betaling.</p>
                 <div className="filters">
                   {occasions.map((item) => <button className={`chip ${occasion === item ? "active" : ""}`} key={item} onClick={() => setOccasion(item)}>{item}</button>)}
                 </div>
