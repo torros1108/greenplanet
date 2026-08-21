@@ -484,14 +484,15 @@ export default function AdminPage() {
   }
 
   async function deleteCustomer(customer: Customer) {
-    if (!window.confirm("Vil du slette kunden? Kundens persondata fjernes fra kundeprofil og ordreoversigt, men ordrelinjer beholdes.")) return;
+    if (!window.confirm("Vil du slette kunden? Ubetalte ordrer slettes helt. Betalte, pakkede og sendte ordrer beholdes, men kundens persondata anonymiseres.")) return;
     setError("");
 
     const params = new URLSearchParams({
       id: customer.id || "",
       email: customer.email || "",
       phone: customer.phone || "",
-      name: customer.name || ""
+      name: customer.name || "",
+      orderIds: customer.orders.map((order) => order.id).join(",")
     });
     const response = await fetch(`/api/admin/customers?${params.toString()}`, { method: "DELETE" });
     if (!response.ok) {
@@ -800,7 +801,9 @@ function ActivityDetail({ activity, onDelete }: { activity: AdminActivity; onDel
         <div className="activity-status-pill">{status}</div>
       </div>
       <div className="admin-danger-row">
-        <button className="btn danger" onClick={() => onDelete(activity.session_id)}>Slet aktivitet</button>
+        <button className="btn danger" onClick={() => onDelete(activity.session_id)}>
+          {hasCart(activity) && !activity.converted_order_number ? "Slet kurvsession" : "Slet aktivitet"}
+        </button>
       </div>
 
       <div className="admin-summary-row">

@@ -35,6 +35,10 @@ function orderMatchQuery(payload: CustomerPayload) {
   return parts.length ? `or=(${parts.map(encodeURIComponent).join(",")})` : "";
 }
 
+function isPaidOrHandledStatus(status: string) {
+  return ["paid", "packed", "sent"].includes(status);
+}
+
 export async function GET() {
   try {
     if (!(await requireAdmin())) {
@@ -116,6 +120,10 @@ export async function DELETE(request: Request) {
     const email = searchParams.get("email") || "";
     const phone = searchParams.get("phone") || "";
     const name = searchParams.get("name") || "";
+    const orderIds = (searchParams.get("orderIds") || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
 
     if (id) {
       await supabaseAdminRequest(`customers?id=eq.${encodeURIComponent(id)}`, {
@@ -130,19 +138,38 @@ export async function DELETE(request: Request) {
     }
 
     const match = orderMatchQuery({ originalEmail: email, originalPhone: phone, originalName: name });
-    if (match) {
-      await supabaseAdminRequest(`orders?${match}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          customer_name: "Slettet kunde",
-          customer_email: "",
-          customer_phone: "",
-          customer_address: "",
-          customer_postcode: "",
-          customer_city: "",
-          create_customer_profile: false
-        })
-      });
+    if (orderIds.length || match) {
+      const matchingOrders = orderIds.length
+        ? await supabaseAdminRequest<Array<{ id: string; status: string }>>(
+            `orders?select=id,status&id=in.(${orderIds.join(",")})`
+          )
+        : await supabaseAdminRequest<Array<{ id: string; status: string }>>(
+            `orders?select=id,status&${match}`
+          );
+      const ordersToKeep = matchingOrders.filter((order) => isPaidOrHandledStatus(order.status));
+      const ordersToDelete = matchingOrders.filter((order) => !isPaidOrHandledStatus(order.status));
+
+      if (ordersToDelete.length) {
+        await supabaseAdminRequest(`orders?id=in.(${ordersToDelete.map((order) => order.id).join(",")})`, {
+          method: "DELETE",
+          headers: { Prefer: "return=minimal" }
+        });
+      }
+
+      if (ordersToKeep.length) {
+        await supabaseAdminRequest(`orders?id=in.(${ordersToKeep.map((order) => order.id).join(",")})`, {
+          method: "PATCH",
+          body: JSON.stringify({
+            customer_name: "Slettet kunde",
+            customer_email: "",
+            customer_phone: "",
+            customer_address: "",
+            customer_postcode: "",
+            customer_city: "",
+            create_customer_profile: false
+          })
+        });
+      }
     }
 
     return NextResponse.json({ ok: true });
