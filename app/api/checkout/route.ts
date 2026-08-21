@@ -46,6 +46,39 @@ function amountInOre(value: number | string) {
   return Math.max(0, Math.round((Number(value) || 0) * 100));
 }
 
+function clean(value: unknown) {
+  return String(value || "").trim();
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function validateOrder(payload: OrderInput) {
+  const errors: string[] = [];
+  const deliveryMethod = clean(payload.delivery?.method);
+  const isPickup = deliveryMethod === "Afhentes / aftales";
+
+  if (!payload.lines?.length) errors.push("Kurven er tom");
+  if (!clean(payload.customer?.name)) errors.push("Bestillers navn mangler");
+  if (!isValidEmail(clean(payload.customer?.email))) errors.push("Gyldig e-mail mangler");
+  if (!clean(payload.customer?.phone)) errors.push("Telefonnummer mangler");
+  if (!clean(payload.customer?.address)) errors.push("Bestillers adresse mangler");
+  if (!clean(payload.customer?.postcode)) errors.push("Bestillers postnummer mangler");
+  if (!clean(payload.customer?.city)) errors.push("Bestillers by mangler");
+
+  if (!isPickup) {
+    if (!clean(payload.delivery?.recipientName)) errors.push("Modtager mangler");
+    if (!clean(payload.delivery?.address)) errors.push("Leveringsadresse mangler");
+    if (!clean(payload.delivery?.postcode)) errors.push("Leveringspostnummer mangler");
+    if (!clean(payload.delivery?.city)) errors.push("Leveringsby mangler");
+  } else if (!clean(payload.delivery?.recipientName)) {
+    errors.push("Kontaktperson til afhentning mangler");
+  }
+
+  return errors;
+}
+
 function orderBody(orderNumber: string, payload: OrderInput, includeCustomerProfile = true) {
   return {
     order_number: orderNumber,
@@ -93,8 +126,9 @@ export async function POST(request: Request) {
     }
 
     const payload = (await request.json()) as OrderInput;
-    if (!payload.lines?.length) {
-      return NextResponse.json({ error: "Kurven er tom" }, { status: 400 });
+    const validationErrors = validateOrder(payload);
+    if (validationErrors.length) {
+      return NextResponse.json({ error: validationErrors[0], errors: validationErrors }, { status: 400 });
     }
 
     const orderNumber = `GP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(1000 + Math.random() * 9000)}`;

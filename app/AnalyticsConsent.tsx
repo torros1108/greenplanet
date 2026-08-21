@@ -35,6 +35,11 @@ export function hasAnalyticsConsent() {
   return window.localStorage.getItem(consentStorageKey) === "accepted";
 }
 
+export function openCookieSettings() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event("greenplanet-open-cookie-settings"));
+}
+
 export default function AnalyticsConsent() {
   const [choice, setChoice] = useState<string | null>(null);
 
@@ -42,6 +47,13 @@ export default function AnalyticsConsent() {
     const stored = window.localStorage.getItem(consentStorageKey);
     setChoice(stored);
     if (stored === "accepted") loadAnalytics();
+
+    function openSettings() {
+      setChoice(null);
+    }
+
+    window.addEventListener("greenplanet-open-cookie-settings", openSettings);
+    return () => window.removeEventListener("greenplanet-open-cookie-settings", openSettings);
   }, []);
 
   function choose(nextChoice: "accepted" | "declined") {

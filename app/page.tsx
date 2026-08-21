@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { hasAnalyticsConsent } from "./AnalyticsConsent";
+import { hasAnalyticsConsent, openCookieSettings } from "./AnalyticsConsent";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 
 const boxPrice = 49;
@@ -131,6 +131,10 @@ type SupabasePageRow = {
 
 function money(value: number) {
   return `${Math.round(value)} kr.`;
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 function margin(product: Product) {
@@ -377,6 +381,7 @@ export default function Home() {
   const [useCustomerAddressForDelivery, setUseCustomerAddressForDelivery] = useState(true);
   const [createCustomerProfile, setCreateCustomerProfile] = useState(false);
   const [shipping, setShipping] = useState("");
+  const [checkoutErrors, setCheckoutErrors] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState("");
@@ -879,10 +884,35 @@ export default function Home() {
     setUseCustomerAddressForDelivery(true);
     setCreateCustomerProfile(false);
     setShipping("");
+    setCheckoutErrors([]);
+  }
+
+  function validateCheckout() {
+    const errors: string[] = [];
+
+    if (!cart.length) errors.push("Kurven er tom.");
+    if (!customerName.trim()) errors.push("Skriv bestillers navn.");
+    if (!isValidEmail(customerEmail)) errors.push("Skriv en gyldig e-mail til ordrebekræftelse.");
+    if (!customerPhone.trim()) errors.push("Skriv telefonnummer, så vi kan kontakte dig ved spørgsmål.");
+    if (!customerAddress.trim()) errors.push("Skriv bestillers adresse.");
+    if (!customerPostcode.trim()) errors.push("Skriv bestillers postnummer.");
+    if (!customerCity.trim()) errors.push("Skriv bestillers by.");
+
+    if (!isPickup) {
+      if (!effectiveDeliveryName.trim()) errors.push(isDirectDelivery ? "Skriv modtagers navn." : "Skriv navn på den, der skal modtage pakken.");
+      if (!effectiveDeliveryAddress.trim()) errors.push(isDirectDelivery ? "Skriv modtagers adresse." : "Skriv leveringsadresse.");
+      if (!effectiveDeliveryPostcode.trim()) errors.push("Skriv leveringspostnummer.");
+      if (!effectiveDeliveryCity.trim()) errors.push("Skriv leveringsby.");
+    }
+
+    if (isPickup && !effectiveDeliveryName.trim()) errors.push("Skriv kontaktperson til afhentning/aftale.");
+
+    setCheckoutErrors(errors);
+    return errors.length === 0;
   }
 
   async function submitOrder() {
-    if (!cart.length) return;
+    if (!validateCheckout()) return;
 
     const shippingLine: CartLine | null = shippingFee > 0 ? {
       id: `shipping-${Date.now()}`,
@@ -1555,9 +1585,17 @@ export default function Home() {
                 </div>
                 <div className="checkout-section">
                   <h3><span>3</span> Bekræft</h3>
-                  <p className="checkout-help">Du kan se produkter, gaveæske/kasse, kort, fragt og samlet total, før du går til sikker betaling. Kortteksterne følger de enkelte gaver.</p>
+                  <p className="checkout-help">Tjek ordreoversigten, levering og kontaktoplysninger. Når du klikker videre, oprettes ordren og du sendes til Stripe for sikker kortbetaling.</p>
                 </div>
-                <button className="btn primary" onClick={submitOrder}>
+                {!!checkoutErrors.length && (
+                  <div className="checkout-errors" role="alert">
+                    <strong>Vi mangler lidt før betaling</strong>
+                    <ul>
+                      {checkoutErrors.map((error) => <li key={error}>{error}</li>)}
+                    </ul>
+                  </div>
+                )}
+                <button className="btn primary" disabled={!cart.length} onClick={submitOrder}>
                   Gå til sikker betaling
                 </button>
               </div>
@@ -1585,7 +1623,7 @@ export default function Home() {
                 </div>
                 <div className="checkout-note">
                   <strong>Sikker betaling</strong>
-                  <span>Din ordre gemmes, og du sendes videre til Stripe for at betale sikkert med kort.</span>
+                  <span>Du betaler sikkert med kort hos Stripe. Greenplanet behandler først ordren, når betalingen er gennemført.</span>
                 </div>
               </div>
             </section>
@@ -1695,6 +1733,7 @@ export default function Home() {
               <button onClick={() => setView("terms")}>Handelsbetingelser</button>
               <button onClick={() => setView("privacy")}>Privatlivspolitik</button>
               <button onClick={() => setView("cookies")}>Cookiepolitik</button>
+              <button onClick={openCookieSettings}>Cookieindstillinger</button>
             </div>
           </div>
         </footer>
