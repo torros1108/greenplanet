@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { giftboxes, initialProducts, type Product } from "@/lib/data";
+import { giftboxes, initialProducts, productSpecs, type Product } from "@/lib/data";
 import { AddGiftboxToCartButton } from "./AddGiftboxToCartButton";
 
 const boxPrice = 49;
@@ -77,6 +77,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
 
   const items = giftboxItems(giftbox.productIds);
   const total = items.reduce((sum, product) => sum + product.price, 0) + boxPrice;
+  const productsTotal = items.reduce((sum, product) => sum + product.price, 0);
   const image = items.find((item) => item.image)?.image;
   const giftboxStructuredData = {
     "@context": "https://schema.org",
@@ -187,6 +188,10 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
                   </Link>
                 ))}
               </div>
+              <div className="giftbox-media-note">
+                <strong>{items.length} produkter i æsken</strong>
+                <span>Indhold {money(productsTotal)} · gaveæske {money(boxPrice)}</span>
+              </div>
             </div>
             <div className="product-detail-info panel">
               <div className="meta">{giftbox.category} · {items.length} produkter</div>
@@ -218,15 +223,47 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
                   {giftbox.details.map((detail) => <span key={detail}>{detail}</span>)}
                 </div>
               </div>
-              <h3 className="included-title">Det er i æsken</h3>
+              <div className="included-title-row">
+                <div>
+                  <h3 className="included-title">Indhold i gaveæsken</h3>
+                  <p>Tryk på et produkt for at se alle detaljer, ingredienser og varianter.</p>
+                </div>
+                <strong>{money(productsTotal)}</strong>
+              </div>
               <div className="included-products">
                 {items.map((product) => (
                   <Link className="included-product" href={`/products/${product.id}`} key={product.id}>
-                    <span>{product.brand}</span>
-                    <strong>{product.title}</strong>
-                    <em>{money(product.price)}</em>
+                    <span className="included-product-image">
+                      {product.image ? <img src={product.image} alt={product.title} /> : <span className={`shape ${product.shape}`} />}
+                    </span>
+                    <span className="included-product-copy">
+                      <span className="included-product-brand">{product.brand}</span>
+                      <strong>{product.title}</strong>
+                      <small>{product.description}</small>
+                      <span className="included-product-specs">
+                        {productSpecs(product).slice(0, 2).map((spec) => (
+                          <em key={`${product.id}-${spec.label}`}>{spec.label}: {spec.value}</em>
+                        ))}
+                      </span>
+                    </span>
+                    <span className="included-product-price">{money(product.price)}</span>
                   </Link>
                 ))}
+                <div className="included-product included-product-box" aria-label="Gaveæske og pakning">
+                  <span className="included-product-image giftbox-pack-icon">
+                    <span />
+                  </span>
+                  <span className="included-product-copy">
+                    <span className="included-product-brand">Greenplanet</span>
+                    <strong>Gaveæske og pakning</strong>
+                    <small>{giftbox.packing}</small>
+                    <span className="included-product-specs">
+                      <em>Kort: Personlig hilsen kan tilføjes</em>
+                      <em>Levering: Kan sendes direkte</em>
+                    </span>
+                  </span>
+                  <span className="included-product-price">{money(boxPrice)}</span>
+                </div>
               </div>
               <div className="actions">
                 <AddGiftboxToCartButton id={giftbox.id} title={giftbox.title} note={giftbox.note} items={items} total={total} />
