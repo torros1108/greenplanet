@@ -1262,7 +1262,7 @@ export default function Home() {
                         <div className="card-actions">
                           <button className="btn" onClick={() => openProductDetail(card.product, card.variant)}>Se detaljer</button>
                           <button
-                            className="icon-add"
+                            className="btn primary cart-cta"
                             onClick={() => {
                               if (card.variant || card.product.variants?.length) {
                                 openProductDetail(card.product, card.variant);
@@ -1272,7 +1272,7 @@ export default function Home() {
                             }}
                             aria-label={card.variant || card.product.variants?.length ? "Vælg variant" : "Læg i kurv"}
                           >
-                            +
+                            {card.variant || card.product.variants?.length ? "Vælg farve" : "Læg i kurv"}
                           </button>
                         </div>
                       </div>
