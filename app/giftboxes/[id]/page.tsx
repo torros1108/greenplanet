@@ -226,43 +226,42 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
               <div className="included-title-row">
                 <div>
                   <h3 className="included-title">Indhold i gaveæsken</h3>
-                  <p>Tryk på et produkt for at se alle detaljer, ingredienser og varianter.</p>
+                  <p>Produkterne er valgt, så æsken føles samlet, brugbar og klar til at give videre.</p>
                 </div>
                 <strong>{money(productsTotal)}</strong>
               </div>
               <div className="included-products">
-                {items.map((product) => (
+                {items.map((product, index) => {
+                  const facts = productSpecs(product).slice(0, 2);
+                  return (
                   <Link className="included-product" href={`/products/${product.id}`} key={product.id}>
                     <span className="included-product-image">
                       {product.image ? <img src={product.image} alt={product.title} /> : <span className={`shape ${product.shape}`} />}
                     </span>
                     <span className="included-product-copy">
-                      <span className="included-product-brand">{product.brand}</span>
+                      <span className="included-product-brand">0{index + 1} · {product.brand}</span>
                       <strong>{product.title}</strong>
                       <small>{product.description}</small>
-                      <span className="included-product-specs">
-                        {productSpecs(product).slice(0, 2).map((spec) => (
-                          <em key={`${product.id}-${spec.label}`}>{spec.label}: {spec.value}</em>
+                      <span className="included-product-facts">
+                        {facts.map((spec) => (
+                          <span key={`${product.id}-${spec.label}`}>
+                            <b>{spec.label}</b>
+                            <em>{spec.value}</em>
+                          </span>
                         ))}
                       </span>
                     </span>
                     <span className="included-product-price">{money(product.price)}</span>
                   </Link>
-                ))}
-                <div className="included-product included-product-box" aria-label="Gaveæske og pakning">
-                  <span className="included-product-image giftbox-pack-icon">
-                    <span />
-                  </span>
-                  <span className="included-product-copy">
-                    <span className="included-product-brand">Greenplanet</span>
-                    <strong>Gaveæske og pakning</strong>
-                    <small>{giftbox.packing}</small>
-                    <span className="included-product-specs">
-                      <em>Kort: Personlig hilsen kan tilføjes</em>
-                      <em>Levering: Kan sendes direkte</em>
-                    </span>
-                  </span>
-                  <span className="included-product-price">{money(boxPrice)}</span>
+                  );
+                })}
+                <div className="giftbox-packaging-summary">
+                  <div>
+                    <span>Pakning</span>
+                    <strong>Greenplanet gaveæske</strong>
+                    <p>{giftbox.packing}</p>
+                  </div>
+                  <em>{money(boxPrice)}</em>
                 </div>
               </div>
               <div className="actions">
