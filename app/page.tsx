@@ -1348,15 +1348,30 @@ export default function Home() {
 
           {view === "builder" && (
             <section>
-              <div className="section-head">
-                <h2>Byg selv</h2>
-                <p>Vælg produkter, skriv en personlig hilsen og se prisen på produkter, gaveæske og fragt, før du går til betaling.</p>
+              <div className="section-head builder-head">
+                <div>
+                  <span className="eyebrow">Personlig gaveæske</span>
+                  <h2>Byg selv</h2>
+                  <p>Vælg produkterne, skriv hilsenen og se gaveæskens pris, før du lægger den i kurven.</p>
+                </div>
                 <div className="filters">
                   {occasions.map((item) => <button className={`chip ${occasion === item ? "active" : ""}`} key={item} onClick={() => setOccasion(item)}>{item}</button>)}
                 </div>
               </div>
+              <div className="builder-steps" aria-label="Byg selv trin">
+                <span className={selectedBuilderItems.length ? "done" : "active"}>1. Vælg produkter</span>
+                <span className={message.trim() ? "done" : selectedBuilderItems.length ? "active" : ""}>2. Skriv kort</span>
+                <span className={selectedBuilderItems.length && !missingBuilderVariant ? "active" : ""}>3. Læg i kurv</span>
+              </div>
               <div className="builder">
-                <aside className="panel sticky">
+                <aside className="panel sticky builder-preview-panel">
+                  <div className="builder-panel-head">
+                    <div>
+                      <span className="eyebrow">Din gaveæske</span>
+                      <h3>{selectedBuilderItems.length ? `${selectedBuilderItems.length} valgte produkter` : "Klar til at blive fyldt"}</h3>
+                    </div>
+                    <strong>{money(customGiftboxTotal)}</strong>
+                  </div>
                   <div className="box-preview">
                     <div className="selected-items">
                       {selectedBuilderItems.length ? selectedBuilderItems.map(({ product, item, selectedVariant }) => (
@@ -1366,7 +1381,7 @@ export default function Home() {
                       )) : (
                         <div className="builder-empty-preview">
                           <strong>Vælg produkter</strong>
-                          <span>De vises her i gaveæsken</span>
+                          <span>De vises her som indhold i æsken</span>
                         </div>
                       )}
                     </div>
@@ -1374,9 +1389,12 @@ export default function Home() {
                   </div>
                   <div className="summary">
                     <div className="builder-selected-list">
-                      <strong>Valgt til gaveæsken</strong>
+                      <div className="builder-list-head">
+                        <strong>Indhold i æsken</strong>
+                        <span>{selectedBuilderItems.length}/6 produkter</span>
+                      </div>
                       {selectedBuilderItems.length ? selectedBuilderItems.map(({ product, variants, selectedVariant, item }) => (
-                        <div className="builder-selected-product" key={product.id}>
+                        <div className={`builder-selected-product ${variants.length > 0 && !selectedVariant ? "needs-variant" : ""}`} key={product.id}>
                           <div className="builder-selected-thumb">
                             {item.image ? <img alt={selectedVariant ? `${product.title} - ${selectedVariant.title}` : product.title} src={item.image} /> : <span>{product.brand.slice(0, 1)}</span>}
                             {selectedVariant && <span className="builder-variant-dot" style={{ background: variantColor(selectedVariant) || undefined }} />}
@@ -1384,6 +1402,7 @@ export default function Home() {
                           <div>
                             <span>{product.brand}</span>
                             <b>{product.title}</b>
+                            {variants.length > 0 && !selectedVariant && <small>Vælg farve</small>}
                             {variants.length > 0 && (
                               <label className="builder-variant-select">
                                 <span>Farve</span>
@@ -1411,7 +1430,10 @@ export default function Home() {
                         <p>Vælg op til 6 produkter fra listen.</p>
                       )}
                     </div>
-                    <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Korttekst..." />
+                    <label className="builder-card-message">
+                      <span>Korttekst</span>
+                      <textarea value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Skriv hilsen på kortet..." />
+                    </label>
                     <div className="builder-price-breakdown">
                       <strong>Prisopdeling</strong>
                       {selectedBuilderItems.map(({ product, selectedVariant, item }) => (
@@ -1430,14 +1452,22 @@ export default function Home() {
                     </button>
                   </div>
                 </aside>
+                <div className="builder-mobile-total">
+                  <div>
+                    <span>Din gaveæske</span>
+                    <strong>{selectedBuilderItems.length} produkter · {money(customGiftboxTotal)}</strong>
+                  </div>
+                  <button className="btn primary" disabled={missingBuilderVariant || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
+                    {missingBuilderVariant ? "Vælg farve" : "Læg i kurv"}
+                  </button>
+                </div>
                 <div className="grid builder-product-grid">
                   {filteredBuilderProducts.map((product) => (
-                    <article className="card builder-product-card" key={product.id}>
+                    <article className={`card builder-product-card ${selected.includes(product.id) ? "selected" : ""}`} key={product.id}>
                       <div className="product-visual"><ProductVisual product={product} /></div>
                       <div className="card-body">
                         <div className="meta">{product.brand}</div>
                         <h3>{product.title}</h3>
-                        <p>{product.description}</p>
                         <div className="buy-row">
                           <span className="price">{money(product.price)}</span>
                           <button

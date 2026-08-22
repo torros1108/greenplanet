@@ -17,6 +17,13 @@ function giftboxItems(productIds: string[]) {
     .filter((product): product is Product => Boolean(product));
 }
 
+function visibleProductCount() {
+  return initialProducts.reduce((count, product) => {
+    const variantCount = product.variants?.filter((variant) => variant.status !== "archived").length || 0;
+    return count + (variantCount || 1);
+  }, 0);
+}
+
 function absoluteUrl(url?: string) {
   if (!url) return `${siteUrl}/brand/greenplanet-logo-mint.png`;
   if (url.startsWith("http")) return url;
@@ -158,7 +165,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
         <nav className="nav">
           <Link href="/">Forside<span>01</span></Link>
           <Link className="active" href="/#giftboxes">Gaveæsker<span>{giftboxes.length}</span></Link>
-          <Link href="/#products">Produkter<span>{initialProducts.length}</span></Link>
+          <Link href="/#products">Produkter<span>{visibleProductCount()}</span></Link>
           <Link href="/#builder">Byg selv<span>03</span></Link>
         </nav>
         <p className="side-note">Naturlige barselsgaver, babygaver og wellnessgaver fra små brands.</p>
