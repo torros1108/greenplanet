@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import AnalyticsConsent from "./AnalyticsConsent";
 import "./styles.css";
 import "./giftbox-detail.css";
+import "./premium.css";
 
 const siteUrl = "https://www.greenplanet.dk";
 const structuredData = {
