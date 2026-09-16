@@ -11,7 +11,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1
-    }
+    },
+    ...[
+      "kontakt",
+      "levering",
+      "returnering",
+      "juridisk",
+      "handelsbetingelser",
+      "privatlivspolitik",
+      "cookiepolitik"
+    ].map((path) => ({
+      url: `${siteUrl}/${path}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.5
+    }))
   ];
 
   const productRoutes = initialProducts

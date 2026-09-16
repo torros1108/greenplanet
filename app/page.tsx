@@ -389,6 +389,7 @@ export default function Home() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [selectedBuilderVariants, setSelectedBuilderVariants] = useState<Record<string, string>>({});
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const categories = useMemo(() => ["Alle", ...Array.from(new Set(products.map((product) => product.category)))], [products]);
   const occasions = useMemo(
@@ -738,6 +739,11 @@ export default function Home() {
     return () => window.removeEventListener("hashchange", applyHash);
   }, []);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    setMobileMenuOpen(false);
+  }, [view, selectedProductId]);
+
   function giftboxProducts(giftbox: Giftbox) {
     return giftbox.productIds.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[];
   }
@@ -1067,7 +1073,25 @@ export default function Home() {
     <main className="app-shell">
       <aside className="sidebar">
         <div className="brand"><GreenplanetLogo /></div>
-        <nav className="nav">
+        <button
+          className="mobile-cart-shortcut"
+          type="button"
+          onClick={() => setView("orders")}
+          aria-label={`Åbn kurv med ${cart.length} ${cart.length === 1 ? "gave" : "gaver"}`}
+        >
+          Kurv <span>{cart.length}</span>
+        </button>
+        <button
+          className={`mobile-nav-toggle ${mobileMenuOpen ? "open" : ""}`}
+          type="button"
+          aria-expanded={mobileMenuOpen}
+          aria-controls="shop-navigation"
+          aria-label={mobileMenuOpen ? "Luk menu" : "Åbn menu"}
+          onClick={() => setMobileMenuOpen((current) => !current)}
+        >
+          <span /><span /><span />
+        </button>
+        <nav className={`nav ${mobileMenuOpen ? "open" : ""}`} id="shop-navigation">
           {[
             ["home", "Forside", "01"],
             ["giftboxes", "Gaveæsker", String(giftboxCatalog.length)],
@@ -1724,10 +1748,15 @@ export default function Home() {
               CVR {companyInfo.cvr}<br />
               {companyInfo.address}, {companyInfo.postcode} {companyInfo.city}
             </p>
-            <div className="social-icons" aria-label="Sociale medier">
-              <a href="#" aria-label="Instagram">ig</a>
-              <a href="#" aria-label="Facebook">fb</a>
-              <a href="#" aria-label="E-mail">@</a>
+            <div className="social-icons" aria-label="Kontakt">
+              <a
+                className="instagram-link"
+                href="https://www.instagram.com/greenplanet.dk/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Greenplanet på Instagram"
+              >ig</a>
+              <a href={`mailto:${companyInfo.email}`} aria-label={`Send e-mail til ${companyInfo.email}`}>@</a>
             </div>
             <form className="newsletter-form" onSubmit={subscribeNewsletter}>
               <span>Nyhedsbrev</span>
