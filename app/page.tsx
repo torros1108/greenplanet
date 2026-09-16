@@ -1532,6 +1532,10 @@ export default function Home() {
                     {missingBuilderVariant ? "Vælg farve" : editingCartLineId ? "Gem ændringer" : "Læg i kurv"}
                   </button>
                 </div>
+                <div className="builder-catalog-head">
+                  <div><span className="section-eyebrow">Udvalgte produkter</span><h3>Vælg indhold</h3></div>
+                  <p>Tryk på Vælg for at lægge et produkt i gaveæsken. Du kan vælge op til seks produkter.</p>
+                </div>
                 <div className="grid builder-product-grid">
                   {filteredBuilderProducts.map((product) => (
                     <article className={`card builder-product-card ${selected.includes(product.id) ? "selected" : ""}`} key={product.id}>
