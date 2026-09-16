@@ -924,7 +924,10 @@ export default function Home() {
   }
 
   async function submitOrder() {
-    if (!validateCheckout()) return;
+    if (!validateCheckout()) {
+      window.setTimeout(() => document.querySelector(".checkout-errors")?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+      return;
+    }
 
     const shippingLine: CartLine | null = shippingFee > 0 ? {
       id: `shipping-${Date.now()}`,
@@ -1603,12 +1606,12 @@ export default function Home() {
                 <div className="checkout-section">
                   <h3><span>1</span> Bestiller og fakturaadresse</h3>
                   <div className="form-grid">
-                    <input value={customerName} onChange={(event) => setCustomerName(event.target.value)} placeholder="Navn eller firma" />
-                    <input value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} placeholder="E-mail" />
-                    <input value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} placeholder="Telefon" />
-                    <input className="wide-field" value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="Bestillers adresse" />
-                    <input value={customerPostcode} onChange={(event) => setCustomerPostcode(event.target.value)} placeholder="Postnr." />
-                    <input value={customerCity} onChange={(event) => setCustomerCity(event.target.value)} placeholder="By" />
+                    <label className="form-field"><span>Navn eller firma</span><input value={customerName} onChange={(event) => setCustomerName(event.target.value)} placeholder="Navn eller firma" /></label>
+                    <label className="form-field"><span>E-mail</span><input type="email" value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} placeholder="navn@email.dk" /></label>
+                    <label className="form-field"><span>Telefon</span><input type="tel" value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} placeholder="Telefonnummer" /></label>
+                    <label className="form-field wide-field"><span>Fakturaadresse</span><input value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="Vej og husnummer" /></label>
+                    <label className="form-field"><span>Postnummer</span><input inputMode="numeric" value={customerPostcode} onChange={(event) => setCustomerPostcode(event.target.value)} placeholder="Postnr." /></label>
+                    <label className="form-field"><span>By</span><input value={customerCity} onChange={(event) => setCustomerCity(event.target.value)} placeholder="By" /></label>
                     <label className="checkbox-row wide-field">
                       <input
                         type="checkbox"
@@ -1622,12 +1625,15 @@ export default function Home() {
                 <div className="checkout-section">
                   <h3><span>2</span> Levering</h3>
                   <div className="form-grid">
-                    <select value={deliveryMethod} onChange={(event) => setDeliveryMethod(event.target.value)}>
-                      <option>Send direkte til modtager</option>
-                      <option>Send til mig</option>
-                      <option>Afhentes / aftales</option>
-                    </select>
-                    {!useBillingAsDelivery && <input value={recipientName} onChange={(event) => setRecipientName(event.target.value)} placeholder={deliveryNameLabel} />}
+                    <label className="form-field wide-field">
+                      <span>Leveringsform</span>
+                      <select value={deliveryMethod} onChange={(event) => setDeliveryMethod(event.target.value)}>
+                        <option>Send direkte til modtager</option>
+                        <option>Send til mig</option>
+                        <option>Afhentes / aftales</option>
+                      </select>
+                    </label>
+                    {!useBillingAsDelivery && <label className="form-field"><span>{deliveryNameLabel}</span><input value={recipientName} onChange={(event) => setRecipientName(event.target.value)} placeholder={deliveryNameLabel} /></label>}
                     {deliveryMethod === "Send til mig" && (
                       <label className="checkbox-row wide-field">
                         <input
@@ -1638,10 +1644,10 @@ export default function Home() {
                         <span>Brug bestillers adresse som leveringsadresse</span>
                       </label>
                     )}
-                    {!isPickup && !useBillingAsDelivery && <input className="wide-field" value={recipientAddress} onChange={(event) => setRecipientAddress(event.target.value)} placeholder={deliveryAddressLabel} />}
-                    {!isPickup && !useBillingAsDelivery && <input value={recipientPostcode} onChange={(event) => setRecipientPostcode(event.target.value)} placeholder="Postnr." />}
-                    {!isPickup && !useBillingAsDelivery && <input value={recipientCity} onChange={(event) => setRecipientCity(event.target.value)} placeholder="By" />}
-                    <input className="wide-field" value={deliveryDate} onChange={(event) => setDeliveryDate(event.target.value)} placeholder={isPickup ? "Ønsket afhentningsdato" : "Ønsket leveringsdato"} />
+                    {!isPickup && !useBillingAsDelivery && <label className="form-field wide-field"><span>{deliveryAddressLabel}</span><input value={recipientAddress} onChange={(event) => setRecipientAddress(event.target.value)} placeholder="Vej og husnummer" /></label>}
+                    {!isPickup && !useBillingAsDelivery && <label className="form-field"><span>Postnummer</span><input inputMode="numeric" value={recipientPostcode} onChange={(event) => setRecipientPostcode(event.target.value)} placeholder="Postnr." /></label>}
+                    {!isPickup && !useBillingAsDelivery && <label className="form-field"><span>By</span><input value={recipientCity} onChange={(event) => setRecipientCity(event.target.value)} placeholder="By" /></label>}
+                    <label className="form-field wide-field"><span>{isPickup ? "Ønsket afhentningsdato" : "Ønsket leveringsdato"}</span><input type="date" min={new Date().toISOString().slice(0, 10)} value={deliveryDate} onChange={(event) => setDeliveryDate(event.target.value)} /></label>
                   </div>
                   <p className="checkout-help">
                     {isDirectDelivery
