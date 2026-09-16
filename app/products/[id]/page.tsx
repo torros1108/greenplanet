@@ -10,12 +10,6 @@ function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
 
-function visibleProductCount() {
-  return initialProducts.reduce((count, product) => {
-    const variantCount = product.variants?.filter((variant) => variant.status !== "archived").length || 0;
-    return count + (variantCount || 1);
-  }, 0);
-}
 
 function productGalleryImages(product: (typeof initialProducts)[number]) {
   const images = [product.image, ...(product.images || []), ...(product.variants || []).map((variant) => variant.image)]
@@ -161,10 +155,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </Link>
         </div>
         <nav className="nav">
-          <Link href="/">Forside<span>01</span></Link>
-          <Link href="/#giftboxes">Gaveæsker<span>5</span></Link>
-          <Link className="active" href="/#products">Produkter<span>{visibleProductCount()}</span></Link>
-          <Link href="/#builder">Byg selv<span>03</span></Link>
+          <Link href="/">Forside</Link>
+          <Link href="/#giftboxes">Gaveæsker</Link>
+          <Link className="active" href="/#products">Produkter</Link>
+          <Link href="/#builder">Byg selv</Link>
         </nav>
         <p className="side-note">Naturlige barselsgaver, babygaver og wellnessgaver fra små brands.</p>
       </aside>
@@ -196,6 +190,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <h2>{product.title}</h2>
               <p className="lead">{product.description}</p>
               <div className="detail-price">{money(product.price)}</div>
+              <div className="purchase-panel">
+                <AddToCartButton product={product} />
+                {product.giftbox && <Link className="btn" href="/#builder">Brug i byg-selv</Link>}
+              </div>
               <h3 className="spec-title">Produkt egenskaber</h3>
               <div className="detail-list">
                 {specs.map((spec) => (
@@ -205,10 +203,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div className="tag-row">
                 {product.occasions.map((item) => <span key={item}>{item}</span>)}
               </div>
-              <div className="actions">
-                <AddToCartButton product={product} />
-                {product.giftbox && <Link className="btn" href="/#builder">Brug i byg-selv</Link>}
-              </div>
+
             </div>
           </section>
         </div>
