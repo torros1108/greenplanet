@@ -1011,3 +1011,23 @@ input:focus, textarea:focus, select:focus {
   .builder-section .crate::after { top: 24px; width: 52px; height: 52px; font-size: 28px; }
   .builder-section .summary { padding: 20px 14px 22px; }
 }
+@media (max-width: 640px) {
+  .builder-section { min-width: 0; overflow-x: clip; }
+  .builder-section .builder-head,
+  .builder-section .builder-head > div { width: 100%; min-width: 0; max-width: 100%; }
+  .builder-section .builder-head h2 {
+    max-width: 330px;
+    font-size: 44px;
+    line-height: 1;
+    white-space: normal;
+    overflow-wrap: normal;
+  }
+  .builder-section .filters {
+    min-width: 0;
+    max-width: 100%;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+  .builder-section .filters::-webkit-scrollbar { display: none; }
+  .builder-section .builder-mobile-total { left: auto; right: auto; width: 100%; min-width: 0; }
+}
