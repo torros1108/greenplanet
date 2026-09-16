@@ -1264,9 +1264,12 @@ export default function Home() {
           )}
 
           {view === "giftboxes" && (
-            <section>
-              <div className="section-head"><h2>Gaveæsker</h2><p>Færdige gaveæsker med udvalgte produkter, gavekasse og mulighed for personlig korttekst.</p></div>
-              <div className="grid">
+            <section className="giftbox-section">
+              <div className="section-head">
+                <div><span className="section-eyebrow">Klar til at give</span><h2>Gaveæsker</h2></div>
+                <p>Udvalgte produkter, pakket i Greenplanet-gaveæske med plads til din personlige hilsen.</p>
+              </div>
+              <div className="grid giftbox-grid">
                 {giftboxCatalog.map((giftbox) => {
                   const items = giftboxProducts(giftbox);
                   return (
