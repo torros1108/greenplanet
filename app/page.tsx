@@ -743,6 +743,12 @@ export default function Home() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     setMobileMenuOpen(false);
+
+    if (view === "confirmation" || view === "product" || view === "import") return;
+    const nextHash = view === "home" ? "" : `#${view}`;
+    if (window.location.hash !== nextHash) {
+      window.history.pushState({}, "", nextHash ? `/${nextHash}` : "/");
+    }
   }, [view, selectedProductId]);
 
   function giftboxProducts(giftbox: Giftbox) {
@@ -835,7 +841,7 @@ export default function Home() {
 
     setSelected(selectedIds);
     setSelectedBuilderVariants({ ...variantsFromItems, ...(line.source?.selectedVariants || {}) });
-    setMessage(line.cardText || line.note || "");
+    setMessage(line.cardText || "");
     setEditingCartLineId(line.id);
     setView("builder");
   }
