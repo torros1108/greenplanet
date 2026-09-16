@@ -389,6 +389,7 @@ export default function Home() {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [selectedBuilderVariants, setSelectedBuilderVariants] = useState<Record<string, string>>({});
+  const [editingCartLineId, setEditingCartLineId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const categories = useMemo(() => ["Alle", ...Array.from(new Set(products.map((product) => product.category)))], [products]);
@@ -799,23 +800,28 @@ export default function Home() {
   }
 
   function addCustomGiftboxToCart() {
-    if (missingBuilderVariant) return;
-    setCart((current) => [
-      ...current,
-        {
-          id: `cart-${Date.now()}-custom`,
-          title: "Byg-selv gaveæske",
-          note: message,
-          cardText: message,
-          items: selectedBuilderItems.map(({ item }) => item),
-          total: customGiftboxTotal,
-          source: {
-            type: "custom",
-            selectedIds: selectedBuilderItems.map(({ product }) => product.id),
-            selectedVariants: selectedBuilderVariants
-          }
-      }
-    ]);
+    if (missingBuilderVariant || !selectedBuilderItems.length) return;
+    setCart((current) => {
+      const existing = editingCartLineId ? current.find((line) => line.id === editingCartLineId) : null;
+      const updatedLine: CartLine = {
+        id: existing?.id || `cart-${Date.now()}-custom`,
+        title: existing?.title || "Byg-selv gaveæske",
+        note: message,
+        cardText: message,
+        items: selectedBuilderItems.map(({ item }) => item),
+        total: customGiftboxTotal,
+        source: {
+          type: "custom",
+          selectedIds: selectedBuilderItems.map(({ product }) => product.id),
+          selectedVariants: selectedBuilderVariants
+        }
+      };
+
+      return existing
+        ? current.map((line) => line.id === existing.id ? updatedLine : line)
+        : [...current, updatedLine];
+    });
+    setEditingCartLineId(null);
     setMessage("");
     setView("orders");
   }
@@ -830,7 +836,7 @@ export default function Home() {
     setSelected(selectedIds);
     setSelectedBuilderVariants({ ...variantsFromItems, ...(line.source?.selectedVariants || {}) });
     setMessage(line.cardText || line.note || "");
-    setCart((current) => current.filter((item) => item.id !== line.id));
+    setEditingCartLineId(line.id);
     setView("builder");
   }
 
@@ -1093,14 +1099,14 @@ export default function Home() {
         </button>
         <nav className={`nav ${mobileMenuOpen ? "open" : ""}`} id="shop-navigation">
           {[
-            ["home", "Forside", "01"],
-            ["giftboxes", "Gaveæsker", String(giftboxCatalog.length)],
-            ["products", "Produkter", String(productCards.length)],
-            ["builder", "Byg selv", String(selected.length)],
+            ["home", "Forside", ""],
+            ["giftboxes", "Gaveæsker", ""],
+            ["products", "Produkter", ""],
+            ["builder", "Byg selv", ""],
             ["orders", "Kurv", String(cart.length)]
           ].map(([id, label, count]) => (
             <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id as View)}>
-              {label}<span>{count}</span>
+              {label}{count && <span>{count}</span>}
             </button>
           ))}
         </nav>
@@ -1180,7 +1186,7 @@ export default function Home() {
                   <strong>Wellness</strong><span>Naturlige olier, ler og hudpleje</span>
                 </button>
                 <button className="stat" onClick={() => setView("giftboxes")}>
-                  <strong>{giftboxCatalog.length}</strong><span>kuraterede gaveæsker</span>
+                  <strong>Personlig</strong><span>Byg en gaveæske med din egen hilsen</span>
                 </button>
               </section>
               <section className="seo-gift-guide" aria-labelledby="gift-guide-title">
@@ -1288,15 +1294,20 @@ export default function Home() {
                           <button
                             className="btn primary cart-cta"
                             onClick={() => {
-                              if (card.variant || card.product.variants?.length) {
-                                openProductDetail(card.product, card.variant);
+                              if (card.variant) {
+                                addProductToCart(card.product, card.variant);
+                                return;
+                              }
+                              if (card.product.variants?.length) {
+                                openProductDetail(card.product);
                                 return;
                               }
                               addProductToCart(card.product);
                             }}
-                            aria-label={card.variant || card.product.variants?.length ? "Vælg variant" : "Læg i kurv"}
+                            disabled={!!card.variant && card.variant.stock <= 0}
+                            aria-label={card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
                           >
-                            {card.variant || card.product.variants?.length ? "Vælg farve" : "Læg i kurv"}
+                            {card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
                           </button>
                         </div>
                       </div>
@@ -1471,8 +1482,8 @@ export default function Home() {
                       <div className="total"><span>Total gaveæske</span><em>{money(customGiftboxTotal)}</em></div>
                     </div>
                     {missingBuilderVariant && <p className="builder-warning">Vælg farve på alle produkter med varianter, før gaveæsken lægges i kurven.</p>}
-                    <button className="btn primary" disabled={missingBuilderVariant} onClick={addCustomGiftboxToCart}>
-                      {missingBuilderVariant ? "Vælg farve først" : "Læg i kurv"}
+                    <button className="btn primary" disabled={missingBuilderVariant || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
+                      {missingBuilderVariant ? "Vælg farve først" : editingCartLineId ? "Gem ændringer" : "Læg i kurv"}
                     </button>
                   </div>
                 </aside>
@@ -1482,7 +1493,7 @@ export default function Home() {
                     <strong>{selectedBuilderItems.length} produkter · {money(customGiftboxTotal)}</strong>
                   </div>
                   <button className="btn primary" disabled={missingBuilderVariant || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
-                    {missingBuilderVariant ? "Vælg farve" : "Læg i kurv"}
+                    {missingBuilderVariant ? "Vælg farve" : editingCartLineId ? "Gem ændringer" : "Læg i kurv"}
                   </button>
                 </div>
                 <div className="grid builder-product-grid">
