@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { hasAnalyticsConsent, openCookieSettings } from "./AnalyticsConsent";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
@@ -357,6 +357,7 @@ function GreenplanetLogo({ compact = false }: { compact?: boolean }) {
 
 export default function Home() {
   const [view, setView] = useState<View>("home");
+  const skipInitialHashSync = useRef(true);
   const [visitorSessionId, setVisitorSessionId] = useState("");
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [giftboxCatalog, setGiftboxCatalog] = useState<Giftbox[]>(initialGiftboxes);
@@ -741,6 +742,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (skipInitialHashSync.current) {
+      skipInitialHashSync.current = false;
+      return;
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     setMobileMenuOpen(false);
 
