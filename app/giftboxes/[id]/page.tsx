@@ -17,12 +17,6 @@ function giftboxItems(productIds: string[]) {
     .filter((product): product is Product => Boolean(product));
 }
 
-function visibleProductCount() {
-  return initialProducts.reduce((count, product) => {
-    const variantCount = product.variants?.filter((variant) => variant.status !== "archived").length || 0;
-    return count + (variantCount || 1);
-  }, 0);
-}
 
 function absoluteUrl(url?: string) {
   if (!url) return `${siteUrl}/brand/greenplanet-logo-mint.png`;
@@ -164,10 +158,10 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
           </Link>
         </div>
         <nav className="nav">
-          <Link href="/">Forside<span>01</span></Link>
-          <Link className="active" href="/#giftboxes">Gaveæsker<span>{giftboxes.length}</span></Link>
-          <Link href="/#products">Produkter<span>{visibleProductCount()}</span></Link>
-          <Link href="/#builder">Byg selv<span>03</span></Link>
+          <Link href="/">Forside</Link>
+          <Link className="active" href="/#giftboxes">Gaveæsker</Link>
+          <Link href="/#products">Produkter</Link>
+          <Link href="/#builder">Byg selv</Link>
         </nav>
         <p className="side-note">Naturlige barselsgaver, babygaver og wellnessgaver fra små brands.</p>
       </aside>
@@ -198,6 +192,10 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
               <h2>{giftbox.title}</h2>
               <p className="lead">{giftbox.description}</p>
               <div className="detail-price">{money(total)}</div>
+              <div className="purchase-panel">
+                <AddGiftboxToCartButton id={giftbox.id} title={giftbox.title} note={giftbox.note} items={items} total={total} />
+                <Link className="btn" href="/#builder">Byg din egen</Link>
+              </div>
               <div className="giftbox-detail-grid">
                 <div className="giftbox-info-box">
                   <span>Passer til</span>
@@ -264,10 +262,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
                   <em>{money(boxPrice)}</em>
                 </div>
               </div>
-              <div className="actions">
-                <AddGiftboxToCartButton id={giftbox.id} title={giftbox.title} note={giftbox.note} items={items} total={total} />
-                <Link className="btn" href="/#builder">Byg din egen</Link>
-              </div>
+
             </div>
           </section>
         </div>
