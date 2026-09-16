@@ -1418,12 +1418,12 @@ export default function Home() {
           )}
 
           {view === "builder" && (
-            <section>
+            <section className="builder-section">
               <div className="section-head builder-head">
                 <div>
-                  <span className="eyebrow">Personlig gaveæske</span>
-                  <h2>Byg selv</h2>
-                  <p>Vælg produkterne, skriv hilsenen og se gaveæskens pris, før du lægger den i kurven.</p>
+                  <span className="section-eyebrow">Skabt af dig</span>
+                  <h2>Byg din gaveæske</h2>
+                  <p>Vælg op til seks produkter, skriv din hilsen og se den samlede pris, mens du bygger gaven.</p>
                 </div>
                 <div className="filters">
                   {occasions.map((item) => <button className={`chip ${occasion === item ? "active" : ""}`} key={item} onClick={() => setOccasion(item)}>{item}</button>)}
