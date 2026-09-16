@@ -1271,18 +1271,21 @@ export default function Home() {
                   const items = giftboxProducts(giftbox);
                   return (
                     <article className="card giftbox-card" key={giftbox.id}>
-                      <div className="product-visual mini-row">
-                        {items.slice(0, 4).map((product, index) => (
-                          <div className="selected-mini image-mini" key={product.id} style={{ background: ["#dfeade", "#f1d9d3", "#ead9ad", "#d7d5ea"][index] }}>
-                            {product.image ? <img src={product.image} alt={product.title} loading="lazy" /> : product.brand.split(" ")[0]}
-                          </div>
-                        ))}
-                      </div>
+                      <Link className="giftbox-visual-link" href={`/giftboxes/${giftbox.id}`} aria-label={`Se ${giftbox.title}`}>
+                        <div className="product-visual mini-row">
+                          <span className="giftbox-mark" aria-hidden="true">G</span>
+                          {items.slice(0, 4).map((product, index) => (
+                            <div className="selected-mini image-mini" key={product.id} style={{ "--gift-index": index } as React.CSSProperties}>
+                              {product.image ? <img src={product.image} alt="" loading="lazy" /> : product.brand.split(" ")[0]}
+                            </div>
+                          ))}
+                        </div>
+                      </Link>
                       <div className="card-body">
                         <div className="meta">{giftbox.category} · {items.length} produkter</div>
                         <h3>{giftbox.title}</h3>
                         <p>{giftbox.description}</p>
-                        <p><strong>Indhold:</strong> {items.map((item) => item.title).join(", ")}</p>
+                        <p className="giftbox-contents"><span>Gaveæsken indeholder</span>{items.map((item) => item.title).join(" · ")}</p>
                         <div className="buy-row">
                           <span className="price">{money(giftboxTotal(giftbox))}</span>
                           <div className="card-actions">
