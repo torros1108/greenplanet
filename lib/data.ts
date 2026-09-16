@@ -156,7 +156,7 @@ export function productSpecs(product: Product) {
   const byProduct: Record<string, { label: string; value: string }[]> = {
     p1: [
       { label: "Produkttype", value: "Babysleeper" },
-      { label: "Materiale", value: "100% linen/hør" },
+      { label: "Materiale", value: "100% hør" },
       { label: "Fyld", value: "Silikonefyld med OekoTex Standard 100 certifikat" },
       { label: "Størrelse", value: "36 x 78 cm (+/- 2 cm)" },
       { label: "Farver", value: "Beige / pudderrosa" },
@@ -165,44 +165,44 @@ export function productSpecs(product: Product) {
     ],
     p2: [
       { label: "Produkttype", value: "Babynest" },
-      { label: "Materiale", value: "100% soften linen/hør" },
+      { label: "Materiale", value: "100% blødgjort hør" },
       { label: "Fyld", value: "Kuglefyld og skummadras med OekoTex Standard 100 certifikat" },
-      { label: "Indvendige mål", value: "Baby size: 34 x 67 cm" },
+      { label: "Indvendige mål", value: "Babystørrelse: 34 x 67 cm" },
       { label: "Farver", value: "Beige / havblå / skovgrøn" },
-      { label: "Brug", value: "Baby crib, forældreseng, Moses basket, sofa eller terrasse" }
+      { label: "Brug", value: "Tremmeseng, forældreseng, babylift, sofa eller terrasse under opsyn" }
     ],
     p3: [
       { label: "Produkttype", value: "Baby hudplejekit" },
       { label: "Indhold", value: "4 produkter til pleje fra top til tå" },
-      { label: "Ingredienser", value: "Avocado-, almond-, wheat- og jojobaolie" },
+      { label: "Ingredienser", value: "Avocado-, mandel-, hvede- og jojobaolie" },
       { label: "Certificering", value: "AllergyCertified-certificeret" },
-      { label: "Uden", value: "Parfume og fragrance" },
+      { label: "Uden", value: "Parfume og duftstoffer" },
       { label: "Emballage", value: "Leveres i FSC-godkendt lille babykuffert" },
       { label: "Brug", value: "Nærer, beskytter og holder babyhuden fugtet og blød" }
     ],
     p4: [
       { label: "Produkttype", value: "Belly sheet masks" },
       { label: "Område", value: "Mave og graviditetspleje" },
-      { label: "Indhold", value: "4 nourishing belly sheet masks" },
-      { label: "Nøgleingredienser", value: "Aloe vera, coconut extract og cucumber" },
+      { label: "Indhold", value: "4 nærende mavemasker" },
+      { label: "Nøgleingredienser", value: "Aloe vera, kokosekstrakt og agurk" },
       { label: "Ingredienser", value: "Aqua, glycerin, lactobacillus ferment, aloe, cucumber, sorbitol m.fl." },
       { label: "Certificering", value: "AllergyCertified-certificeret" },
-      { label: "Uden", value: "Parfume og fragrance" },
+      { label: "Uden", value: "Parfume og duftstoffer" },
       { label: "Brug", value: "Fugt og kølende pleje til gravid mave og efter graviditet" }
     ],
     p5: [
-      { label: "Produkttype", value: "Baby shampoo og body wash" },
-      { label: "Indhold", value: "Blød skummende shampoo og body soap" },
-      { label: "Nøgleingredienser", value: "Oat, jojoba oil og aloe vera" },
+      { label: "Produkttype", value: "Babyshampoo og kropsvask" },
+      { label: "Indhold", value: "Mildt skummende shampoo og kropsvask" },
+      { label: "Nøgleingredienser", value: "Havre, jojobaolie og aloe vera" },
       { label: "Ingredienser", value: "Aqua, coco-glucoside, glycerin, aloe, oat extract, almond oil m.fl." },
-      { label: "Rens", value: "Naturlig detergent fra coconut, udviklet til ikke at svie i øjnene" },
+      { label: "Rens", value: "Milde vaskeaktive stoffer fra kokos, udviklet til ikke at svie i øjnene" },
       { label: "Certificering", value: "AllergyCertified-certificeret" },
-      { label: "Uden", value: "Parfume og fragrance" }
+      { label: "Uden", value: "Parfume og duftstoffer" }
     ],
     p6: [
       { label: "Produkttype", value: "Nussekanin" },
-      { label: "Materiale", value: "100% organic cotton" },
-      { label: "Fyld", value: "Rabbit head med 100% recycled polyester filling" },
+      { label: "Materiale", value: "100% økologisk bomuld" },
+      { label: "Fyld", value: "Kaninhoved med fyld af 100% genanvendt polyester" },
       { label: "Størrelse", value: "Ca. 47 x 30 cm" },
       { label: "Farve", value: "Hvid" },
       { label: "Vask", value: "40 grader" },
@@ -210,8 +210,8 @@ export function productSpecs(product: Product) {
     ],
     p7: [
       { label: "Produkttype", value: "Nussekanin" },
-      { label: "Materiale", value: "100% organic cotton" },
-      { label: "Fyld", value: "Rabbit head med 100% recycled polyester filling" },
+      { label: "Materiale", value: "100% økologisk bomuld" },
+      { label: "Fyld", value: "Kaninhoved med fyld af 100% genanvendt polyester" },
       { label: "Størrelse", value: "Ca. 47 x 30 cm" },
       { label: "Farve", value: "Isblå" },
       { label: "Vask", value: "40 grader" },
@@ -219,16 +219,16 @@ export function productSpecs(product: Product) {
     ],
     p8: [
       { label: "Produkttype", value: "Babyhåndklæde med hætte" },
-      { label: "Materiale", value: "100% organic cotton" },
+      { label: "Materiale", value: "100% økologisk bomuld" },
       { label: "Størrelse", value: "75 x 75 cm" },
       { label: "Farve", value: "Hvid" },
       { label: "Vask", value: "40 eller 60 grader" },
-      { label: "Detalje", value: "Hanger på bagsiden" },
+      { label: "Detalje", value: "Strop på bagsiden" },
       { label: "Certificering", value: "GOTS-certificeret produkt" }
     ],
     p9: [
       { label: "Produkttype", value: "Babyhåndklæde med hætte" },
-      { label: "Materiale", value: "100% organic cotton" },
+      { label: "Materiale", value: "100% økologisk bomuld" },
       { label: "Størrelse", value: "75 x 75 cm" },
       { label: "Farve", value: "Rabbit pink" },
       { label: "Vask", value: "40 eller 60 grader" },
@@ -237,7 +237,7 @@ export function productSpecs(product: Product) {
     ],
     p10: [
       { label: "Produkttype", value: "Babyhåndklæde med hætte" },
-      { label: "Materiale", value: "100% certified organic cotton terry" },
+      { label: "Materiale", value: "100% certificeret økologisk bomuldsfrotté" },
       { label: "Størrelse", value: "75 x 75 cm" },
       { label: "Farve", value: "Rabbit grey" },
       { label: "Vask", value: "40 eller 60 grader" },
@@ -248,9 +248,9 @@ export function productSpecs(product: Product) {
       { label: "Produkttype", value: "Rosa ler" },
       { label: "Størrelse", value: "50 GR" },
       { label: "Indhold", value: "Fransk rosa ler" },
-      { label: "INCI", value: "Pink clay / rosa ler" },
+      { label: "INCI", value: "Rosa ler" },
       { label: "Hudtype", value: "Mild ler til følsom hud" },
-      { label: "Brug", value: "Bland 1-2 spsk. ler med rozenwater/hydrosol, lad virke ca. 15 min." },
+      { label: "Brug", value: "Bland 1-2 spsk. ler med rosenvand eller hydrolat, lad virke ca. 15 min." },
       { label: "Profil", value: "100% naturlig hudpleje" }
     ],
     p12: [
@@ -263,7 +263,7 @@ export function productSpecs(product: Product) {
     p13: [
       { label: "Produkttype", value: "Rosenvand" },
       { label: "Størrelse", value: "50 ML" },
-      { label: "Indhold", value: "Bulgarsk rozenwater" },
+      { label: "Indhold", value: "Bulgarsk rosenvand" },
       { label: "Brug", value: "Toner, opfriskning og hudpleje" },
       { label: "Hudtype", value: "Mildt produkt, egnet til alle hudtyper" },
       { label: "Profil", value: "100% biologisk/økologisk" }
@@ -279,7 +279,7 @@ export function productSpecs(product: Product) {
     p15: [
       { label: "Produkttype", value: "Rosehip olie" },
       { label: "Størrelse", value: "30 ML" },
-      { label: "Indhold", value: "Koldpresset rosehip/rozenbottel olie" },
+      { label: "Indhold", value: "Koldpresset hybenkerneolie" },
       { label: "Profil", value: "Uraffineret olie med omega 3, omega 6 og pro-vitamin A" },
       { label: "Brug", value: "Ansigtspleje, glød og pigment-/ar-pleje" },
       { label: "Duft", value: "Jordet og varm duft, let chokoladeagtig" }
