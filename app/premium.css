@@ -87,7 +87,7 @@ body {
 .hero-art {
   min-height: 690px;
   background-image: linear-gradient(180deg, rgba(19,53,34,.02), rgba(19,53,34,.1)), url("/greenplanet-premium-hero.png");
-  background-position: 62% center;
+  background-position: 79% center;
   background-size: cover;
 }
 .hero-art:before, .hero-art:after { display: none; }
@@ -597,7 +597,7 @@ input:focus, textarea:focus, select:focus {
     grid-template-columns: 1fr;
     min-height: auto;
   }
-  .hero-art { min-height: 560px; background-position: 68% center; }
+  .hero-art { min-height: 560px; background-position: 80% center; }
   .stats, .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card-body { padding-inline: 20px; }
 }
@@ -608,7 +608,7 @@ input:focus, textarea:focus, select:focus {
   .mobile-cart-shortcut { min-height: 36px; padding-inline: 10px; font-size: 12px; }
   .hero-copy { padding: 28px 22px; }
   .big-title { font-size: 46px; }
-  .hero-art { min-height: 460px; background-position: 69% center; }
+  .hero-art { min-height: 460px; background-position: 81% center; }
   .hero-featured-product {
     right: 8%;
     width: 76%;
