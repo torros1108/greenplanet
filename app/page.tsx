@@ -1260,7 +1260,10 @@ export default function Home() {
                           <span className="price">{money(giftboxTotal(giftbox))}</span>
                           <div className="card-actions">
                             <Link className="btn" href={`/giftboxes/${giftbox.id}`}>Se gaveæsken</Link>
-                            <button className="btn primary" onClick={() => addGiftboxToCart(giftbox)}>Læg i kurv</button>
+                            {items.some((item) => item.variants?.some((variant) => variant.status !== "archived"))
+                              ? <Link className="btn primary" href={`/giftboxes/${giftbox.id}`}>Vælg farve</Link>
+                              : <button className="btn primary" onClick={() => addGiftboxToCart(giftbox)}>Læg i kurv</button>}
+
                           </div>
                         </div>
                       </div>
@@ -1352,16 +1355,7 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-                <h3 className="spec-title">Produkt egenskaber</h3>
-                <div className="detail-list">
-                  {selectedProductSpecs.map((spec) => (
-                    <div key={spec.label}><span>{spec.label}</span><strong>{spec.value}</strong></div>
-                  ))}
-                </div>
-                <div className="tag-row">
-                  {selectedProduct.occasions.map((item) => <span key={item}>{item}</span>)}
-                </div>
-                <div className="actions">
+                <div className="actions purchase-actions">
                   <button
                     className="btn primary"
                     disabled={(selectedProductVariants.length > 0 && !selectedProductVariant) || selectedProductVariantUnavailable}
@@ -1376,7 +1370,16 @@ export default function Home() {
                   }} disabled={(selectedProductVariants.length > 0 && !selectedProductVariant) || selectedProductVariantUnavailable}>
                     {selectedProductVariantUnavailable ? "Ikke på lager" : selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Brug i byg-selv"}
                   </button>}
+                </div>                <h3 className="spec-title">Produkt egenskaber</h3>
+                <div className="detail-list">
+                  {selectedProductSpecs.map((spec) => (
+                    <div key={spec.label}><span>{spec.label}</span><strong>{spec.value}</strong></div>
+                  ))}
                 </div>
+                <div className="tag-row">
+                  {selectedProduct.occasions.map((item) => <span key={item}>{item}</span>)}
+                </div>
+
               </div>
             </section>
           )}
