@@ -1031,3 +1031,65 @@ input:focus, textarea:focus, select:focus {
   .builder-section .filters::-webkit-scrollbar { display: none; }
   .builder-section .builder-mobile-total { left: auto; right: auto; width: 100%; min-width: 0; }
 }
+/* Fill the build-your-own preview like a composed open gift box. */
+.builder-section .box-preview {
+  min-height: 540px;
+}
+.builder-section .box-preview::before {
+  inset: 7% 7% 9%;
+  box-shadow: inset 0 0 80px rgba(23, 59, 40, .035);
+}
+.builder-section .selected-items {
+  inset: 62px 34px 112px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 132px));
+  align-content: center;
+  align-items: end;
+  justify-content: center;
+  gap: 10px 14px;
+}
+.builder-section .builder-mini {
+  width: 100%;
+  height: 228px;
+  transform: rotate(var(--tilt, -2deg)) translateY(-8px);
+}
+.builder-section .builder-mini:nth-child(even) {
+  margin-bottom: 0;
+  transform: rotate(3deg) translateY(-24px);
+}
+.builder-section .builder-mini:nth-child(3n) {
+  margin-bottom: 0;
+  transform: rotate(-5deg) translateY(-4px);
+}
+.builder-section .selected-items:has(.builder-mini:nth-child(4)) {
+  align-content: end;
+  gap: 0 10px;
+}
+.builder-section .selected-items:has(.builder-mini:nth-child(4)) .builder-mini {
+  height: 156px;
+}
+.builder-section .paper { bottom: 176px; }
+.builder-section .crate { bottom: 28px; height: 166px; }
+
+@media (max-width: 900px) {
+  .builder-section .box-preview { min-height: 480px; }
+  .builder-section .selected-items { inset: 52px 28px 100px; }
+  .builder-section .builder-mini { height: 200px; }
+  .builder-section .selected-items:has(.builder-mini:nth-child(4)) .builder-mini { height: 140px; }
+  .builder-section .paper { bottom: 160px; }
+  .builder-section .crate { height: 150px; }
+}
+
+@media (max-width: 640px) {
+  .builder-section .box-preview { min-height: 380px; }
+  .builder-section .selected-items {
+    inset: 42px 18px 82px;
+    grid-template-columns: repeat(3, minmax(0, 82px));
+    gap: 6px 8px;
+  }
+  .builder-section .builder-mini { height: 142px; }
+  .builder-section .selected-items:has(.builder-mini:nth-child(4)) .builder-mini { height: 104px; }
+  .builder-section .paper { bottom: 126px; }
+  .builder-section .crate { bottom: 20px; height: 120px; }
+  .builder-section .crate::after { top: 20px; width: 46px; height: 46px; font-size: 25px; }
+}
