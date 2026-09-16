@@ -211,6 +211,15 @@ async function supabaseGet<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+function polishDanishProductCopy(value: string) {
+  return value
+    .replace(/Moses basket/gi, "babylift")
+    .replace(/100% linen/gi, "100 % hør")
+    .replace(/softened linen/gi, "blødgjort hør")
+    .replace(/Baby size/gi, "Babystørrelse")
+    .replace(/OekoTex/gi, "OEKO-TEX® STANDARD 100");
+}
+
 function fromSupabaseProduct(row: SupabaseProductRow): Product {
   return {
     id: row.legacy_id || row.slug,
@@ -218,10 +227,13 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
     brand: row.brand,
     category: row.category,
     tags: [],
-    description: row.description,
+    description: polishDanishProductCopy(row.description),
     specs: Array.isArray(row.specs)
       ? row.specs
-          .map((spec) => ({ label: String(spec.label || ""), value: String(spec.value || "") }))
+          .map((spec) => ({
+            label: polishDanishProductCopy(String(spec.label || "")),
+            value: polishDanishProductCopy(String(spec.value || ""))
+          }))
           .filter((spec) => spec.label && spec.value)
       : undefined,
     cost: Number(row.cost) || 0,
@@ -631,7 +643,7 @@ export default function Home() {
           id: row.legacy_id || row.slug,
           title: row.title,
           category: row.category,
-          description: row.description,
+          description: polishDanishProductCopy(row.description),
           productIds: productIdsByGiftbox[row.legacy_id || row.slug] || [],
           note: row.note || "",
           recipient: row.recipient || "",
