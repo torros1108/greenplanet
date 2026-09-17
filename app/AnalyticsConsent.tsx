@@ -6,27 +6,37 @@ const consentStorageKey = "greenplanet-cookie-consent";
 const googleAnalyticsId = "G-53L8K46EHN";
 
 function loadAnalytics() {
+  window["ga-disable-G-53L8K46EHN"] = false;
   if (document.querySelector(`script[data-greenplanet-analytics="${googleAnalyticsId}"]`)) return;
+
+  const dataLayer = window.dataLayer || [];
+  window.dataLayer = dataLayer;
+  // Google consumes Arguments objects as commands, not ordinary arrays.
+  window.gtag = function () {
+    dataLayer.push(arguments);
+  };
+  window.gtag("consent", "default", {
+    analytics_storage: "granted",
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+  });
+  window.gtag("js", new Date());
+  window.gtag("config", googleAnalyticsId, { allow_google_signals: false, allow_ad_personalization_signals: false });
 
   const gtagScript = document.createElement("script");
   gtagScript.async = true;
   gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`;
   gtagScript.dataset.greenplanetAnalytics = googleAnalyticsId;
   document.head.appendChild(gtagScript);
-
-  const dataLayer = window.dataLayer || [];
-  window.dataLayer = dataLayer;
-  window.gtag = (...args: unknown[]) => {
-    dataLayer.push(args);
-  };
-  window.gtag("js", new Date());
-  window.gtag("config", googleAnalyticsId);
+  gtagScript.onerror = () => gtagScript.remove();
 }
 
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    "ga-disable-G-53L8K46EHN"?: boolean;
   }
 }
 
@@ -57,10 +67,15 @@ export default function AnalyticsConsent() {
   }, []);
 
   function choose(nextChoice: "accepted" | "declined") {
+    const wasAccepted = hasAnalyticsConsent();
     window.localStorage.setItem(consentStorageKey, nextChoice);
     setChoice(nextChoice);
     window.dispatchEvent(new Event("greenplanet-consent-change"));
     if (nextChoice === "accepted") loadAnalytics();
+    if (nextChoice === "declined" && wasAccepted) {
+      window["ga-disable-G-53L8K46EHN"] = true;
+      window.location.reload();
+    }
   }
 
   if (choice) return null;
