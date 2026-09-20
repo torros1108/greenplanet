@@ -1353,7 +1353,7 @@ export default function Home() {
               <div className="grid">
                 {productCards.map((card) => (
                   <article className="card" key={card.key}>
-                    <div className="product-visual"><ProductVisual product={card.product} variant={card.variant} /></div>
+                    <div className={`product-visual ${card.product.title.toLowerCase().includes("sports-bh") ? "sports-bra-visual" : ""}`}><ProductVisual product={card.product} variant={card.variant} /></div>
                     <div className="card-body">
                       <div className="meta">{card.meta}</div>
                       <h3>{card.title}</h3>

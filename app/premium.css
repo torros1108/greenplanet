@@ -1168,3 +1168,16 @@ input:focus, textarea:focus, select:focus {
   .move-hero { min-height: 540px; }
   .move-hero-copy h2 { font-size: 41px; }
 }
+
+
+/* Tighter product-card crop for sports bras */
+.card .product-visual.sports-bra-visual .product-image {
+  transform: scale(1.38);
+  transform-origin: 50% 24%;
+}
+@media (max-width: 640px) {
+  .card .product-visual.sports-bra-visual .product-image {
+    transform: scale(1.32);
+    transform-origin: 50% 23%;
+  }
+}
