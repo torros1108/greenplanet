@@ -1,10 +1,80 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { initialProducts, productSpecs } from "@/lib/data";
+import { cache } from "react";
+import { initialProducts, productSpecs, type Product, type ProductVariant } from "@/lib/data";
+import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 import { AddToCartButton } from "./AddToCartButton";
 
 const siteUrl = "https://www.greenplanet.dk";
+type SupabaseProductRow = {
+  legacy_id: string | null;
+  slug: string;
+  title: string;
+  brand: string;
+  category: string;
+  description: string;
+  cost: number | string;
+  price: number | string;
+  stock: number;
+  sku: string | null;
+  variants?: ProductVariant[] | null;
+  image_url: string | null;
+  images?: string[] | null;
+  giftbox_eligible: boolean;
+  occasions: string[] | null;
+  shape: Product["shape"];
+  specs?: { label: string; value: string }[] | null;
+};
+
+function mapProduct(row: SupabaseProductRow): Product {
+  return {
+    id: row.legacy_id || row.slug,
+    title: row.title,
+    brand: row.brand,
+    category: row.category,
+    tags: [],
+    description: row.description,
+    specs: row.specs || undefined,
+    images: row.images || undefined,
+    cost: Number(row.cost),
+    price: Number(row.price),
+    stock: row.stock,
+    sku: row.sku || row.slug,
+    image: row.image_url || undefined,
+    variants: row.variants || undefined,
+    giftbox: row.giftbox_eligible,
+    occasions: row.occasions || [],
+    shape: row.shape || "box",
+    status: "Live"
+  };
+}
+
+const productSelect = "legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,specs";
+
+const getProduct = cache(async (id: string) => {
+  try {
+    const rows = await supabaseAdminRequest<SupabaseProductRow[]>(
+      `products?select=${productSelect}&legacy_id=eq.${encodeURIComponent(id)}&status=eq.live&limit=1`
+    );
+    if (rows[0]) return mapProduct(rows[0]);
+  } catch {
+    // Local fallback keeps builds and previews working without Supabase credentials.
+  }
+  return initialProducts.find((item) => item.id === id) || null;
+});
+
+const getMoveProducts = cache(async () => {
+  try {
+    const rows = await supabaseAdminRequest<SupabaseProductRow[]>(
+      `products?select=${productSelect}&category=eq.Move&status=eq.live&order=legacy_id.asc`
+    );
+    return rows.map(mapProduct);
+  } catch {
+    return initialProducts.filter((item) => item.category === "Move");
+  }
+});
+
 
 function money(value: number) {
   return `${Math.round(value)} kr.`;
@@ -44,7 +114,7 @@ type ProductPageProps = {
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { id } = await params;
-  const product = initialProducts.find((item) => item.id === id);
+  const product = await getProduct(id);
   if (!product) return { title: "Produkt", robots: { index: false, follow: false } };
 
   const title = `${product.title} fra ${product.brand}`;
@@ -75,14 +145,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { id } = await params;
-  const product = initialProducts.find((item) => item.id === id);
+  const product = await getProduct(id);
   if (!product) notFound();
   const specs = productSpecs(product);
   const images = productGalleryImages(product);
   const liveVariants = product.variants?.filter((variant) => variant.status !== "archived") || [];
-  const matchingProducts = product.category === "Move"
-    ? initialProducts.filter((item) => item.id !== product.id && item.category === "Move" && moveSeries(item.title) === moveSeries(product.title))
-    : [];
+  const moveProducts = product.category === "Move" ? await getMoveProducts() : [];
+  const matchingProducts = moveProducts.filter((item) => item.id !== product.id && moveSeries(item.title) === moveSeries(product.title));
   const categoryHref = product.category === "Move" ? "/#move" : product.category === "Naturlig beauty" ? "/#wellness" : product.category === "Baby & barsel" ? "/#baby" : "/#products";
   const categoryLabel = product.category === "Naturlig beauty" ? "Velvære" : product.category;
   const productStructuredData = {
