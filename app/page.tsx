@@ -1128,7 +1128,7 @@ export default function Home() {
           {[
             ["home", "Forside", ""],
             ["giftboxes", "Gaveæsker", ""],
-            ["products", "Produkter", ""],
+            ["products", "Baby & velvære", ""],
             ["move", "Move", ""],
             ["builder", "Byg selv", ""],
             ["orders", "Kurv", String(cart.length)]
@@ -1166,7 +1166,7 @@ export default function Home() {
                   <div className="actions">
                     <button className="btn primary" onClick={() => setView("giftboxes")}>Find en gaveæske</button>
                     <button className="btn" onClick={() => setView("builder")}>Byg din egen</button>
-                    <button className="btn" onClick={() => setView("products")}>Se produkter</button>
+                    <button className="btn" onClick={() => { setCategory("Alle"); setView("products"); }}>Se baby & velvære</button>
                   </div>
                 </div>
                 <div className="hero-art">
@@ -1343,7 +1343,7 @@ export default function Home() {
                 </section>
               )}
               <div className="section-head" id={category === "Move" ? "move-products" : undefined}>
-                <h2>{category === "Move" ? "Move" : "Produkter"}</h2>
+                <h2>{category === "Move" ? "Move" : "Baby & velvære"}</h2>
                 <div className="filters">
                   {categories.map((item) => <button className={`chip ${category === item ? "active" : ""}`} key={item} onClick={() => setCategory(item)}>{item}</button>)}
                 </div>
@@ -1865,7 +1865,7 @@ export default function Home() {
             <div>
               <span>Shop</span>
               <button onClick={() => setView("giftboxes")}>Gaveæsker</button>
-              <button onClick={() => { setCategory("Alle"); setView("products"); }}>Produkter</button>
+              <button onClick={() => { setCategory("Alle"); setView("products"); }}>Baby & velvære</button>
               <button onClick={() => { setCategory("Move"); setView("products"); }}>Move</button>
               <button onClick={() => setView("builder")}>Byg selv</button>
             </div>
