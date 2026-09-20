@@ -1129,26 +1129,24 @@ export default function Home() {
             ["home", "Forside", ""],
             ["giftboxes", "Gaveæsker", ""],
             ["products", "Produkter", ""],
+            ["move", "Move", ""],
             ["builder", "Byg selv", ""],
             ["orders", "Kurv", String(cart.length)]
           ].map(([id, label, count]) => (
             <button
               key={id}
-              className={view === id && !(id === "products" && category === "Move") ? "active" : ""}
+              className={id === "move"
+                ? view === "products" && category === "Move" ? "active" : ""
+                : view === id && !(id === "products" && category === "Move") ? "active" : ""}
               onClick={() => {
                 if (id === "products") setCategory("Alle");
-                setView(id as View);
+                if (id === "move") setCategory("Move");
+                setView(id === "move" ? "products" : id as View);
               }}
             >
               {label}{count && <span>{count}</span>}
             </button>
           ))}
-          <button
-            className={view === "products" && category === "Move" ? "active" : ""}
-            onClick={() => { setCategory("Move"); setView("products"); }}
-          >
-            Move
-          </button>
         </nav>
         <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
       </aside>
@@ -1867,7 +1865,8 @@ export default function Home() {
             <div>
               <span>Shop</span>
               <button onClick={() => setView("giftboxes")}>Gaveæsker</button>
-              <button onClick={() => setView("products")}>Produkter</button>
+              <button onClick={() => { setCategory("Alle"); setView("products"); }}>Produkter</button>
+              <button onClick={() => { setCategory("Move"); setView("products"); }}>Move</button>
               <button onClick={() => setView("builder")}>Byg selv</button>
             </div>
             <div>
