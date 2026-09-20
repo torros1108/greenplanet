@@ -1128,25 +1128,27 @@ export default function Home() {
           {[
             ["home", "Forside", ""],
             ["giftboxes", "Gaveæsker", ""],
-            ["products", "Baby & velvære", ""],
+            ["baby", "Baby & barsel", ""],
+            ["wellness", "Velvære", ""],
             ["move", "Move", ""],
             ["builder", "Byg selv", ""],
             ["orders", "Kurv", String(cart.length)]
-          ].map(([id, label, count]) => (
-            <button
-              key={id}
-              className={id === "move"
-                ? view === "products" && category === "Move" ? "active" : ""
-                : view === id && !(id === "products" && category === "Move") ? "active" : ""}
-              onClick={() => {
-                if (id === "products") setCategory("Alle");
-                if (id === "move") setCategory("Move");
-                setView(id === "move" ? "products" : id as View);
-              }}
-            >
-              {label}{count && <span>{count}</span>}
-            </button>
-          ))}
+          ].map(([id, label, count]) => {
+            const productCategory = id === "baby" ? "Baby & barsel" : id === "wellness" ? "Naturlig beauty" : id === "move" ? "Move" : null;
+            const isActive = productCategory ? view === "products" && category === productCategory : view === id;
+            return (
+              <button
+                key={id}
+                className={isActive ? "active" : ""}
+                onClick={() => {
+                  if (productCategory) setCategory(productCategory);
+                  setView(productCategory ? "products" : id as View);
+                }}
+              >
+                {label}{count && <span>{count}</span>}
+              </button>
+            );
+          })}
         </nav>
         <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
       </aside>
@@ -1166,7 +1168,7 @@ export default function Home() {
                   <div className="actions">
                     <button className="btn primary" onClick={() => setView("giftboxes")}>Find en gaveæske</button>
                     <button className="btn" onClick={() => setView("builder")}>Byg din egen</button>
-                    <button className="btn" onClick={() => { setCategory("Alle"); setView("products"); }}>Se baby & velvære</button>
+                    <button className="btn" onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>Se babyprodukter</button>
                   </div>
                 </div>
                 <div className="hero-art">
@@ -1343,7 +1345,7 @@ export default function Home() {
                 </section>
               )}
               <div className="section-head" id={category === "Move" ? "move-products" : undefined}>
-                <h2>{category === "Move" ? "Move" : "Baby & velvære"}</h2>
+                <h2>{category === "Move" ? "Move" : category === "Baby & barsel" ? "Baby & barsel" : category === "Naturlig beauty" ? "Velvære" : "Alle produkter"}</h2>
                 <div className="filters">
                   {categories.map((item) => <button className={`chip ${category === item ? "active" : ""}`} key={item} onClick={() => setCategory(item)}>{item}</button>)}
                 </div>
@@ -1865,7 +1867,8 @@ export default function Home() {
             <div>
               <span>Shop</span>
               <button onClick={() => setView("giftboxes")}>Gaveæsker</button>
-              <button onClick={() => { setCategory("Alle"); setView("products"); }}>Baby & velvære</button>
+              <button onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>Baby & barsel</button>
+              <button onClick={() => { setCategory("Naturlig beauty"); setView("products"); }}>Velvære</button>
               <button onClick={() => { setCategory("Move"); setView("products"); }}>Move</button>
               <button onClick={() => setView("builder")}>Byg selv</button>
             </div>
