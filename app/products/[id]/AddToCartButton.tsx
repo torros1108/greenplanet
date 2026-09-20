@@ -27,6 +27,7 @@ export function AddToCartButton({ product }: { product: Product }) {
   const variants = useMemo(() => product.variants?.filter((variant) => variant.status !== "archived") || [], [product]);
   const [variantId, setVariantId] = useState("");
   const selectedVariant = variants.find((variant) => variant.id === variantId) || null;
+  const variantLabel = product.category === "Move" ? "størrelse" : "variant";
 
   function addToCart() {
     if (variants.length > 0 && !selectedVariant) return;
@@ -63,8 +64,8 @@ export function AddToCartButton({ product }: { product: Product }) {
     <>
       {variants.length > 0 && (
         <div className="variant-picker">
-          <span>Vælg farve</span>
-          <div className="variant-options" role="listbox" aria-label="Vælg farve">
+          <span>Vælg {variantLabel}</span>
+          <div className="variant-options" role="listbox" aria-label={`Vælg ${variantLabel}`}>
             {variants.map((variant) => (
               <button
                 className={`variant-option ${selectedVariant?.id === variant.id ? "active" : ""}`}
@@ -76,7 +77,7 @@ export function AddToCartButton({ product }: { product: Product }) {
                 aria-selected={selectedVariant?.id === variant.id}
                 style={{ ["--variant-color" as string]: variantColor(variant) || "#dfeade" }}
               >
-                <span className="variant-swatch" />
+                {product.category !== "Move" && <span className="variant-swatch" />}
                 <strong>{variant.title}</strong>
                 <em>{Math.round(variant.price)} kr. · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}</em>
               </button>
@@ -87,7 +88,7 @@ export function AddToCartButton({ product }: { product: Product }) {
       {selectedVariant && (
         <div className="variant-preview" style={{ ["--variant-color" as string]: variantColor(selectedVariant) || "#dfeade" }}>
           <span className="variant-swatch" />
-          Valgt farve: <strong>{selectedVariant.title}</strong>
+          Valgt {variantLabel}: <strong>{selectedVariant.title}</strong>
         </div>
       )}
       {selectedVariant?.image && (
@@ -96,7 +97,7 @@ export function AddToCartButton({ product }: { product: Product }) {
         </div>
       )}
       <button className="btn primary" disabled={variants.length > 0 && !selectedVariant} onClick={addToCart}>
-        {variants.length > 0 && !selectedVariant ? "Vælg farve først" : "Læg i kurv"}
+        {variants.length > 0 && !selectedVariant ? `Vælg ${variantLabel} først` : "Læg i kurv"}
       </button>
     </>
   );

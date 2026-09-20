@@ -414,7 +414,7 @@ export default function Home() {
   const filteredProducts = category === "Alle" ? products : products.filter((product) => product.category === category);
   const productCards: ProductCardItem[] = filteredProducts.flatMap((product) => {
     const variants = product.variants?.filter((variant) => variant.status !== "archived") || [];
-    if (!variants.length) {
+    if (!variants.length || product.category === "Move") {
       return [{
         key: product.id,
         product,
@@ -1341,9 +1341,9 @@ export default function Home() {
                               addProductToCart(card.product);
                             }}
                             disabled={!!card.variant && card.variant.stock <= 0}
-                            aria-label={card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
+                            aria-label={card.product.category === "Move" && !card.variant ? "Vælg størrelse" : card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
                           >
-                            {card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
+                            {card.product.category === "Move" && !card.variant ? "Vælg størrelse" : card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
                           </button>
                         </div>
                       </div>
@@ -1367,8 +1367,8 @@ export default function Home() {
                 <div className="detail-price">{money(selectedProductPrice)}</div>
                 {selectedProductVariants.length > 0 && (
                   <div className="variant-picker">
-                    <span>Vælg farve</span>
-                    <div className="variant-options" role="listbox" aria-label="Vælg farve">
+                    <span>{selectedProduct.category === "Move" ? "Vælg størrelse" : "Vælg variant"}</span>
+                    <div className="variant-options" role="listbox" aria-label={selectedProduct.category === "Move" ? "Vælg størrelse" : "Vælg variant"}>
                       {selectedProductVariants.map((variant) => (
                         <button
                           className={`variant-option ${selectedProductVariant?.id === variant.id ? "active" : ""}`}
@@ -1380,7 +1380,7 @@ export default function Home() {
                           aria-selected={selectedProductVariant?.id === variant.id}
                           style={{ ["--variant-color" as string]: variantColor(variant) || "#dfeade" }}
                         >
-                          <span className="variant-swatch" />
+                          {selectedProduct.category !== "Move" && <span className="variant-swatch" />}
                           <strong>{variant.title}</strong>
                           <em>{money(variant.price)} · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}</em>
                         </button>
@@ -1394,7 +1394,7 @@ export default function Home() {
                     disabled={(selectedProductVariants.length > 0 && !selectedProductVariant) || selectedProductVariantUnavailable}
                     onClick={() => addProductToCart(selectedProduct, selectedProductVariant)}
                   >
-                    {selectedProductVariantUnavailable ? "Ikke på lager" : selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Læg i kurv"}
+                    {selectedProductVariantUnavailable ? "Ikke på lager" : selectedProductVariants.length > 0 && !selectedProductVariant ? (selectedProduct.category === "Move" ? "Vælg størrelse først" : "Vælg variant først") : "Læg i kurv"}
                   </button>
                   {selectedProduct.giftbox && <button className="btn" onClick={() => {
                     setSelected((current) => current.includes(selectedProduct.id) ? current : [...current, selectedProduct.id].slice(0, 6));
