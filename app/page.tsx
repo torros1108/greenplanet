@@ -133,6 +133,13 @@ function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
 
+function moveSeries(title: string) {
+  return title
+    .replace(/\s+(kompressionsleggings|løbeleggings|leggings|sports-bh|løbetop)$/i, "")
+    .trim()
+    .toLowerCase();
+}
+
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -436,6 +443,14 @@ export default function Home() {
     }));
   });
   const selectedProduct = products.find((product) => product.id === selectedProductId) || null;
+  const selectedMoveSeries = selectedProduct?.category === "Move" ? moveSeries(selectedProduct.title) : "";
+  const matchingMoveProducts = selectedMoveSeries
+    ? products.filter((product) =>
+        product.id !== selectedProduct?.id &&
+        product.category === "Move" &&
+        moveSeries(product.title) === selectedMoveSeries
+      )
+    : [];
   const selectedProductSpecs = selectedProduct ? productSpecs(selectedProduct) : [];
   const selectedProductVariants = selectedProduct?.variants?.filter((variant) => variant.status !== "archived") || [];
   const selectedProductVariant =
@@ -1438,7 +1453,33 @@ export default function Home() {
                   }} disabled={(selectedProductVariants.length > 0 && !selectedProductVariant) || selectedProductVariantUnavailable}>
                     {selectedProductVariantUnavailable ? "Ikke på lager" : selectedProductVariants.length > 0 && !selectedProductVariant ? "Vælg farve først" : "Brug i byg-selv"}
                   </button>}
-                </div>                <h3 className="spec-title">Produkt egenskaber</h3>
+                </div>
+                {matchingMoveProducts.length > 0 && (
+                  <section className="matching-products" aria-labelledby="matching-products-title">
+                    <div className="matching-products-head">
+                      <span className="section-eyebrow">Samme serie</span>
+                      <h3 id="matching-products-title">Passer sammen med</h3>
+                    </div>
+                    <div className="matching-products-list">
+                      {matchingMoveProducts.map((product) => (
+                        <button
+                          className="matching-product"
+                          key={product.id}
+                          type="button"
+                          onClick={() => openProductDetail(product)}
+                        >
+                          <span className="matching-product-image"><ProductVisual product={product} /></span>
+                          <span className="matching-product-copy">
+                            <strong>{product.title}</strong>
+                            <em>{money(product.price)}</em>
+                          </span>
+                          <span className="matching-product-action">Se produkt</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                <h3 className="spec-title">Produkt egenskaber</h3>
                 <div className="detail-list">
                   {selectedProductSpecs.map((spec) => (
                     <div key={spec.label}><span>{spec.label}</span><strong>{spec.value}</strong></div>
