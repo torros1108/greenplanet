@@ -1132,12 +1132,25 @@ export default function Home() {
             ["builder", "Byg selv", ""],
             ["orders", "Kurv", String(cart.length)]
           ].map(([id, label, count]) => (
-            <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id as View)}>
+            <button
+              key={id}
+              className={view === id && !(id === "products" && category === "Move") ? "active" : ""}
+              onClick={() => {
+                if (id === "products") setCategory("Alle");
+                setView(id as View);
+              }}
+            >
               {label}{count && <span>{count}</span>}
             </button>
           ))}
+          <button
+            className={view === "products" && category === "Move" ? "active" : ""}
+            onClick={() => { setCategory("Move"); setView("products"); }}
+          >
+            Move
+          </button>
         </nav>
-        <p className="side-note">Naturlige barselsgaver, babygaver og wellnessgaver fra små brands.</p>
+        <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
       </aside>
 
       <section className="main">
@@ -1212,8 +1225,8 @@ export default function Home() {
                 <button className="stat" onClick={() => { setCategory("Naturlig beauty"); setView("products"); }}>
                   <strong>Wellness</strong><span>Naturlige olier, ler og hudpleje</span>
                 </button>
-                <button className="stat" onClick={() => setView("giftboxes")}>
-                  <strong>Personlig</strong><span>Byg en gaveæske med din egen hilsen</span>
+                <button className="stat" onClick={() => { setCategory("Move"); setView("products"); }}>
+                  <strong>Move</strong><span>Yoga, træning og activewear i matchende sæt</span>
                 </button>
               </section>
               <section className="seo-gift-guide" aria-labelledby="gift-guide-title">
