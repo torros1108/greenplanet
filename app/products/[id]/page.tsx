@@ -10,6 +10,13 @@ function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
 
+function moveSeries(title: string) {
+  return title
+    .replace(/\s+(kompressionsleggings|løbeleggings|leggings|sports-bh|løbetop)$/i, "")
+    .trim()
+    .toLowerCase();
+}
+
 
 function productGalleryImages(product: (typeof initialProducts)[number]) {
   const images = [product.image, ...(product.images || []), ...(product.variants || []).map((variant) => variant.image)]
@@ -73,6 +80,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const specs = productSpecs(product);
   const images = productGalleryImages(product);
   const liveVariants = product.variants?.filter((variant) => variant.status !== "archived") || [];
+  const matchingProducts = product.category === "Move"
+    ? initialProducts.filter((item) => item.id !== product.id && item.category === "Move" && moveSeries(item.title) === moveSeries(product.title))
+    : [];
+  const categoryHref = product.category === "Move" ? "/#move" : product.category === "Naturlig beauty" ? "/#wellness" : product.category === "Baby & barsel" ? "/#baby" : "/#products";
+  const categoryLabel = product.category === "Naturlig beauty" ? "Velvære" : product.category;
   const productStructuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -157,16 +169,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <nav className="nav">
           <Link href="/">Forside</Link>
           <Link href="/#giftboxes">Gaveæsker</Link>
-          <Link className="active" href="/#products">Produkter</Link>
+          <Link className={product.category === "Baby & barsel" ? "active" : undefined} href="/#baby">Baby & barsel</Link>
+          <Link className={product.category === "Naturlig beauty" ? "active" : undefined} href="/#wellness">Velvære</Link>
+          <Link className={product.category === "Move" ? "active" : undefined} href="/#move">Move</Link>
           <Link href="/#builder">Byg selv</Link>
         </nav>
-        <p className="side-note">Naturlige barselsgaver, babygaver og wellnessgaver fra små brands.</p>
+        <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
       </aside>
 
       <section className="main">
         <div className="content">
           <section className="product-detail">
-            <Link className="btn back-btn" href="/#products">Tilbage til produkter</Link>
+            <Link className="btn back-btn" href={categoryHref}>Tilbage til {categoryLabel}</Link>
             <div className="product-detail-media panel">
               {images.length ? (
                 <div className="product-gallery">
@@ -194,6 +208,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <AddToCartButton product={product} />
                 {product.giftbox && <Link className="btn" href="/#builder">Brug i byg-selv</Link>}
               </div>
+              {matchingProducts.length > 0 && (
+                <section className="matching-products" aria-labelledby="matching-products-title">
+                  <div className="matching-products-head">
+                    <span className="section-eyebrow">Samme serie</span>
+                    <h3 id="matching-products-title">Passer sammen med</h3>
+                  </div>
+                  <div className="matching-products-list">
+                    {matchingProducts.map((item) => (
+                      <Link className="matching-product" href={`/products/${item.id}`} key={item.id}>
+                        <span className="matching-product-image visual-frame"><img className="product-image" src={item.image} alt={item.title} /></span>
+                        <span className="matching-product-copy"><strong>{item.title}</strong><em>{money(item.price)}</em></span>
+                        <span className="matching-product-action">Se produkt</span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
               <h3 className="spec-title">Produkt egenskaber</h3>
               <div className="detail-list">
                 {specs.map((spec) => (

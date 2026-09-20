@@ -160,10 +160,12 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
         <nav className="nav">
           <Link href="/">Forside</Link>
           <Link className="active" href="/#giftboxes">Gaveæsker</Link>
-          <Link href="/#products">Produkter</Link>
+          <Link href="/#baby">Baby & barsel</Link>
+          <Link href="/#wellness">Velvære</Link>
+          <Link href="/#move">Move</Link>
           <Link href="/#builder">Byg selv</Link>
         </nav>
-        <p className="side-note">Naturlige barselsgaver, babygaver og wellnessgaver fra små brands.</p>
+        <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
       </aside>
 
       <section className="main">

@@ -73,12 +73,12 @@ export const giftboxes: Giftbox[] = [
     productIds: ["p4", "p13", "p15"],
     note: "Belly masks, rosenvand og rosehip olie.",
     recipient: "Til den gravide eller nybagte mor, der fortjener en lille pause.",
-    occasion: "Barsel, babyshower, mors dag eller en omsorgsfuld hilsen.",
-    packing: "Pakkes i Greenplanet gaveæske med silkepapir, roligt udtryk og mulighed for personlig hilsen.",
+    occasion: "Barsel, babyshower, mors dag eller bare fordi.",
+    packing: "Pakkes i Greenplanet-gaveæske med silkepapir og plads til en personlig hilsen.",
     cardText: "Skriv en kort hilsen ved checkout, så lægger vi den ved i æsken.",
     delivery: "Kan sendes direkte til modtageren eller til dig, hvis du selv vil overrække gaven.",
-    why: "Æsken samler blid kropspleje og små pauser, som kan bruges uden at kræve meget tid eller overskud.",
-    details: ["3 produkter", "Personligt kort kan tilføjes", "Velegnet til direkte gavelevering", "Naturlig beauty og barselsro"]
+    why: "Æsken samler tre hudplejeprodukter, der er nemme at bruge under graviditeten og efter fødslen.",
+    details: ["3 produkter", "Personligt kort kan tilføjes", "Velegnet til direkte gavelevering", "Hudpleje til graviditet og barsel"]
   },
   {
     id: "g2",
@@ -89,7 +89,7 @@ export const giftboxes: Giftbox[] = [
     note: "SoKind plejekit, babyvask og nussekanin.",
     recipient: "Til nybagte forældre, der gerne vil have en praktisk og smuk startpakke.",
     occasion: "Barselsbesøg, firmagave, babyshower eller velkommen-til-verden gave.",
-    packing: "Pakkes som en rolig barselsæske med babypleje for sig og tekstilproduktet synligt i toppen.",
+    packing: "Babypleje og nussekanin pakkes overskueligt i en Greenplanet-gaveæske med silkepapir.",
     cardText: "Mulighed for personlig hilsen, fx fra kollegaer, familie eller vennegruppe.",
     delivery: "Egnet til levering direkte til familien, og nem at sende som samlet gave.",
     why: "Kombinationen af plejeprodukt og lille blød gave gør æsken både brugbar og personlig.",
@@ -117,7 +117,7 @@ export const giftboxes: Giftbox[] = [
     description: "En større barselsgave med Babyly, SoKind og Summerville organic.",
     productIds: ["p1", "p3", "p10"],
     note: "Til familie, fællesgave eller firmagave.",
-    recipient: "Til den lidt større barselsgave, hvor flere går sammen om noget ordentligt.",
+    recipient: "Til den større barselsgave fra familie, venner eller kollegaer.",
     occasion: "Firmagave, fællesgave, barsel eller en særlig velkommen-til-verden gave.",
     packing: "Pakkes som premium-æske med tekstil, pleje og babyprodukt tydeligt opdelt.",
     cardText: "Plads til en længere hilsen fra team, familie eller vennegruppe.",
@@ -137,7 +137,7 @@ export const giftboxes: Giftbox[] = [
     packing: "Pakkes med beautyprodukterne samlet som en lille hjemme-spa gave.",
     cardText: "Korttekst kan tilføjes, så gaven føles personlig selv ved direkte levering.",
     delivery: "Kan sendes direkte til modtager eller bestilles hjem til egen overrækkelse.",
-    why: "Æsken fungerer som en samlet wellness-gave frem for enkeltprodukter, der bare ligger ved siden af hinanden.",
+    why: "Produkterne er udvalgt til en komplet wellnessgave med ansigtspleje og nærende olier.",
     details: ["4 produkter", "Naturlig beauty", "Hjemme-spa følelse", "God til venindegaver"]
   }
 ];

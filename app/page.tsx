@@ -758,7 +758,11 @@ export default function Home() {
   useEffect(() => {
     function applyHash() {
       const hash = window.location.hash.replace("#", "");
-      if (publicViews.includes(hash as (typeof publicViews)[number])) {
+      const categoryHash = { baby: "Baby & barsel", wellness: "Naturlig beauty", move: "Move" }[hash];
+      if (categoryHash) {
+        setCategory(categoryHash);
+        setView("products");
+      } else if (publicViews.includes(hash as (typeof publicViews)[number])) {
         setView(hash as View);
       }
     }
@@ -778,11 +782,12 @@ export default function Home() {
     setMobileMenuOpen(false);
 
     if (view === "confirmation" || view === "product" || view === "import") return;
-    const nextHash = view === "home" ? "" : `#${view}`;
+    const categoryHash = category === "Baby & barsel" ? "baby" : category === "Naturlig beauty" ? "wellness" : category === "Move" ? "move" : "products";
+    const nextHash = view === "home" ? "" : view === "products" ? `#${categoryHash}` : `#${view}`;
     if (window.location.hash !== nextHash) {
       window.history.pushState({}, "", nextHash ? `/${nextHash}` : "/");
     }
-  }, [view, selectedProductId]);
+  }, [view, category, selectedProductId]);
 
   function giftboxProducts(giftbox: Giftbox) {
     return giftbox.productIds.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[];
@@ -1873,7 +1878,7 @@ export default function Home() {
         <footer className="site-footer">
           <div className="footer-brand">
             <strong>{companyInfo.name}</strong>
-            <p>Gaveæsker og udvalgte produkter til baby, barsel og ny mor.</p>
+            <p>Gaveæsker, babyprodukter, wellness og activewear fra udvalgte brands.</p>
             <p className="footer-company">
               CVR {companyInfo.cvr}<br />
               {companyInfo.address}, {companyInfo.postcode} {companyInfo.city}
