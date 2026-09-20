@@ -1332,8 +1332,8 @@ export default function Home() {
                   <div className="move-hero-shade" aria-hidden="true" />
                   <div className="move-hero-copy">
                     <span className="move-hero-eyebrow">Greenplanet Move</span>
-                    <h2 id="move-hero-title">Activewear til yoga, løb og træning</h2>
-                    <p>Mønstrede leggings, sports-bh’er og bløde lag til træning og afslappede dage.</p>
+                    <h2 id="move-hero-title">Activewear og athleisure</h2>
+                    <p>Leggings, sports-bh’er, hoodies og bløde cardigans til yoga, løb, træning og afslappede dage.</p>
                     <button
                       className="btn move-hero-cta"
                       type="button"
