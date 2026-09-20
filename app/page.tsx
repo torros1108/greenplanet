@@ -1347,7 +1347,7 @@ export default function Home() {
               <div className="section-head" id={category === "Move" ? "move-products" : undefined}>
                 <h2>{category === "Move" ? "Move" : category === "Baby & barsel" ? "Baby & barsel" : category === "Naturlig beauty" ? "Velvære" : "Alle produkter"}</h2>
                 <div className="filters">
-                  {categories.map((item) => <button className={`chip ${category === item ? "active" : ""}`} key={item} onClick={() => setCategory(item)}>{item}</button>)}
+                  {categories.map((item) => <button className={`chip ${category === item ? "active" : ""}`} key={item} onClick={() => setCategory(item)}>{item === "Naturlig beauty" ? "Velvære" : item}</button>)}
                 </div>
               </div>
               <div className="grid">
