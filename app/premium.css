@@ -1093,3 +1093,78 @@ input:focus, textarea:focus, select:focus {
   .builder-section .crate { bottom: 20px; height: 120px; }
   .builder-section .crate::after { top: 20px; width: 46px; height: 46px; font-size: 25px; }
 }
+
+/* Move collection */
+.move-collection { display: grid; gap: 0; }
+.move-hero {
+  position: relative;
+  min-height: clamp(520px, 64vw, 760px);
+  overflow: hidden;
+  background: #173b28;
+  box-shadow: var(--premium-shadow);
+}
+.move-hero-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+.move-hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(8,29,19,.82) 0%, rgba(8,29,19,.6) 31%, rgba(8,29,19,.15) 59%, rgba(8,29,19,0) 76%);
+}
+.move-hero-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: inherit;
+  width: min(620px, 53%);
+  padding: clamp(36px, 6vw, 86px);
+  color: var(--cream);
+}
+.move-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.move-hero-eyebrow:before { content: ""; width: 42px; height: 1px; background: currentColor; }
+.move-hero-copy h2 {
+  max-width: 590px;
+  margin: 0 0 20px;
+  color: var(--cream);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(48px, 6vw, 82px);
+  font-weight: 500;
+  line-height: .98;
+}
+.move-hero-copy p {
+  max-width: 480px;
+  margin: 0 0 28px;
+  color: rgba(255,253,248,.88);
+  font-size: clamp(17px, 1.5vw, 21px);
+  line-height: 1.55;
+}
+.move-hero-cta { align-self: flex-start; border-color: var(--cream); background: var(--cream); color: var(--forest); }
+.move-collection > .section-head { scroll-margin-top: 90px; }
+@media (max-width: 760px) {
+  .move-hero { min-height: 620px; }
+  .move-hero-image { object-position: 64% center; }
+  .move-hero-shade { background: linear-gradient(180deg, rgba(8,29,19,.06) 22%, rgba(8,29,19,.35) 52%, rgba(8,29,19,.9) 100%); }
+  .move-hero-copy { justify-content: flex-end; width: 100%; padding: 30px 22px 34px; }
+  .move-hero-copy h2 { max-width: 520px; font-size: 48px; }
+  .move-hero-copy p { max-width: 430px; font-size: 17px; }
+}
+@media (max-width: 420px) {
+  .move-hero { min-height: 540px; }
+  .move-hero-copy h2 { font-size: 41px; }
+}

@@ -1321,9 +1321,31 @@ export default function Home() {
           )}
 
           {view === "products" && (
-            <section>
-              <div className="section-head">
-                <h2>Produkter</h2>
+            <section className={category === "Move" ? "move-collection" : undefined}>
+              {category === "Move" && (
+                <section className="move-hero" aria-labelledby="move-hero-title">
+                  <img
+                    className="move-hero-image"
+                    src="/move/move-tropical-dark-hero-v1.png"
+                    alt="Kvinde i Tropical Dark activewear på løbetur i en grøn park"
+                  />
+                  <div className="move-hero-shade" aria-hidden="true" />
+                  <div className="move-hero-copy">
+                    <span className="move-hero-eyebrow">Greenplanet Move</span>
+                    <h2 id="move-hero-title">Activewear til bevægelse og hverdage</h2>
+                    <p>Matchende sæt, leggings og overdele til yoga, træning og ture i det fri.</p>
+                    <button
+                      className="btn move-hero-cta"
+                      type="button"
+                      onClick={() => document.getElementById("move-products")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    >
+                      Se kollektionen
+                    </button>
+                  </div>
+                </section>
+              )}
+              <div className="section-head" id={category === "Move" ? "move-products" : undefined}>
+                <h2>{category === "Move" ? "Move" : "Produkter"}</h2>
                 <div className="filters">
                   {categories.map((item) => <button className={`chip ${category === item ? "active" : ""}`} key={item} onClick={() => setCategory(item)}>{item}</button>)}
                 </div>
