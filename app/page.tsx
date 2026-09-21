@@ -140,6 +140,14 @@ function moveSeries(title: string) {
     .toLowerCase();
 }
 
+function moveProductType(title: string) {
+  const value = title.toLowerCase();
+  if (/legging/.test(value)) return "Leggings";
+  if (/sports-bh|løbetop|\btop\b/.test(value)) return "Toppe & sports-bh’er";
+  if (/hoodie|cardigan|jacket/.test(value)) return "Hoodies & cardigans";
+  return "Andet";
+}
+
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -383,6 +391,7 @@ export default function Home() {
   const [policyCatalog, setPolicyCatalog] = useState<Record<PolicyView, PolicyPage>>(defaultPolicyPages);
   const [selected, setSelected] = useState<string[]>(["p3", "p4", "p6"]);
   const [category, setCategory] = useState("Alle");
+  const [moveFilter, setMoveFilter] = useState("Alle");
   const [occasion, setOccasion] = useState("Alle");
   const [cart, setCart] = useState<CartLine[]>([]);
   const [csvText, setCsvText] = useState("");
@@ -418,7 +427,11 @@ export default function Home() {
     [products]
   );
   const eligibleProducts = products.filter((product) => product.giftbox && product.status === "Live");
-  const filteredProducts = category === "Alle" ? products : products.filter((product) => product.category === category);
+  const moveFilters = ["Alle", "Leggings", "Toppe & sports-bh’er", "Hoodies & cardigans"];
+  const categoryProducts = category === "Alle" ? products : products.filter((product) => product.category === category);
+  const filteredProducts = category === "Move" && moveFilter !== "Alle"
+    ? categoryProducts.filter((product) => moveProductType(product.title) === moveFilter)
+    : categoryProducts;
   const productCards: ProductCardItem[] = filteredProducts.flatMap((product) => {
     const variants = product.variants?.filter((variant) => variant.status !== "archived") || [];
     if (!variants.length || product.category === "Move") {
@@ -1370,6 +1383,20 @@ export default function Home() {
                   {categories.map((item) => <button className={`chip ${category === item ? "active" : ""}`} key={item} onClick={() => setCategory(item)}>{item === "Naturlig beauty" ? "Velvære" : item}</button>)}
                 </div>
               </div>
+              {category === "Move" && (
+                <div className="move-subfilters" role="group" aria-label="Filtrer Move-produkter">
+                  {moveFilters.map((item) => (
+                    <button
+                      className={`move-subfilter ${moveFilter === item ? "active" : ""}`}
+                      key={item}
+                      type="button"
+                      onClick={() => setMoveFilter(item)}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="grid">
                 {productCards.map((card) => (
                   <article className="card" key={card.key}>

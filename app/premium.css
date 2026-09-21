@@ -1252,3 +1252,39 @@ input:focus, textarea:focus, select:focus {
   .matching-product-image { width: 64px; }
   .matching-product-action { grid-column: 2; }
 }
+
+
+.move-subfilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -4px 0 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(23, 32, 24, .12);
+}
+.move-subfilter {
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 1px solid rgba(23, 32, 24, .18);
+  border-radius: 0;
+  background: rgba(255, 253, 248, .76);
+  color: var(--forest);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.move-subfilter:hover { border-color: var(--forest); }
+.move-subfilter.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: #fffdf8;
+}
+@media (max-width: 640px) {
+  .move-subfilters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .move-subfilter { width: 100%; padding-inline: 10px; }
+}
