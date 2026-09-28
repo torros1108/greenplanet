@@ -1,10 +1,12 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { sendOrderPaidEmails, type MailOrder } from "@/lib/mail";
+import { verifyStripeSignature } from "@/lib/stripeSignature";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 
 type StripeCheckoutSession = {
   id: string;
+  amount_total?: number | null;
+  payment_status?: string | null;
   metadata?: {
     order_id?: string;
     order_number?: string;
@@ -12,101 +14,14 @@ type StripeCheckoutSession = {
 };
 
 type StripeEvent = {
+  id: string;
   type: string;
   data: {
     object: StripeCheckoutSession;
   };
 };
 
-type OrderLine = {
-  items: Array<{
-    id?: string;
-    selectedVariant?: {
-      id?: string;
-    };
-  }>;
-};
-
-type PaidOrder = {
-  id: string;
-  status: string;
-  order_lines: OrderLine[];
-};
-
-type InventoryProduct = {
-  id: string;
-  stock: number;
-  variants: Array<{
-    id: string;
-    title: string;
-    sku: string;
-    price: number;
-    stock: number;
-    status?: string;
-  }> | null;
-};
-
-function verifyStripeSignature(payload: string, signatureHeader: string, secret: string) {
-  const parts = Object.fromEntries(
-    signatureHeader.split(",").map((part) => {
-      const [key, value] = part.split("=");
-      return [key, value];
-    })
-  );
-
-  const timestamp = parts.t;
-  const signature = parts.v1;
-  if (!timestamp || !signature) return false;
-
-  const signedPayload = `${timestamp}.${payload}`;
-  const expected = createHmac("sha256", secret).update(signedPayload).digest("hex");
-  const expectedBuffer = Buffer.from(expected);
-  const signatureBuffer = Buffer.from(signature);
-
-  return expectedBuffer.length === signatureBuffer.length && timingSafeEqual(expectedBuffer, signatureBuffer);
-}
-
-async function decrementInventory(orderId: string) {
-  const [order] = await supabaseAdminRequest<PaidOrder[]>(
-    `orders?id=eq.${encodeURIComponent(orderId)}&select=id,status,order_lines(items)`
-  );
-  if (!order || order.status === "paid") return;
-
-  const counts = new Map<string, { productId: string; variantId?: string; quantity: number }>();
-  order.order_lines.forEach((line) => {
-    line.items.forEach((item) => {
-      if (!item.id) return;
-      const variantId = item.selectedVariant?.id;
-      const key = `${item.id}::${variantId || ""}`;
-      const current = counts.get(key);
-      counts.set(key, { productId: item.id, variantId, quantity: (current?.quantity || 0) + 1 });
-    });
-  });
-
-  for (const entry of counts.values()) {
-    const [product] = await supabaseAdminRequest<InventoryProduct[]>(
-      `products?legacy_id=eq.${encodeURIComponent(entry.productId)}&select=id,stock,variants`
-    );
-    if (!product) continue;
-
-    const update: { stock: number; variants?: InventoryProduct["variants"] } = {
-      stock: Math.max(0, Number(product.stock || 0) - entry.quantity)
-    };
-
-    if (entry.variantId && Array.isArray(product.variants)) {
-      update.variants = product.variants.map((variant) =>
-        variant.id === entry.variantId
-          ? { ...variant, stock: Math.max(0, Number(variant.stock || 0) - entry.quantity) }
-          : variant
-      );
-    }
-
-    await supabaseAdminRequest(`products?id=eq.${encodeURIComponent(product.id)}`, {
-      method: "PATCH",
-      body: JSON.stringify(update)
-    });
-  }
-}
+type PaymentResult = { processed: boolean; reason: string };
 
 async function loadMailOrder(orderId: string) {
   const [order] = await supabaseAdminRequest<MailOrder[]>(
@@ -132,13 +47,19 @@ export async function POST(request: Request) {
     const event = JSON.parse(payload) as StripeEvent;
 
     if (event.type === "checkout.session.completed") {
-      const orderId = event.data.object.metadata?.order_id;
-      if (orderId) {
-        await decrementInventory(orderId);
-        await supabaseAdminRequest(`orders?id=eq.${encodeURIComponent(orderId)}`, {
-          method: "PATCH",
-          body: JSON.stringify({ status: "paid" })
+      const session = event.data.object;
+      const orderId = session.metadata?.order_id;
+      if (orderId && session.payment_status === "paid") {
+        const [result] = await supabaseAdminRequest<PaymentResult[]>("rpc/process_stripe_checkout_payment", {
+          method: "POST",
+          body: JSON.stringify({
+            p_event_id: event.id,
+            p_order_id: orderId,
+            p_amount_total: session.amount_total ?? -1
+          })
         });
+        if (!result) throw new Error("Stripe-betalingen gav intet database-resultat");
+
         const order = await loadMailOrder(orderId);
         if (order) {
           await sendOrderPaidEmails(order);

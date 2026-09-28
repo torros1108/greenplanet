@@ -1,5 +1,18 @@
 import { NextResponse } from "next/server";
+import {
+  giftboxPackagingPrice,
+  roundMoney,
+  shippingPrice,
+  type CheckoutProduct,
+  type CheckoutVariant
+} from "@/lib/checkoutPricing";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
+
+type LineSource = {
+  type?: "giftbox" | "custom" | "product";
+  giftboxId?: string;
+  selectedVariants?: Record<string, string>;
+};
 
 type OrderLineInput = {
   title: string;
@@ -12,7 +25,9 @@ type OrderLineInput = {
     brand: string;
     price: number;
     sku?: string;
+    selectedVariant?: CheckoutVariant;
   }>;
+  source?: LineSource;
 };
 
 type OrderInput = {
@@ -37,6 +52,18 @@ type OrderInput = {
     note?: string;
   };
 };
+
+type GiftboxRow = {
+  legacy_id: string | null;
+  title: string;
+  box_price: number;
+};
+
+type CanonicalLine = OrderLineInput & {
+  total: number;
+};
+
+class CheckoutError extends Error {}
 
 function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
@@ -77,6 +104,106 @@ function validateOrder(payload: OrderInput) {
   }
 
   return errors;
+}
+
+function liveVariants(product: CheckoutProduct) {
+  return Array.isArray(product.variants)
+    ? product.variants.filter((variant) => variant.status !== "draft" && variant.status !== "archived")
+    : [];
+}
+
+async function priceOrder(payload: OrderInput): Promise<OrderInput> {
+  if (payload.lines.length > 20) throw new CheckoutError("Kurven indeholder for mange linjer");
+
+  const [products, giftboxes] = await Promise.all([
+    supabaseAdminRequest<CheckoutProduct[]>(
+      "products?status=eq.live&select=legacy_id,title,brand,price,stock,sku,variants"
+    ),
+    supabaseAdminRequest<GiftboxRow[]>(
+      "giftboxes?status=eq.live&select=legacy_id,title,box_price"
+    )
+  ]);
+  const productMap = new Map(products.filter((product) => product.legacy_id).map((product) => [product.legacy_id!, product]));
+  const giftboxMap = new Map(giftboxes.filter((giftbox) => giftbox.legacy_id).map((giftbox) => [giftbox.legacy_id!, giftbox]));
+  const requestedStock = new Map<string, number>();
+  const pricedLines: CanonicalLine[] = [];
+  let itemCount = 0;
+
+  for (const line of payload.lines) {
+    if (!line.items?.length) continue;
+    itemCount += line.items.length;
+    if (itemCount > 100) throw new CheckoutError("Kurven indeholder for mange produkter");
+
+    const sourceType = line.source?.type;
+    if (!sourceType || !["giftbox", "custom", "product"].includes(sourceType)) {
+      throw new CheckoutError("Kurven indeholder en ugyldig varelinje");
+    }
+
+    const canonicalItems = line.items.map((item) => {
+      const product = productMap.get(clean(item.id));
+      if (!product) throw new CheckoutError("Et produkt i kurven er ikke længere tilgængeligt");
+
+      const variants = liveVariants(product);
+      const requestedVariantId = clean(item.selectedVariant?.id || line.source?.selectedVariants?.[item.id]);
+      const variant = requestedVariantId ? variants.find((candidate) => candidate.id === requestedVariantId) : undefined;
+      if (requestedVariantId && !variant) throw new CheckoutError(`${product.title}: Varianten er ikke længere tilgængelig`);
+      if (sourceType !== "giftbox" && variants.length > 0 && !variant) {
+        throw new CheckoutError(`${product.title}: Vælg en variant før betaling`);
+      }
+
+      const stockKey = `${product.legacy_id}::${variant?.id || ""}`;
+      requestedStock.set(stockKey, (requestedStock.get(stockKey) || 0) + 1);
+
+      return {
+        id: product.legacy_id!,
+        title: product.title,
+        brand: product.brand,
+        price: roundMoney(Number(variant?.price ?? product.price)),
+        sku: variant?.sku || product.sku || "",
+        ...(variant ? { selectedVariant: { ...variant, price: roundMoney(Number(variant.price)) } } : {})
+      };
+    });
+
+    let packagingPrice = 0;
+    let title = canonicalItems.length === 1 ? canonicalItems[0].title : "Byg-selv gaveæske";
+    if (sourceType === "custom") packagingPrice = giftboxPackagingPrice;
+    if (sourceType === "giftbox") {
+      const giftbox = giftboxMap.get(clean(line.source?.giftboxId));
+      if (!giftbox) throw new CheckoutError("Gaveæsken er ikke længere tilgængelig");
+      packagingPrice = roundMoney(Number(giftbox.box_price));
+      title = giftbox.title;
+    }
+
+    pricedLines.push({
+      title,
+      note: clean(line.note).slice(0, 1000),
+      cardText: clean(line.cardText).slice(0, 1000),
+      items: canonicalItems,
+      source: line.source,
+      total: roundMoney(canonicalItems.reduce((sum, item) => sum + item.price, 0) + packagingPrice)
+    });
+  }
+
+  if (!pricedLines.length) throw new CheckoutError("Kurven er tom");
+
+  for (const [key, quantity] of requestedStock) {
+    const [productId, variantId] = key.split("::");
+    const product = productMap.get(productId);
+    const variant = variantId ? liveVariants(product!).find((candidate) => candidate.id === variantId) : undefined;
+    const available = Number(variant?.stock ?? product?.stock ?? 0);
+    if (available < quantity) throw new CheckoutError(`${product?.title || "Produkt"}: Der er kun ${available} på lager`);
+  }
+
+  const freight = shippingPrice(payload.delivery?.method);
+  if (freight > 0) {
+    pricedLines.push({ title: "Fragt", note: clean(payload.delivery?.method), cardText: "", items: [], total: freight });
+  }
+
+  return {
+    ...payload,
+    lines: pricedLines,
+    total: roundMoney(pricedLines.reduce((sum, line) => sum + line.total, 0))
+  };
 }
 
 function orderBody(orderNumber: string, payload: OrderInput, includeCustomerProfile = true) {
@@ -125,11 +252,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "STRIPE_SECRET_KEY mangler" }, { status: 500 });
     }
 
-    const payload = (await request.json()) as OrderInput;
-    const validationErrors = validateOrder(payload);
+    const submittedPayload = (await request.json()) as OrderInput;
+    const validationErrors = validateOrder(submittedPayload);
     if (validationErrors.length) {
       return NextResponse.json({ error: validationErrors[0], errors: validationErrors }, { status: 400 });
     }
+    const payload = await priceOrder(submittedPayload);
 
     const orderNumber = `GP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(1000 + Math.random() * 9000)}`;
     const [order] = await createOrder(orderNumber, payload);
@@ -188,6 +316,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: session.id, url: session.url, orderNumber: order.order_number, supabaseId: order.id });
   } catch (error) {
     console.error(error);
+    if (error instanceof CheckoutError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: "Betaling kunne ikke startes" }, { status: 500 });
   }
 }
