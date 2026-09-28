@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { sendOrderPaidEmails, type MailOrder } from "@/lib/mail";
+import { isPaidCheckoutEvent } from "@/lib/stripeEvents";
 import { verifyStripeSignature } from "@/lib/stripeSignature";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 
@@ -46,10 +47,10 @@ export async function POST(request: Request) {
 
     const event = JSON.parse(payload) as StripeEvent;
 
-    if (event.type === "checkout.session.completed") {
+    if (isPaidCheckoutEvent(event.type, event.data.object.payment_status)) {
       const session = event.data.object;
       const orderId = session.metadata?.order_id;
-      if (orderId && session.payment_status === "paid") {
+      if (orderId) {
         const [result] = await supabaseAdminRequest<PaymentResult[]>("rpc/process_stripe_checkout_payment", {
           method: "POST",
           body: JSON.stringify({

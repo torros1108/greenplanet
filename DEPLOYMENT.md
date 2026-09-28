@@ -4,19 +4,22 @@
 
 1. Create a Supabase project named `greenplanet`.
 2. Open SQL Editor and run `supabase/schema.sql`.
-3. Run `supabase/seed.sql` to import starter products, gift boxes, gift box composition, and policy pages.
-4. Copy these values into `.env.local` locally and into Vercel environment variables later:
+3. Run `supabase/security-hardening.sql` to install atomic Stripe processing and persistent admin login rate limiting.
+4. Run `supabase/activity-schema.sql` to install visitor and cart activity tracking.
+5. Run `supabase/seed.sql` to import starter products, gift boxes, gift box composition, and policy pages.
+6. Copy these values into `.env.local` locally and into Vercel environment variables later:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ADMIN_PASSWORD`
+   - `ADMIN_RATE_LIMIT_SECRET` (recommended; use a separate random secret)
    - `STRIPE_SECRET_KEY`
    - `STRIPE_WEBHOOK_SECRET` (when webhooks are enabled)
    - `RESEND_API_KEY`
    - `MAIL_FROM`
    - `ORDER_NOTIFICATION_EMAIL`
-5. Keep `SUPABASE_SERVICE_ROLE_KEY` secret. It must only be used in server routes.
-6. Run `supabase/activity-schema.sql` if the project already exists and you only need to add visitor/cart activity.
+7. Keep `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_RATE_LIMIT_SECRET`, Stripe keys, and Resend keys secret. They must only be used in server routes.
+8. Existing projects must also run new SQL migration files before deploying application code that depends on them.
 
 ## 2. Vercel
 
@@ -26,7 +29,7 @@
 4. Deploy.
 5. In Stripe Dashboard, create a webhook endpoint:
    - `https://greenplanet.dk/api/stripe/webhook`
-   - Event: `checkout.session.completed`
+   - Events: `checkout.session.completed` and `checkout.session.async_payment_succeeded`
    - Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
 
 ## 3. Domain

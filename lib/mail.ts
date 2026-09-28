@@ -1,4 +1,5 @@
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
+import { orderMailIdempotencyKey } from "@/lib/mailIdempotency";
 
 type MailTemplate = {
   slug: string;
@@ -49,6 +50,7 @@ type SendEmailInput = {
   subject: string;
   text: string;
   html?: string;
+  idempotencyKey?: string;
 };
 
 function formatMoney(value: number | string) {
@@ -153,7 +155,7 @@ async function createPaidCustomerProfile(order: MailOrder) {
   }
 }
 
-async function sendResendEmail({ to, subject, text, html }: SendEmailInput) {
+async function sendResendEmail({ to, subject, text, html, idempotencyKey }: SendEmailInput) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.MAIL_FROM || "Greenplanet <hello@greenplanet.dk>";
 
@@ -166,7 +168,8 @@ async function sendResendEmail({ to, subject, text, html }: SendEmailInput) {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {})
     },
     body: JSON.stringify({ from, to, subject, text, html: html || textToHtml(text) })
   });
@@ -179,7 +182,12 @@ async function sendResendEmail({ to, subject, text, html }: SendEmailInput) {
   return true;
 }
 
-export async function sendTemplateEmail(slug: string, to: string, variables: Record<string, string>) {
+export async function sendTemplateEmail(
+  slug: string,
+  to: string,
+  variables: Record<string, string>,
+  idempotencyKey?: string
+) {
   const template = await loadTemplate(slug);
   if (!template) {
     console.warn(`Mailtemplate mangler: ${slug}`);
@@ -192,7 +200,8 @@ export async function sendTemplateEmail(slug: string, to: string, variables: Rec
     to,
     subject,
     text,
-    html: textToHtml(text, renderTemplate(template.preheader || "", variables))
+    html: textToHtml(text, renderTemplate(template.preheader || "", variables)),
+    idempotencyKey
   });
 }
 
@@ -201,7 +210,12 @@ export async function sendOrderPaidEmails(order: MailOrder) {
   const variables = orderVariables(order);
 
   if (order.customer_email && !order.order_confirmation_sent_at) {
-    const sent = await sendTemplateEmail("order_confirmation", order.customer_email, variables);
+    const sent = await sendTemplateEmail(
+      "order_confirmation",
+      order.customer_email,
+      variables,
+      orderMailIdempotencyKey(order.id, "order-confirmation")
+    );
     if (sent) updates.order_confirmation_sent_at = new Date().toISOString();
   }
 
@@ -212,14 +226,24 @@ export async function sendOrderPaidEmails(order: MailOrder) {
   ) {
     const customerCreated = await createPaidCustomerProfile(order);
     if (customerCreated) {
-      const sent = await sendTemplateEmail("customer_welcome", order.customer_email, variables);
+      const sent = await sendTemplateEmail(
+        "customer_welcome",
+        order.customer_email,
+        variables,
+        orderMailIdempotencyKey(order.id, "customer-welcome")
+      );
       if (sent) updates.customer_welcome_sent_at = new Date().toISOString();
     }
   }
 
   const adminEmail = process.env.ORDER_NOTIFICATION_EMAIL;
   if (adminEmail && !order.admin_notification_sent_at) {
-    const sent = await sendTemplateEmail("admin_order_notification", adminEmail, variables);
+    const sent = await sendTemplateEmail(
+      "admin_order_notification",
+      adminEmail,
+      variables,
+      orderMailIdempotencyKey(order.id, "admin-order-notification")
+    );
     if (sent) updates.admin_notification_sent_at = new Date().toISOString();
   }
 
