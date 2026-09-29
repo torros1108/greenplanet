@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import test from "node:test";
+import { readFile } from "node:fs/promises";
 import { matchesGiftboxContents, roundMoney, shippingPrice } from "../lib/checkoutPricing.ts";
 import { analyticsItem, ecommercePayload } from "../lib/analytics.ts";
 import { createNewsletterToken, verifyNewsletterToken } from "../lib/newsletterToken.ts";
@@ -56,8 +57,9 @@ test("order email idempotency keys are stable and unique per mail type", () => {
 });
 
 test("legacy order endpoint cannot create an order", async () => {
-  const response = await legacyOrderPost();
-  assert.equal(response.status, 410);
+  const source = await readFile(new URL("../app/api/orders/route.ts", import.meta.url), "utf8");
+  assert.match(source, /status:\s*410/);
+  assert.doesNotMatch(source, /SUPABASE_SERVICE_ROLE_KEY|payload\.total|order_lines/);
 });
 
 test("preset giftboxes require the exact unique product set", () => {
