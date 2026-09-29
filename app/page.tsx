@@ -809,6 +809,8 @@ export default function Home() {
   }
 
   function openProductDetail(product: Product, variant?: ProductVariant) {
+    const price = variant?.price ?? product.price;
+    sendEcommerceEvent("view_item", ecommercePayload(price, [analyticsItem({ id: product.id, title: product.title, brand: product.brand, price, variant: variant?.title })]));
     setSelectedProductId(product.id);
     setSelectedVariantId(variant?.id || "");
     setView("product");
@@ -851,6 +853,7 @@ export default function Home() {
           }
       }
     ]);
+    sendEcommerceEvent("add_to_cart", ecommercePayload(giftboxTotal(giftbox), items.map((item) => analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price }))));
     setView("orders");
   }
 
@@ -876,6 +879,7 @@ export default function Home() {
         ? current.map((line) => line.id === existing.id ? updatedLine : line)
         : [...current, updatedLine];
     });
+    sendEcommerceEvent("add_to_cart", ecommercePayload(customGiftboxTotal, selectedBuilderItems.map(({ item }) => analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price, variant: item.selectedVariant?.title }))));
     setEditingCartLineId(null);
     setMessage("");
     setView("orders");
@@ -912,6 +916,7 @@ export default function Home() {
       ? { ...product, price: variant.price, stock: variant.stock, sku: variant.sku, image: variant.image || product.image, selectedVariant: variant }
       : product;
 
+    sendEcommerceEvent("add_to_cart", ecommercePayload(item.price, [analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price, variant: item.selectedVariant?.title })]));
     setCart((current) => [
       ...current,
         {
@@ -932,6 +937,11 @@ export default function Home() {
 
   function updateCartCardText(id: string, cardText: string) {
     setCart((current) => current.map((line) => line.id === id ? { ...line, cardText } : line));
+  }
+
+  function removeCartLine(line: CartLine) {
+    sendEcommerceEvent("remove_from_cart", ecommercePayload(line.total, cartAnalyticsItems([line])));
+    setCart((current) => current.filter((item) => item.id !== line.id));
   }
 
   function resetCheckout() {
