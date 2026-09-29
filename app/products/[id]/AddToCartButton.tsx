@@ -48,7 +48,7 @@ export function AddToCartButton({ product }: { product: Product }) {
       cart = [];
     }
 
-    const item = selectedVariant
+    const item: Product & { selectedVariant?: ProductVariant } = selectedVariant
       ? { ...product, price: selectedVariant.price, stock: selectedVariant.stock, sku: selectedVariant.sku, image: selectedVariant.image || product.image, selectedVariant }
       : product;
     const title = selectedVariant ? `${product.title} · ${selectedVariant.title}` : product.title;
