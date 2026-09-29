@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -210,21 +210,7 @@ function parseCsv(text: string) {
   return rows.slice(1).map((cells) => Object.fromEntries(headers.map((header, index) => [header, cells[index] || ""])));
 }
 
-async function supabaseGet<T>(path: string): Promise<T> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) throw new Error("Supabase mangler env");
 
-  const response = await fetch(`${url}/rest/v1/${path}`, {
-    headers: {
-      apikey: anonKey,
-      Authorization: `Bearer ${anonKey}`
-    }
-  });
-
-  if (!response.ok) throw new Error(`Supabase svarede ${response.status}`);
-  return response.json() as Promise<T>;
-}
 
 function polishDanishProductCopy(value: string) {
   return value
@@ -251,7 +237,7 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
           }))
           .filter((spec) => spec.label && spec.value)
       : undefined,
-    cost: Number(row.cost) || 0,
+    cost: 0,
     price: Number(row.price) || 0,
     stock: row.stock || 0,
     sku: row.sku || "",
@@ -634,28 +620,18 @@ export default function Home() {
 
     async function loadSupabaseData() {
       try {
-        async function loadProducts() {
-          try {
-            return await supabaseGet<SupabaseProductRow[]>(
-              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,status,specs&status=eq.live&order=legacy_id.asc"
-            );
-          } catch {
-            return supabaseGet<SupabaseProductRow[]>(
-              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,image_url,giftbox_eligible,occasions,shape,status&status=eq.live&order=legacy_id.asc"
-            );
-          }
-        }
-
-        const [productRows, giftboxRows, linkRows, pageRows] = await Promise.all([
-          loadProducts(),
-          supabaseGet<SupabaseGiftboxRow[]>(
-            "giftboxes?select=legacy_id,slug,title,category,description,note,recipient,occasion,packing,card_text,delivery,why,details&status=eq.live&order=legacy_id.asc"
-          ),
-          supabaseGet<SupabaseGiftboxLinkRow[]>(
-            "giftbox_products?select=sort_order,giftboxes(legacy_id),products(legacy_id)&order=sort_order.asc"
-          ),
-          supabaseGet<SupabasePageRow[]>("pages?select=slug,title,eyebrow,intro,sections")
-        ]);
+        const response = await fetch("/api/storefront/catalog", { headers: { Accept: "application/json" } });
+        if (!response.ok) throw new Error(`Kataloget svarede ${response.status}`);
+        const catalog = await response.json() as {
+          products: SupabaseProductRow[];
+          giftboxes: SupabaseGiftboxRow[];
+          links: SupabaseGiftboxLinkRow[];
+          pages: SupabasePageRow[];
+        };
+        const productRows = catalog.products;
+        const giftboxRows = catalog.giftboxes;
+        const linkRows = catalog.links;
+        const pageRows = catalog.pages;
 
         if (cancelled) return;
 
@@ -1129,7 +1105,8 @@ export default function Home() {
       }
 
       setNewsletterEmail("");
-      setNewsletterStatus("Tak, du er skrevet op.");
+      const data = await response.json() as { message?: string };
+      setNewsletterStatus(data.message || "Tjek din indbakke og bekræft tilmeldingen.");
     } catch {
       setNewsletterStatus("Tilmelding kunne ikke gemmes lige nu.");
     }
