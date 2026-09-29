@@ -59,6 +59,11 @@ type GiftboxRow = {
   box_price: number;
 };
 
+type GiftboxLinkRow = {
+  giftboxes: { legacy_id: string | null } | null;
+  products: { legacy_id: string | null } | null;
+};
+
 type CanonicalLine = OrderLineInput & {
   total: number;
 };
@@ -125,6 +130,13 @@ async function priceOrder(payload: OrderInput): Promise<OrderInput> {
   ]);
   const productMap = new Map(products.filter((product) => product.legacy_id).map((product) => [product.legacy_id!, product]));
   const giftboxMap = new Map(giftboxes.filter((giftbox) => giftbox.legacy_id).map((giftbox) => [giftbox.legacy_id!, giftbox]));
+  const giftboxProductIds = giftboxLinks.reduce<Map<string, string[]>>((groups, link) => {
+    const giftboxId = link.giftboxes?.legacy_id;
+    const productId = link.products?.legacy_id;
+    if (!giftboxId || !productId) return groups;
+    groups.set(giftboxId, [...(groups.get(giftboxId) || []), productId]);
+    return groups;
+  }, new Map());
   const requestedStock = new Map<string, number>();
   const pricedLines: CanonicalLine[] = [];
   let itemCount = 0;
@@ -170,6 +182,12 @@ async function priceOrder(payload: OrderInput): Promise<OrderInput> {
     if (sourceType === "giftbox") {
       const giftbox = giftboxMap.get(clean(line.source?.giftboxId));
       if (!giftbox) throw new CheckoutError("Gaveæsken er ikke længere tilgængelig");
+      const expectedIds = [...(giftboxProductIds.get(giftbox.legacy_id!) || [])].sort();
+      const requestedIds = canonicalItems.map((item) => item.id).sort();
+      const hasDuplicates = new Set(requestedIds).size !== requestedIds.length;
+      if (hasDuplicates || expectedIds.length !== requestedIds.length || expectedIds.some((id, index) => id !== requestedIds[index])) {
+        throw new CheckoutError("Gaveæskens indhold er ændret. Genindlæs siden og prøv igen.");
+      }
       packagingPrice = roundMoney(Number(giftbox.box_price));
       title = giftbox.title;
     }
