@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { hasAnalyticsConsent } from "@/app/AnalyticsConsent";
+import { analyticsItem, ecommercePayload } from "@/lib/analytics";
 import type { Product, ProductVariant } from "@/lib/data";
 
 const cartStorageKey = "greenplanet-cart";
@@ -28,6 +30,10 @@ export function AddToCartButton({ product }: { product: Product }) {
   const [variantId, setVariantId] = useState("");
   const selectedVariant = variants.find((variant) => variant.id === variantId) || null;
   const variantLabel = product.category === "Move" ? "størrelse" : "variant";
+
+  useEffect(() => {
+    if (hasAnalyticsConsent() && window.gtag) window.gtag("event", "view_item", ecommercePayload(product.price, [analyticsItem({ id: product.id, title: product.title, brand: product.brand, price: product.price })]));
+  }, [product]);
 
   function addToCart() {
     if (variants.length > 0 && !selectedVariant) return;
@@ -57,6 +63,7 @@ export function AddToCartButton({ product }: { product: Product }) {
     });
 
     window.localStorage.setItem(cartStorageKey, JSON.stringify(cart));
+    if (hasAnalyticsConsent() && window.gtag) window.gtag("event", "add_to_cart", ecommercePayload(item.price, [analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price, variant: item.selectedVariant?.title })]));
     window.location.href = "/#orders";
   }
 
