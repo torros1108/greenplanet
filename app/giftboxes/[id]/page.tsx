@@ -3,18 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { giftboxes, initialProducts, productSpecs, type Product } from "@/lib/data";
 import { AddGiftboxToCartButton } from "./AddGiftboxToCartButton";
+import { getGiftboxDetail } from "@/lib/storefrontServer";
 
 const boxPrice = 49;
 const siteUrl = "https://www.greenplanet.dk";
 
 function money(value: number) {
   return `${Math.round(value)} kr.`;
-}
-
-function giftboxItems(productIds: string[]) {
-  return productIds
-    .map((id) => initialProducts.find((product) => product.id === id))
-    .filter((product): product is Product => Boolean(product));
 }
 
 
@@ -34,8 +29,9 @@ type GiftboxPageProps = {
 
 export async function generateMetadata({ params }: GiftboxPageProps): Promise<Metadata> {
   const { id } = await params;
-  const giftbox = giftboxes.find((item) => item.id === id);
-  const items = giftbox ? giftboxItems(giftbox.productIds) : [];
+  const detail = await getGiftboxDetail(id);
+  const giftbox = detail?.giftbox;
+  const items = detail?.items || [];
   const image = items.find((item) => item.image)?.image;
   const title = giftbox ? `${giftbox.title} gaveæske` : "Gaveæske";
   const description = giftbox ? `${giftbox.description} Pakkes som gaveæske med personlig hilsen og mulighed for direkte levering.` : "Naturlige gaveæsker fra Greenplanet.";
@@ -66,11 +62,10 @@ export async function generateMetadata({ params }: GiftboxPageProps): Promise<Me
 
 export default async function GiftboxPage({ params }: GiftboxPageProps) {
   const { id } = await params;
-  const giftbox = giftboxes.find((item) => item.id === id);
-  if (!giftbox) notFound();
-
-  const items = giftboxItems(giftbox.productIds);
-  const total = items.reduce((sum, product) => sum + product.price, 0) + boxPrice;
+  const detail = await getGiftboxDetail(id);
+  if (!detail) notFound();
+  const { giftbox, items, boxPrice: liveBoxPrice } = detail;
+  const total = items.reduce((sum, product) => sum + product.price, 0) + liveBoxPrice;
   const productsTotal = items.reduce((sum, product) => sum + product.price, 0);
   const image = items.find((item) => item.image)?.image;
   const giftboxStructuredData = {
