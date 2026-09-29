@@ -5,7 +5,6 @@ import { readFile } from "node:fs/promises";
 import { matchesGiftboxContents, roundMoney, shippingPrice } from "../lib/checkoutPricing.ts";
 import { analyticsItem, ecommercePayload } from "../lib/analytics.ts";
 import { createNewsletterToken, verifyNewsletterToken } from "../lib/newsletterToken.ts";
-import { POST as legacyOrderPost } from "../app/api/orders/route.ts";
 import { orderMailIdempotencyKey } from "../lib/mailIdempotency.ts";
 import { isPaidCheckoutEvent } from "../lib/stripeEvents.ts";
 import { verifyStripeSignature } from "../lib/stripeSignature.ts";
