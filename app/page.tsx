@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { hasAnalyticsConsent, openCookieSettings } from "./AnalyticsConsent";
+import { analyticsItem, ecommercePayload, type AnalyticsItem } from "@/lib/analytics";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 
 const boxPrice = 49;
@@ -129,6 +130,26 @@ type SupabasePageRow = {
   sections: { title: string; body: string }[] | null;
 };
 
+function sendEcommerceEvent(name: "view_item" | "add_to_cart" | "remove_from_cart" | "begin_checkout" | "purchase", payload: ReturnType<typeof ecommercePayload>) {
+  if (!hasAnalyticsConsent() || typeof window === "undefined" || !window.gtag) return;
+  window.gtag("event", name, payload);
+}
+
+function cartAnalyticsItems(lines: CartLine[]): AnalyticsItem[] {
+  return lines.flatMap((line) => line.items.map((item) => analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price, variant: item.selectedVariant?.title })));
+}
+
+async function trackVerifiedPurchase(orderNumber: string) {
+  if (!hasAnalyticsConsent()) return;
+  const storageKey = `greenplanet-ga4-purchase-${orderNumber}`;
+  if (window.localStorage.getItem(storageKey)) return;
+  const response = await fetch(`/api/orders/paid?order=${encodeURIComponent(orderNumber)}`, { headers: { Accept: "application/json" } });
+  if (!response.ok) return;
+  const data = await response.json() as { paid?: boolean; event?: ReturnType<typeof ecommercePayload> };
+  if (!data.paid || !data.event) return;
+  sendEcommerceEvent("purchase", data.event);
+  window.localStorage.setItem(storageKey, "sent");
+}
 function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
@@ -734,6 +755,7 @@ export default function Home() {
 
       resetCheckout();
       void trackActivity("converted", orderNumber || "");
+      if (orderNumber) void trackVerifiedPurchase(orderNumber);
       setView("confirmation");
       window.history.replaceState({}, "", "/");
     }
@@ -998,6 +1020,7 @@ export default function Home() {
     let orderId = `GP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
+      sendEcommerceEvent("begin_checkout", ecommercePayload(checkoutTotal, cartAnalyticsItems(cart)));
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1678,7 +1701,7 @@ export default function Home() {
                         {money(line.total)}
                         <span className="cart-line-actions">
                           {line.items.length > 1 && <button className="chip" onClick={() => editCartGiftbox(line)}>Rediger</button>}
-                          <button className="chip" onClick={() => setCart((current) => current.filter((item) => item.id !== line.id))}>Fjern</button>
+                          <button className="chip" onClick={() => removeCartLine(line)}>Fjern</button>
                         </span>
                       </strong>
                     </div>
