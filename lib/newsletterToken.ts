@@ -9,7 +9,7 @@ type TokenPayload = {
 };
 
 function secret() {
-  const value = process.env.NEWSLETTER_TOKEN_SECRET || process.env.ADMIN_RATE_LIMIT_SECRET;
+  const value = process.env.NEWSLETTER_TOKEN_SECRET || process.env.ADMIN_RATE_LIMIT_SECRET || process.env.ADMIN_PASSWORD;
   if (!value) throw new Error("NEWSLETTER_TOKEN_SECRET mangler");
   return value;
 }
