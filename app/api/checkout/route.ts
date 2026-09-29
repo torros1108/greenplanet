@@ -121,12 +121,15 @@ function liveVariants(product: CheckoutProduct) {
 async function priceOrder(payload: OrderInput): Promise<OrderInput> {
   if (payload.lines.length > 20) throw new CheckoutError("Kurven indeholder for mange linjer");
 
-  const [products, giftboxes] = await Promise.all([
+  const [products, giftboxes, giftboxLinks] = await Promise.all([
     supabaseAdminRequest<CheckoutProduct[]>(
       "products?status=eq.live&select=legacy_id,title,brand,price,stock,sku,variants"
     ),
     supabaseAdminRequest<GiftboxRow[]>(
       "giftboxes?status=eq.live&select=legacy_id,title,box_price"
+    ),
+    supabaseAdminRequest<GiftboxLinkRow[]>(
+      "giftbox_products?select=giftboxes(legacy_id),products(legacy_id)"
     )
   ]);
   const productMap = new Map(products.filter((product) => product.legacy_id).map((product) => [product.legacy_id!, product]));
