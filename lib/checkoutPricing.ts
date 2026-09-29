@@ -28,3 +28,10 @@ export function roundMoney(value: number) {
 export function shippingPrice(deliveryMethod?: string) {
   return deliveryMethod === "Afhentes / aftales" ? 0 : deliveryPrice;
 }
+
+export function matchesGiftboxContents(expectedIds: string[], requestedIds: string[]) {
+  const expected = [...expectedIds].sort();
+  const requested = [...requestedIds].sort();
+  return new Set(requested).size === requested.length && expected.length === requested.length
+    && expected.every((id, index) => id === requested[index]);
+}

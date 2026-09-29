@@ -14,7 +14,6 @@ type SupabaseProductRow = {
   brand: string;
   category: string;
   description: string;
-  cost: number | string;
   price: number | string;
   stock: number;
   sku: string | null;
@@ -37,7 +36,7 @@ function mapProduct(row: SupabaseProductRow): Product {
     description: row.description,
     specs: row.specs || undefined,
     images: row.images || undefined,
-    cost: Number(row.cost),
+    cost: 0,
     price: Number(row.price),
     stock: row.stock,
     sku: row.sku || row.slug,
@@ -50,7 +49,7 @@ function mapProduct(row: SupabaseProductRow): Product {
   };
 }
 
-const productSelect = "legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,specs";
+const productSelect = "legacy_id,slug,title,brand,category,description,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,specs";
 
 const getProduct = cache(async (id: string) => {
   try {

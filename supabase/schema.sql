@@ -122,7 +122,10 @@ create table if not exists public.newsletter_subscribers (
   id uuid primary key default gen_random_uuid(),
   email text not null unique,
   name text,
-  status text default 'active' not null check (status in ('active', 'unsubscribed')),
+  status text default 'pending' not null check (status in ('pending', 'active', 'unsubscribed')),
+  confirmation_sent_at timestamptz,
+  confirmed_at timestamptz,
+  unsubscribed_at timestamptz,
   created_at timestamptz default now() not null,
   updated_at timestamptz default now() not null
 );

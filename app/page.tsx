@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { hasAnalyticsConsent, openCookieSettings } from "./AnalyticsConsent";
+import { analyticsItem, ecommercePayload, type AnalyticsItem } from "@/lib/analytics";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 
 const boxPrice = 49;
@@ -129,6 +130,26 @@ type SupabasePageRow = {
   sections: { title: string; body: string }[] | null;
 };
 
+function sendEcommerceEvent(name: "view_item" | "add_to_cart" | "remove_from_cart" | "begin_checkout" | "purchase", payload: ReturnType<typeof ecommercePayload>) {
+  if (!hasAnalyticsConsent() || typeof window === "undefined" || !window.gtag) return;
+  window.gtag("event", name, payload);
+}
+
+function cartAnalyticsItems(lines: CartLine[]): AnalyticsItem[] {
+  return lines.flatMap((line) => line.items.map((item) => analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price, variant: item.selectedVariant?.title })));
+}
+
+async function trackVerifiedPurchase(orderNumber: string) {
+  if (!hasAnalyticsConsent()) return;
+  const storageKey = `greenplanet-ga4-purchase-${orderNumber}`;
+  if (window.localStorage.getItem(storageKey)) return;
+  const response = await fetch(`/api/orders/paid?order=${encodeURIComponent(orderNumber)}`, { headers: { Accept: "application/json" } });
+  if (!response.ok) return;
+  const data = await response.json() as { paid?: boolean; event?: ReturnType<typeof ecommercePayload> };
+  if (!data.paid || !data.event) return;
+  sendEcommerceEvent("purchase", data.event);
+  window.localStorage.setItem(storageKey, "sent");
+}
 function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
@@ -210,21 +231,7 @@ function parseCsv(text: string) {
   return rows.slice(1).map((cells) => Object.fromEntries(headers.map((header, index) => [header, cells[index] || ""])));
 }
 
-async function supabaseGet<T>(path: string): Promise<T> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) throw new Error("Supabase mangler env");
 
-  const response = await fetch(`${url}/rest/v1/${path}`, {
-    headers: {
-      apikey: anonKey,
-      Authorization: `Bearer ${anonKey}`
-    }
-  });
-
-  if (!response.ok) throw new Error(`Supabase svarede ${response.status}`);
-  return response.json() as Promise<T>;
-}
 
 function polishDanishProductCopy(value: string) {
   return value
@@ -251,7 +258,7 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
           }))
           .filter((spec) => spec.label && spec.value)
       : undefined,
-    cost: Number(row.cost) || 0,
+    cost: 0,
     price: Number(row.price) || 0,
     stock: row.stock || 0,
     sku: row.sku || "",
@@ -634,28 +641,18 @@ export default function Home() {
 
     async function loadSupabaseData() {
       try {
-        async function loadProducts() {
-          try {
-            return await supabaseGet<SupabaseProductRow[]>(
-              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,status,specs&status=eq.live&order=legacy_id.asc"
-            );
-          } catch {
-            return supabaseGet<SupabaseProductRow[]>(
-              "products?select=legacy_id,slug,title,brand,category,description,cost,price,stock,sku,image_url,giftbox_eligible,occasions,shape,status&status=eq.live&order=legacy_id.asc"
-            );
-          }
-        }
-
-        const [productRows, giftboxRows, linkRows, pageRows] = await Promise.all([
-          loadProducts(),
-          supabaseGet<SupabaseGiftboxRow[]>(
-            "giftboxes?select=legacy_id,slug,title,category,description,note,recipient,occasion,packing,card_text,delivery,why,details&status=eq.live&order=legacy_id.asc"
-          ),
-          supabaseGet<SupabaseGiftboxLinkRow[]>(
-            "giftbox_products?select=sort_order,giftboxes(legacy_id),products(legacy_id)&order=sort_order.asc"
-          ),
-          supabaseGet<SupabasePageRow[]>("pages?select=slug,title,eyebrow,intro,sections")
-        ]);
+        const response = await fetch("/api/storefront/catalog", { headers: { Accept: "application/json" } });
+        if (!response.ok) throw new Error(`Kataloget svarede ${response.status}`);
+        const catalog = await response.json() as {
+          products: SupabaseProductRow[];
+          giftboxes: SupabaseGiftboxRow[];
+          links: SupabaseGiftboxLinkRow[];
+          pages: SupabasePageRow[];
+        };
+        const productRows = catalog.products;
+        const giftboxRows = catalog.giftboxes;
+        const linkRows = catalog.links;
+        const pageRows = catalog.pages;
 
         if (cancelled) return;
 
@@ -758,6 +755,7 @@ export default function Home() {
 
       resetCheckout();
       void trackActivity("converted", orderNumber || "");
+      if (orderNumber) void trackVerifiedPurchase(orderNumber);
       setView("confirmation");
       window.history.replaceState({}, "", "/");
     }
@@ -811,6 +809,8 @@ export default function Home() {
   }
 
   function openProductDetail(product: Product, variant?: ProductVariant) {
+    const price = variant?.price ?? product.price;
+    sendEcommerceEvent("view_item", ecommercePayload(price, [analyticsItem({ id: product.id, title: product.title, brand: product.brand, price, variant: variant?.title })]));
     setSelectedProductId(product.id);
     setSelectedVariantId(variant?.id || "");
     setView("product");
@@ -853,6 +853,7 @@ export default function Home() {
           }
       }
     ]);
+    sendEcommerceEvent("add_to_cart", ecommercePayload(giftboxTotal(giftbox), items.map((item) => analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price }))));
     setView("orders");
   }
 
@@ -878,6 +879,7 @@ export default function Home() {
         ? current.map((line) => line.id === existing.id ? updatedLine : line)
         : [...current, updatedLine];
     });
+    sendEcommerceEvent("add_to_cart", ecommercePayload(customGiftboxTotal, selectedBuilderItems.map(({ item }) => analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price, variant: item.selectedVariant?.title }))));
     setEditingCartLineId(null);
     setMessage("");
     setView("orders");
@@ -914,6 +916,7 @@ export default function Home() {
       ? { ...product, price: variant.price, stock: variant.stock, sku: variant.sku, image: variant.image || product.image, selectedVariant: variant }
       : product;
 
+    sendEcommerceEvent("add_to_cart", ecommercePayload(item.price, [analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price, variant: item.selectedVariant?.title })]));
     setCart((current) => [
       ...current,
         {
@@ -934,6 +937,11 @@ export default function Home() {
 
   function updateCartCardText(id: string, cardText: string) {
     setCart((current) => current.map((line) => line.id === id ? { ...line, cardText } : line));
+  }
+
+  function removeCartLine(line: CartLine) {
+    sendEcommerceEvent("remove_from_cart", ecommercePayload(line.total, cartAnalyticsItems([line])));
+    setCart((current) => current.filter((item) => item.id !== line.id));
   }
 
   function resetCheckout() {
@@ -1022,6 +1030,7 @@ export default function Home() {
     let orderId = `GP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
     try {
+      sendEcommerceEvent("begin_checkout", ecommercePayload(checkoutTotal, cartAnalyticsItems(cart)));
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1129,7 +1138,8 @@ export default function Home() {
       }
 
       setNewsletterEmail("");
-      setNewsletterStatus("Tak, du er skrevet op.");
+      const data = await response.json() as { message?: string };
+      setNewsletterStatus(data.message || "Tjek din indbakke og bekræft tilmeldingen.");
     } catch {
       setNewsletterStatus("Tilmelding kunne ikke gemmes lige nu.");
     }
@@ -1701,7 +1711,7 @@ export default function Home() {
                         {money(line.total)}
                         <span className="cart-line-actions">
                           {line.items.length > 1 && <button className="chip" onClick={() => editCartGiftbox(line)}>Rediger</button>}
-                          <button className="chip" onClick={() => setCart((current) => current.filter((item) => item.id !== line.id))}>Fjern</button>
+                          <button className="chip" onClick={() => removeCartLine(line)}>Fjern</button>
                         </span>
                       </strong>
                     </div>

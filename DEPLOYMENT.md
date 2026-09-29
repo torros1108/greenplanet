@@ -13,13 +13,14 @@
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `ADMIN_PASSWORD`
    - `ADMIN_RATE_LIMIT_SECRET` (recommended; use a separate random secret)
+   - `NEWSLETTER_TOKEN_SECRET` (a separate random secret for confirmation links)
    - `STRIPE_SECRET_KEY`
    - `STRIPE_WEBHOOK_SECRET` (when webhooks are enabled)
    - `RESEND_API_KEY`
    - `MAIL_FROM`
    - `ORDER_NOTIFICATION_EMAIL`
-7. Keep `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_RATE_LIMIT_SECRET`, Stripe keys, and Resend keys secret. They must only be used in server routes.
-8. Existing projects must also run new SQL migration files before deploying application code that depends on them.
+8. Keep `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD`, `ADMIN_RATE_LIMIT_SECRET`, Stripe keys, and Resend keys secret. They must only be used in server routes.
+9. Existing projects must also run new SQL migration files before deploying application code that depends on them.
 
 ## 2. Vercel
 
