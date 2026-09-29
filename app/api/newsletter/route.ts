@@ -13,7 +13,7 @@ function isValidEmail(email: string) {
 
 function rateLimitKey(request: Request, email: string) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip")?.trim() || "unknown";
-  const secret = process.env.NEWSLETTER_TOKEN_SECRET || process.env.ADMIN_RATE_LIMIT_SECRET;
+  const secret = process.env.NEWSLETTER_TOKEN_SECRET || process.env.ADMIN_RATE_LIMIT_SECRET || process.env.ADMIN_PASSWORD;
   if (!secret) throw new Error("NEWSLETTER_TOKEN_SECRET mangler");
   return createHmac("sha256", secret).update(`newsletter:${ip}:${email}`).digest("hex");
 }
