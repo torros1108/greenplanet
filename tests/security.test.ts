@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 import test from "node:test";
-import { roundMoney, shippingPrice } from "../lib/checkoutPricing.ts";
+import { matchesGiftboxContents, roundMoney, shippingPrice } from "../lib/checkoutPricing.ts";
+import { analyticsItem, ecommercePayload } from "../lib/analytics.ts";
+import { createNewsletterToken, verifyNewsletterToken } from "../lib/newsletterToken.ts";
+import { POST as legacyOrderPost } from "../app/api/orders/route.ts";
 import { orderMailIdempotencyKey } from "../lib/mailIdempotency.ts";
 import { isPaidCheckoutEvent } from "../lib/stripeEvents.ts";
 import { verifyStripeSignature } from "../lib/stripeSignature.ts";
@@ -50,4 +53,30 @@ test("order email idempotency keys are stable and unique per mail type", () => {
     orderMailIdempotencyKey(orderId, "order-confirmation"),
     orderMailIdempotencyKey(orderId, "admin-order-notification")
   );
+});
+
+test("legacy order endpoint cannot create an order", async () => {
+  const response = await legacyOrderPost();
+  assert.equal(response.status, 410);
+});
+
+test("preset giftboxes require the exact unique product set", () => {
+  assert.equal(matchesGiftboxContents(["p1", "p2"], ["p2", "p1"]), true);
+  assert.equal(matchesGiftboxContents(["p1", "p2"], ["p1", "p1"]), false);
+  assert.equal(matchesGiftboxContents(["p1", "p2"], ["p1", "p3"]), false);
+});
+
+test("newsletter tokens are signed, scoped and expire", () => {
+  process.env.NEWSLETTER_TOKEN_SECRET = "test-newsletter-secret";
+  const now = 1_800_000_000_000;
+  const token = createNewsletterToken("kunde@example.com", "confirm", now + 60_000);
+  assert.equal(verifyNewsletterToken(token, "confirm", now)?.email, "kunde@example.com");
+  assert.equal(verifyNewsletterToken(token, "unsubscribe", now), null);
+  assert.equal(verifyNewsletterToken(token, "confirm", now + 60_001), null);
+});
+
+test("GA4 ecommerce payload contains DKK and no customer data", () => {
+  const item = analyticsItem({ id: "p1", title: "Produkt", brand: "Brand", price: 149.95, variant: "M" });
+  const event = ecommercePayload(198.95, [item], "GP-TEST-1");
+  assert.deepEqual(event, { currency: "DKK", value: 198.95, transaction_id: "GP-TEST-1", items: [{ item_id: "p1", item_name: "Produkt", item_brand: "Brand", item_variant: "M", price: 149.95, quantity: 1 }] });
 });
