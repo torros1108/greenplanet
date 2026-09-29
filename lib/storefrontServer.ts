@@ -7,7 +7,11 @@ type ProductRow = {
   images?: string[] | null; giftbox_eligible: boolean; occasions: string[] | null; shape: Product["shape"];
   specs?: { label: string; value: string }[] | null;
 };
-type GiftboxRow = Giftbox & { legacy_id: string | null; slug: string; card_text: string | null; box_price: number | string };
+type GiftboxRow = {
+  legacy_id: string | null; slug: string; title: string; category: string; description: string; note: string | null;
+  recipient: string | null; occasion: string | null; packing: string | null; card_text: string | null;
+  delivery: string | null; why: string | null; details: string[] | null; box_price: number | string;
+};
 type LinkRow = { sort_order: number; giftboxes: { legacy_id: string | null } | null; products: { legacy_id: string | null } | null };
 
 function mapProduct(row: ProductRow): Product {
