@@ -20,7 +20,8 @@ const structuredData = {
     addressCountry: "DK"
   },
   vatID: "DK44640376",
-  sameAs: []
+  priceRange: "$$",
+  sameAs: ["https://www.instagram.com/greenplanet.dk/"]
 };
 
 export const metadata: Metadata = {
@@ -37,6 +38,9 @@ export const metadata: Metadata = {
     "gaveæske til nybagt mor",
     "barselsgave til mor",
     "babyshower gave",
+    "activewear",
+    "leggings",
+    "sports-bh",
     "Greenplanet"
   ],
   applicationName: "Greenplanet",

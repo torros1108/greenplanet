@@ -181,7 +181,7 @@ function inferCategory(brand: string, title: string) {
   const text = `${brand} ${title}`.toLowerCase();
   if (/baby|rabbit|towel|babynest|sleeper|sokind|belly/.test(text)) return "Baby & barsel";
   if (/klei|olie|rozenwater|ghassoul|argan|hennep|bentoniet/.test(text)) return "Naturlig beauty";
-  if (/legging|bra|jacket|sweat|shorts|athletics/.test(text)) return "Activewear";
+  if (/legging|bra|bh|jacket|jakke|sweat|shorts|athletics/.test(text)) return "Move";
   return "Livsstil";
 }
 
@@ -1097,7 +1097,7 @@ export default function Home() {
         stock: Number(row.stock || row.Antal || 0),
         sku: row.sku || row.SKU || "",
         image: row.image_urls || row["Billed-URL"] || row.image || "",
-        giftbox: String(row.giftbox_eligible || (inferredCategory === "Activewear" ? "no" : "yes")).toLowerCase() !== "no",
+        giftbox: String(row.giftbox_eligible || (inferredCategory === "Move" ? "no" : "yes")).toLowerCase() !== "no",
         occasions: String(
           row.occasions ||
             (inferredCategory === "Baby & barsel"
@@ -1203,15 +1203,15 @@ export default function Home() {
               <section className="hero">
                 <div className="hero-copy">
                   <span className="eyebrow">Gaveæsker til baby, barsel og ny mor</span>
-                  <h2 className="big-title">Barsels- og babygaver i flotte gaveæsker</h2>
+                  <h1 className="big-title">Barsels- og babygaver i flotte gaveæsker</h1>
                   <p className="lead">
                     Vælg en færdig gaveæske eller byg din egen med udvalgte produkter til baby, barsel og ny mor.
                     Vi pakker gaven pænt, lægger kortet ved og sender direkte til modtageren uden prisbilag.
                   </p>
                   <div className="actions">
-                    <button className="btn primary" onClick={() => setView("giftboxes")}>Find en gaveæske</button>
+                    <Link className="btn primary" href="/gaveaesker">Find en gaveæske</Link>
                     <button className="btn" onClick={() => setView("builder")}>Byg din egen</button>
-                    <button className="btn" onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>Se babyprodukter</button>
+                    <Link className="btn" href="/babygaver">Se babyprodukter</Link>
                   </div>
                 </div>
                 <div className="hero-art">
@@ -1259,18 +1259,18 @@ export default function Home() {
                 </div>
               </section>
               <section className="stats">
-                <button className="stat" onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>
+                <Link className="stat" href="/babygaver">
                   <strong>Baby</strong><span>Blide produkter til den første tid</span>
-                </button>
-                <button className="stat" onClick={() => setView("giftboxes")}>
+                </Link>
+                <Link className="stat" href="/gaveaesker">
                   <strong>Barsel</strong><span>Gaver til nye familier og nybagte mødre</span>
-                </button>
-                <button className="stat" onClick={() => { setCategory("Naturlig beauty"); setView("products"); }}>
+                </Link>
+                <Link className="stat" href="/wellness">
                   <strong>Wellness</strong><span>Naturlige olier, ler og hudpleje</span>
-                </button>
-                <button className="stat" onClick={() => { setCategory("Move"); setView("products"); }}>
+                </Link>
+                <Link className="stat" href="/move">
                   <strong>Move</strong><span>Yoga, træning og activewear i matchende sæt</span>
-                </button>
+                </Link>
               </section>
               <section className="seo-gift-guide" aria-labelledby="gift-guide-title">
                 <div className="seo-gift-guide-head">
@@ -1288,7 +1288,7 @@ export default function Home() {
                       En barselsgave må gerne være både praktisk og personlig. Vælg en færdig gaveæske med babypleje,
                       bløde tekstiler og en personlig hilsen, eller sammensæt din egen gave til familien.
                     </p>
-                    <button className="text-link" onClick={() => setView("giftboxes")}>Se barselsgaver</button>
+                    <Link className="text-link" href="/gaveaesker">Se barselsgaver</Link>
                   </article>
                   <article>
                     <h3>Babygave til den første tid</h3>
@@ -1296,7 +1296,7 @@ export default function Home() {
                       Babygaver fra Greenplanet samler milde produkter, økologiske tekstiler og små brugbare gaver,
                       der passer til babyshower, barselsbesøg, dåb og velkommen-til-verden gaver.
                     </p>
-                    <button className="text-link" onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>Se babygaver</button>
+                    <Link className="text-link" href="/babygaver">Se babygaver</Link>
                   </article>
                   <article>
                     <h3>Gaveæske til nybagt mor</h3>
@@ -1304,7 +1304,7 @@ export default function Home() {
                       Til den gravide eller nybagte mor kan du vælge en gaveæske med naturlig hudpleje, rosenvand,
                       olier og produkter, der passer til graviditet, barsel og lidt ekstra pleje i hverdagen.
                     </p>
-                    <button className="text-link" onClick={() => setView("giftboxes")}>Find gave til ny mor</button>
+                    <Link className="text-link" href="/gaveaesker">Find gave til ny mor</Link>
                   </article>
                   <article>
                     <h3>Byg selv gaveæske</h3>
@@ -1949,24 +1949,24 @@ export default function Home() {
           <div className="footer-links">
             <div>
               <span>Shop</span>
-              <button onClick={() => setView("giftboxes")}>Gaveæsker</button>
-              <button onClick={() => { setCategory("Baby & barsel"); setView("products"); }}>Baby & barsel</button>
-              <button onClick={() => { setCategory("Naturlig beauty"); setView("products"); }}>Velvære</button>
-              <button onClick={() => { setCategory("Move"); setView("products"); }}>Move</button>
+              <Link href="/gaveaesker">Gaveæsker</Link>
+              <Link href="/babygaver">Baby & barsel</Link>
+              <Link href="/wellness">Velvære</Link>
+              <Link href="/move">Move</Link>
               <button onClick={() => setView("builder")}>Byg selv</button>
             </div>
             <div>
               <span>Kundeservice</span>
-              <button onClick={() => setView("contact")}>Kontakt</button>
-              <button onClick={() => setView("delivery")}>Levering</button>
-              <button onClick={() => setView("returns")}>Returnering</button>
+              <Link href="/kontakt">Kontakt</Link>
+              <Link href="/levering">Levering</Link>
+              <Link href="/returnering">Returnering</Link>
             </div>
             <div>
               <span>Jura</span>
-              <button onClick={() => setView("legal")}>Juridisk overblik</button>
-              <button onClick={() => setView("terms")}>Handelsbetingelser</button>
-              <button onClick={() => setView("privacy")}>Privatlivspolitik</button>
-              <button onClick={() => setView("cookies")}>Cookiepolitik</button>
+              <Link href="/juridisk">Juridisk overblik</Link>
+              <Link href="/handelsbetingelser">Handelsbetingelser</Link>
+              <Link href="/privatlivspolitik">Privatlivspolitik</Link>
+              <Link href="/cookiepolitik">Cookiepolitik</Link>
               <button onClick={openCookieSettings}>Cookieindstillinger</button>
             </div>
           </div>

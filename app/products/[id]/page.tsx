@@ -103,6 +103,21 @@ function availability(stock: number) {
   return stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock";
 }
 
+const shippingDetails = {
+  "@type": "OfferShippingDetails",
+  shippingRate: { "@type": "MonetaryAmount", value: "49.00", currency: "DKK" },
+  shippingDestination: { "@type": "DefinedRegion", addressCountry: "DK" }
+};
+
+const returnPolicy = {
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "DK",
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 14,
+  returnMethod: "https://schema.org/ReturnByMail",
+  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility"
+};
+
 export function generateStaticParams() {
   return initialProducts.map((product) => ({ id: product.id }));
 }
@@ -151,7 +166,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const liveVariants = product.variants?.filter((variant) => variant.status !== "archived") || [];
   const moveProducts = product.category === "Move" ? await getMoveProducts() : [];
   const matchingProducts = moveProducts.filter((item) => item.id !== product.id && moveSeries(item.title) === moveSeries(product.title));
-  const categoryHref = product.category === "Move" ? "/#move" : product.category === "Naturlig beauty" ? "/#wellness" : product.category === "Baby & barsel" ? "/#baby" : "/#products";
+  const categoryHref = product.category === "Move" ? "/move" : product.category === "Naturlig beauty" ? "/wellness" : product.category === "Baby & barsel" ? "/babygaver" : "/";
   const categoryLabel = product.category === "Naturlig beauty" ? "Velvære" : product.category;
   const productStructuredData = {
     "@context": "https://schema.org",
@@ -182,7 +197,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               priceCurrency: "DKK",
               availability: availability(variant.stock),
               itemCondition: "https://schema.org/NewCondition",
-              url: `${siteUrl}/products/${product.id}`
+              url: `${siteUrl}/products/${product.id}`,
+              shippingDetails,
+              hasMerchantReturnPolicy: returnPolicy
             }))
           : {
               "@type": "Offer",
@@ -191,7 +208,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               priceCurrency: "DKK",
               availability: availability(product.stock),
               itemCondition: "https://schema.org/NewCondition",
-              url: `${siteUrl}/products/${product.id}`
+              url: `${siteUrl}/products/${product.id}`,
+              shippingDetails,
+              hasMerchantReturnPolicy: returnPolicy
             }
       },
       {
@@ -207,8 +226,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {
             "@type": "ListItem",
             position: 2,
-            name: "Produkter",
-            item: `${siteUrl}/#products`
+            name: categoryLabel,
+            item: `${siteUrl}${categoryHref}`
           },
           {
             "@type": "ListItem",
@@ -236,10 +255,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
         <nav className="nav">
           <Link href="/">Forside</Link>
-          <Link href="/#giftboxes">Gaveæsker</Link>
-          <Link className={product.category === "Baby & barsel" ? "active" : undefined} href="/#baby">Baby & barsel</Link>
-          <Link className={product.category === "Naturlig beauty" ? "active" : undefined} href="/#wellness">Velvære</Link>
-          <Link className={product.category === "Move" ? "active" : undefined} href="/#move">Move</Link>
+          <Link href="/gaveaesker">Gaveæsker</Link>
+          <Link className={product.category === "Baby & barsel" ? "active" : undefined} href="/babygaver">Baby & barsel</Link>
+          <Link className={product.category === "Naturlig beauty" ? "active" : undefined} href="/wellness">Velvære</Link>
+          <Link className={product.category === "Move" ? "active" : undefined} href="/move">Move</Link>
           <Link href="/#builder">Byg selv</Link>
         </nav>
         <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
@@ -269,7 +288,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             <div className="product-detail-info panel">
               <div className="meta">{product.brand} · {product.category}</div>
-              <h2>{product.title}</h2>
+              <h1>{product.title}</h1>
               <p className="lead">{product.description}</p>
               <div className="detail-price">{money(product.price)}</div>
               <div className="purchase-panel">

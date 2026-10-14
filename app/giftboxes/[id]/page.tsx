@@ -7,6 +7,19 @@ import { getGiftboxDetail } from "@/lib/storefrontServer";
 
 const boxPrice = 49;
 const siteUrl = "https://www.greenplanet.dk";
+const shippingDetails = {
+  "@type": "OfferShippingDetails",
+  shippingRate: { "@type": "MonetaryAmount", value: "49.00", currency: "DKK" },
+  shippingDestination: { "@type": "DefinedRegion", addressCountry: "DK" }
+};
+const returnPolicy = {
+  "@type": "MerchantReturnPolicy",
+  applicableCountry: "DK",
+  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+  merchantReturnDays: 14,
+  returnMethod: "https://schema.org/ReturnByMail",
+  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility"
+};
 
 function money(value: number) {
   return `${Math.round(value)} kr.`;
@@ -98,7 +111,9 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
           priceCurrency: "DKK",
           availability: "https://schema.org/InStock",
           itemCondition: "https://schema.org/NewCondition",
-          url: `${siteUrl}/giftboxes/${giftbox.id}`
+          url: `${siteUrl}/giftboxes/${giftbox.id}`,
+          shippingDetails,
+          hasMerchantReturnPolicy: returnPolicy
         }
       },
       {
@@ -126,7 +141,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
             "@type": "ListItem",
             position: 2,
             name: "Gaveæsker",
-            item: `${siteUrl}/#giftboxes`
+            item: `${siteUrl}/gaveaesker`
           },
           {
             "@type": "ListItem",
@@ -154,10 +169,10 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
         </div>
         <nav className="nav">
           <Link href="/">Forside</Link>
-          <Link className="active" href="/#giftboxes">Gaveæsker</Link>
-          <Link href="/#baby">Baby & barsel</Link>
-          <Link href="/#wellness">Velvære</Link>
-          <Link href="/#move">Move</Link>
+          <Link className="active" href="/gaveaesker">Gaveæsker</Link>
+          <Link href="/babygaver">Baby & barsel</Link>
+          <Link href="/wellness">Velvære</Link>
+          <Link href="/move">Move</Link>
           <Link href="/#builder">Byg selv</Link>
         </nav>
         <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
@@ -166,7 +181,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
       <section className="main">
         <div className="content">
           <section className="product-detail">
-            <Link className="btn back-btn" href="/#giftboxes">Tilbage til gaveæsker</Link>
+            <Link className="btn back-btn" href="/gaveaesker">Tilbage til gaveæsker</Link>
             <div className="product-detail-media giftbox-detail-media panel">
               <div className="giftbox-collage">
                 {items.map((product, index) => (
@@ -186,7 +201,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
             </div>
             <div className="product-detail-info panel">
               <div className="meta">{giftbox.category} · {items.length} produkter</div>
-              <h2>{giftbox.title}</h2>
+              <h1>{giftbox.title}</h1>
               <p className="lead">{giftbox.description}</p>
               <div className="detail-price">{money(total)}</div>
               <div className="purchase-panel">

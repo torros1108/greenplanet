@@ -153,7 +153,7 @@ button:disabled { cursor: not-allowed; opacity: .58; }
 .giftbox-media-note { position: absolute; left: 22px; right: 22px; bottom: 22px; z-index: 4; display: flex; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid rgba(255,253,247,.62); border-radius: 8px; background: rgba(255,253,247,.84); color: var(--forest); box-shadow: 0 18px 28px rgba(32,48,33,.14); }
 .giftbox-media-note strong { font-size: 15px; }
 .giftbox-media-note span { color: var(--muted); font-size: 14px; font-weight: 800; text-align: right; }
-.product-detail-info h2 { margin: 10px 0 12px; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: clamp(36px, 5vw, 58px); line-height: 1; font-weight: 500; }
+.product-detail-info h1, .product-detail-info h2 { margin: 10px 0 12px; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: clamp(36px, 5vw, 58px); line-height: 1; font-weight: 500; }
 .detail-price { margin: 18px 0; color: var(--forest); font-size: 34px; font-weight: 900; }
 .variant-picker { display: grid; gap: 7px; margin: 0 0 18px; }
 .variant-picker span { color: var(--muted); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }

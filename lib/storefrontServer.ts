@@ -54,3 +54,32 @@ export async function loadPublicRouteIds() {
   ]);
   return { productIds: products.map((p) => p.legacy_id || p.slug), giftboxIds: boxes.map((g) => g.legacy_id || g.slug) };
 }
+
+export async function loadPublicRouteEntries() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return {
+      products: initialProducts.filter((product) => product.status === "Live").map((product) => ({ id: product.id, updatedAt: null })),
+      giftboxes: giftboxes.map((giftbox) => ({ id: giftbox.id, updatedAt: null }))
+    };
+  }
+  type RouteRow = { legacy_id: string | null; slug: string; updated_at: string | null };
+  const [products, boxes] = await Promise.all([
+    supabaseAdminRequest<RouteRow[]>("products?status=eq.live&select=legacy_id,slug,updated_at"),
+    supabaseAdminRequest<RouteRow[]>("giftboxes?status=eq.live&select=legacy_id,slug,updated_at")
+  ]);
+  return {
+    products: products.map((product) => ({ id: product.legacy_id || product.slug, updatedAt: product.updated_at })),
+    giftboxes: boxes.map((giftbox) => ({ id: giftbox.legacy_id || giftbox.slug, updatedAt: giftbox.updated_at }))
+  };
+}
+
+export async function loadPublicProducts(category?: string) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return initialProducts.filter((product) => product.status === "Live" && (!category || product.category === category));
+  }
+  const categoryFilter = category ? `&category=eq.${encodeURIComponent(category)}` : "";
+  const rows = await supabaseAdminRequest<ProductRow[]>(
+    `products?status=eq.live${categoryFilter}&select=legacy_id,slug,title,brand,category,description,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,specs&order=title.asc`
+  );
+  return rows.map(mapProduct);
+}
