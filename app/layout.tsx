@@ -41,6 +41,9 @@ export const metadata: Metadata = {
     "activewear",
     "leggings",
     "sports-bh",
+    "firmagaver",
+    "firmajulegaver",
+    "julegaver til medarbejdere",
     "Greenplanet"
   ],
   applicationName: "Greenplanet",

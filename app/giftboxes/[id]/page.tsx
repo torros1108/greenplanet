@@ -173,9 +173,10 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
           <Link href="/babygaver">Baby & barsel</Link>
           <Link href="/wellness">Velvære</Link>
           <Link href="/move">Move</Link>
+          <Link href="/firmagaver">Firmagaver</Link>
           <Link href="/#builder">Byg selv</Link>
         </nav>
-        <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
+        <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
       </aside>
 
       <section className="main">

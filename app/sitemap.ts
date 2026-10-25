@@ -12,7 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ["gaveaesker", 0.9],
       ["babygaver", 0.9],
       ["wellness", 0.8],
-      ["move", 0.8]
+      ["move", 0.8],
+      ["firmagaver", 0.8]
     ].map(([path, priority]) => ({
       url: `${siteUrl}/${path}`,
       lastModified: now,
