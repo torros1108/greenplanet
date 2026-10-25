@@ -7,7 +7,7 @@ function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
 
-export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" | "wellness" | "move" }) {
+export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" | "wellness" | "move" | "firmagaver" }) {
   return (
     <aside className="sidebar category-sidebar">
       <div className="brand">
@@ -21,10 +21,11 @@ export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" 
         <Link className={current === "babygaver" ? "active" : ""} href="/babygaver">Baby &amp; barsel</Link>
         <Link className={current === "wellness" ? "active" : ""} href="/wellness">Velvære</Link>
         <Link className={current === "move" ? "active" : ""} href="/move">Move</Link>
+        <Link className={current === "firmagaver" ? "active" : ""} href="/firmagaver">Firmagaver</Link>
         <Link href="/#builder">Byg selv</Link>
         <Link href="/#orders">Kurv</Link>
       </nav>
-      <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
+      <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
     </aside>
   );
 }
@@ -36,9 +37,13 @@ type StoreCategoryPageProps = {
   intro: string;
   supportingText: string;
   products: Product[];
+  guideTitle: string;
+  guideIntro: string;
+  guide: Array<{ title: string; body: string }>;
+  faqs: Array<{ question: string; answer: string }>;
 };
 
-export default function StoreCategoryPage({ current, eyebrow, title, intro, supportingText, products }: StoreCategoryPageProps) {
+export default function StoreCategoryPage({ current, eyebrow, title, intro, supportingText, products, guideTitle, guideIntro, guide, faqs }: StoreCategoryPageProps) {
   const pageUrl = `${siteUrl}/${current}`;
   const structuredData = {
     "@context": "https://schema.org",
@@ -68,6 +73,14 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
           { "@type": "ListItem", position: 1, name: "Forside", item: siteUrl },
           { "@type": "ListItem", position: 2, name: title, item: pageUrl }
         ]
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: faqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: { "@type": "Answer", text: faq.answer }
+        }))
       }
     ]
   };
@@ -88,7 +101,7 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
             <div className="section-head">
               <div>
                 <span className="section-eyebrow">Udvalget</span>
-                <h2 id="category-products-title">{products.length} produkter</h2>
+                <h2 id="category-products-title">Se produkterne</h2>
               </div>
             </div>
             <div className="grid category-product-grid">
@@ -107,6 +120,35 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
                     </div>
                   </div>
                 </article>
+              ))}
+            </div>
+          </section>
+          <section className="category-guide" aria-labelledby="category-guide-title">
+            <div className="category-guide-intro">
+              <span className="section-eyebrow">Guide</span>
+              <h2 id="category-guide-title">{guideTitle}</h2>
+              <p>{guideIntro}</p>
+            </div>
+            <div className="category-guide-grid">
+              {guide.map((item) => (
+                <article key={item.title}>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+          <section className="category-faq" aria-labelledby="category-faq-title">
+            <div>
+              <span className="section-eyebrow">Spørgsmål og svar</span>
+              <h2 id="category-faq-title">Det spørger kunderne om</h2>
+            </div>
+            <div className="category-faq-list">
+              {faqs.map((faq) => (
+                <details key={faq.question}>
+                  <summary>{faq.question}</summary>
+                  <p>{faq.answer}</p>
+                </details>
               ))}
             </div>
           </section>
