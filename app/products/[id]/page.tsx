@@ -259,10 +259,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <Link className={product.category === "Baby & barsel" ? "active" : undefined} href="/babygaver">Baby & barsel</Link>
           <Link className={product.category === "Naturlig beauty" ? "active" : undefined} href="/wellness">Velvære</Link>
           <Link className={product.category === "Move" ? "active" : undefined} href="/move">Move</Link>
-          <Link href="/firmagaver">Firmagaver</Link>
           <Link href="/#builder">Byg selv</Link>
         </nav>
-        <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
+        <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
       </aside>
 
       <section className="main">

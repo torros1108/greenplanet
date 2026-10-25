@@ -7,7 +7,7 @@ function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
 
-export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" | "wellness" | "move" | "firmagaver" }) {
+export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" | "wellness" | "move" }) {
   return (
     <aside className="sidebar category-sidebar">
       <div className="brand">
@@ -21,11 +21,10 @@ export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" 
         <Link className={current === "babygaver" ? "active" : ""} href="/babygaver">Baby &amp; barsel</Link>
         <Link className={current === "wellness" ? "active" : ""} href="/wellness">Velvære</Link>
         <Link className={current === "move" ? "active" : ""} href="/move">Move</Link>
-        <Link className={current === "firmagaver" ? "active" : ""} href="/firmagaver">Firmagaver</Link>
         <Link href="/#builder">Byg selv</Link>
         <Link href="/#orders">Kurv</Link>
       </nav>
-      <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
+      <p className="side-note">Barselsgaver, babygaver, wellness og activewear fra udvalgte brands.</p>
     </aside>
   );
 }
