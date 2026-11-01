@@ -1,68 +1,59 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StoreSidebar } from "@/app/_components/StoreCategoryPage";
+import { getGiftboxDetail } from "@/lib/storefrontServer";
 import CorporateGiftInquiry from "./CorporateGiftInquiry";
 
 const siteUrl = "https://www.greenplanet.dk";
-const annaImage = "https://cdn.faire.com/fastly/683206c3fcb33ae803e790578192939dfbf4c29f8a2f8cee00dfd1a4b66dbaeb.jpeg?bg-color=FFFFFF&dpr=1&fit=crop&format=jpg&height=900&precrop=590%2C591%2Cx0%2Cy29%2Csafe&width=900";
-const valenciaImage = "https://cdn.faire.com/fastly/49a6e6f0a774699ed444336b45ba08724e76943072c28235c10aa88a14a64e9f.jpeg?bg-color=FFFFFF&dpr=1&fit=crop&format=jpg&height=900&width=900";
-
-const products = [
-  {
-    name: "Anna keramikvase",
-    subtitle: "Hvid med sandfinish",
-    description: "En håndlavet, vandtæt vase i et enkelt skandinavisk formsprog. Keramikken er fremstillet med solenergi og leveres i gaveæske.",
-    facts: ["Ø 9 × H 16 cm", "Håndlavet keramik", "Vandtæt"],
-    image: annaImage,
-    tone: "light"
-  },
-  {
-    name: "Terra bakke",
-    subtitle: "Caffe",
-    description: "En stor, taktil bakke af genanvendt papir med naturlig latex på indersiden. Et varmt og anvendeligt designobjekt til hjemmet.",
-    facts: ["Ø 28 × H 10 cm", "Genanvendt papir", "Fair Trade-projekt"],
-    image: "",
-    tone: "caffe"
-  },
-  {
-    name: "Valencia Duo",
-    subtitle: "Vase og lysestage i mauve taupe",
-    description: "Mundblæst i genanvendt glas og skabt til flere funktioner: brug den som vase, lysestage eller dekorativ opbevaring.",
-    facts: ["Ø 10 × H 17 cm", "100 % genanvendt glas", "Mundblæst"],
-    image: valenciaImage,
-    tone: "mauve"
-  }
-];
+const corporateGiftboxIds = ["g2", "g3", "g4", "g5"];
 
 export const metadata: Metadata = {
-  title: "Firmajulegaver og firmagaver med boligdesign",
-  description: "Kuraterede firmajulegaver med skandinavisk boligdesign. Få et tilbud på medarbejdergaver med personlig hilsen, gaveindpakning og samlet eller individuel levering.",
+  title: "Firmagaver til medarbejdere og samarbejdspartnere",
+  description: "Vælg en købsklar barselsgave, babygave eller wellnessgave til en medarbejder. Få tilbud på flere firmagaver, personlig hilsen og direkte levering.",
   alternates: { canonical: "/firmagaver" },
   openGraph: {
-    title: "Firmajulegaver med skandinavisk boligdesign | Greenplanet",
-    description: "Deko og boligartikler samlet som firmajulegaver med mulighed for personlig hilsen og levering.",
-    url: "/firmagaver",
-    images: [{ url: annaImage, alt: "Anna keramikvase som firmagave" }]
+    title: "Firmagaver til medarbejdere | Greenplanet",
+    description: "Køb en færdig medarbejdergave, eller få et samlet tilbud på flere firmagaver med personlig hilsen og levering.",
+    url: "/firmagaver"
   }
 };
 
-export default function CorporateGiftsPage() {
+function money(value: number) {
+  return `${Math.round(value)} kr.`;
+}
+
+export default async function CorporateGiftsPage() {
+  const giftboxDetails = (await Promise.all(corporateGiftboxIds.map((id) => getGiftboxDetail(id)))).filter(Boolean);
+  const heroImages = giftboxDetails.flatMap((detail) => detail!.items.map((item) => item.image).filter(Boolean)).slice(0, 4) as string[];
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Service",
-        name: "Firmajulegaver fra Greenplanet",
+        name: "Firmagaver fra Greenplanet",
         provider: { "@type": "Organization", name: "Greenplanet", url: siteUrl },
         areaServed: "DK",
-        description: "Kuraterede firmajulegaver med boligdesign, personlig hilsen og fleksibel levering.",
+        description: "Købsklare medarbejdergaver og firmagaver med personlig hilsen og fleksibel levering.",
         url: `${siteUrl}/firmagaver`
       },
       {
         "@type": "ItemList",
-        name: "Udvalg til firmajulegaver",
-        numberOfItems: products.length,
-        itemListElement: products.map((product, index) => ({ "@type": "ListItem", position: index + 1, name: product.name }))
+        name: "Firmagaver til medarbejdere",
+        numberOfItems: giftboxDetails.length,
+        itemListElement: giftboxDetails.map((detail, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: detail!.giftbox.title,
+          url: `${siteUrl}/giftboxes/${detail!.giftbox.id}`
+        }))
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          { "@type": "Question", name: "Kan firmagaven sendes direkte til medarbejderen?", acceptedAnswer: { "@type": "Answer", text: "Ja. Enkeltgaver kan bestilles online og sendes direkte til medarbejderen med personlig hilsen og uden prisbilag." } },
+          { "@type": "Question", name: "Kan virksomheden bestille flere gaver samlet?", acceptedAnswer: { "@type": "Answer", text: "Ja. Send en forespørgsel med antal, budget og leveringsønsker, så vender Greenplanet tilbage med en samlet løsning og pris." } },
+          { "@type": "Question", name: "Kan vi få virksomhedens egen tekst på kortet?", acceptedAnswer: { "@type": "Answer", text: "Ja. Ved enkeltkøb skrives hilsenen ved bestilling. Ved større bestillinger aftales korttekst og eventuel firmatilpasning i tilbuddet." } }
+        ]
       }
     ]
   };
@@ -75,65 +66,77 @@ export default function CorporateGiftsPage() {
         <div className="content corporate-page-content">
           <header className="corporate-hero">
             <div className="corporate-hero-copy">
-              <span className="eyebrow">Firmagaver til jul</span>
-              <h1>Boligdesign, der bliver stående efter jul</h1>
-              <p className="lead">Giv medarbejdere eller samarbejdspartnere en brugbar gave med skandinavisk udtryk. Vi sammensætter antal, indpakning og levering efter jeres behov.</p>
+              <span className="eyebrow">Firmagaver uden besvær</span>
+              <h1>Gaver til medarbejdere, der er nemme at vælge og sende</h1>
+              <p className="lead">Bestil en barsels-, baby- eller wellnessgave direkte, eller få et samlet tilbud, når flere medarbejdere eller samarbejdspartnere skal have en gave.</p>
               <div className="actions">
-                <Link className="btn primary" href="#firmagave-forespoergsel">Få et tilbud</Link>
-                <Link className="btn corporate-secondary" href="#firmagave-udvalg">Se udvalget</Link>
+                <Link className="btn primary" href="#firmagave-udvalg">Se købsklare gaver</Link>
+                <Link className="btn corporate-secondary" href="#firmagave-forespoergsel">Få et samlet tilbud</Link>
               </div>
             </div>
-            <div className="corporate-hero-stilllife" aria-label="Udvalgte boligprodukter">
-              <div className="corporate-hero-card corporate-hero-card-anna"><img src={annaImage} alt="Hvid Anna keramikvase" /></div>
-              <div className="corporate-hero-card corporate-hero-card-valencia"><img src={valenciaImage} alt="Valencia Duo i genanvendt glas" /></div>
-              <div className="corporate-hero-tray" aria-hidden="true"><span /></div>
+            <div className="corporate-hero-mosaic" aria-label="Udvalgte medarbejdergaver">
+              {heroImages.map((image, index) => <div className={`corporate-hero-tile tile-${index + 1}`} key={`${image}-${index}`}><img src={image} alt="Produkt i en Greenplanet firmagave" /></div>)}
+              <div className="corporate-hero-seal"><span>Personlig hilsen</span><strong>Direkte levering</strong></div>
             </div>
           </header>
 
-          <section className="corporate-benefits" aria-label="Muligheder for firmagaver">
-            <article><strong>Antal efter aftale</strong><span>Små og større bestillinger er velkomne.</span></article>
-            <article><strong>Personlig hilsen</strong><span>Tilføj kort med virksomhedens egen tekst.</span></article>
-            <article><strong>Fleksibel levering</strong><span>Samlet til kontoret eller direkte til modtagerne.</span></article>
+          <section className="corporate-benefits" aria-label="Fordele ved firmagaver fra Greenplanet">
+            <article><strong>Køb én gave med det samme</strong><span>Se indhold og pris, skriv kortet og betal sikkert online.</span></article>
+            <article><strong>Send direkte til medarbejderen</strong><span>Vi sender uden prisbilag og lægger virksomhedens hilsen ved.</span></article>
+            <article><strong>Få én løsning til flere</strong><span>Ved større antal samler vi pris, korttekst og levering i et tilbud.</span></article>
           </section>
 
           <section className="corporate-products" id="firmagave-udvalg" aria-labelledby="firmagave-title">
             <div className="corporate-section-head">
-              <div><span className="section-eyebrow">Udvalgte eksempler</span><h2 id="firmagave-title">Deko og boligartikler</h2></div>
-              <p>De tre produkter viser retningen for firmagaverne. Det endelige udvalg, prisen og tilgængeligheden aftales efter antal, indpakning og levering.</p>
+              <div><span className="section-eyebrow">Kan bestilles nu</span><h2 id="firmagave-title">Købsklare medarbejdergaver</h2></div>
+              <p>Prisen omfatter produkterne, gaveæske og kort. Åbn en gave for at se hele indholdet, vælge varianter og bestille direkte.</p>
             </div>
-            <div className="corporate-product-grid">
-              {products.map((product, index) => (
-                <article className={`corporate-product-card tone-${product.tone}`} key={product.name}>
-                  <div className="corporate-product-number">0{index + 1}</div>
-                  <div className="corporate-product-media">
-                    {product.image ? <img src={product.image} alt={`${product.name}, ${product.subtitle}`} loading="lazy" /> : <div className="terra-visual" aria-label="Terra bakke i farven caffe"><span /><i /></div>}
-                  </div>
-                  <div className="corporate-product-copy">
-                    <span>{product.subtitle}</span>
-                    <h3>{product.name}</h3>
-                    <p>{product.description}</p>
-                    <ul>{product.facts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
-                    <Link className="text-link" href="#firmagave-forespoergsel">Få pris efter antal</Link>
-                  </div>
-                </article>
-              ))}
+            <div className="corporate-gift-grid">
+              {giftboxDetails.map((detail) => {
+                const { giftbox, items, boxPrice } = detail!;
+                const total = items.reduce((sum, item) => sum + item.price, 0) + boxPrice;
+                return (
+                  <article className="corporate-gift-card" key={giftbox.id}>
+                    <Link className="corporate-gift-media" href={`/giftboxes/${giftbox.id}`} aria-label={`Se ${giftbox.title}`}>
+                      {items.slice(0, 3).map((item, index) => item.image && <span className={`gift-media-${index + 1}`} key={item.id}><img src={item.image} alt={item.title} loading="lazy" /></span>)}
+                    </Link>
+                    <div className="corporate-gift-copy">
+                      <span>{giftbox.category} · {items.length} produkter</span>
+                      <h3><Link href={`/giftboxes/${giftbox.id}`}>{giftbox.title}</Link></h3>
+                      <p>{giftbox.description}</p>
+                      <p className="corporate-gift-contents"><strong>I æsken:</strong> {items.map((item) => item.title).join(", ")}</p>
+                      <div className="corporate-gift-action"><strong>{money(total)}</strong><Link className="btn primary" href={`/giftboxes/${giftbox.id}`}>Se og bestil</Link></div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
 
           <section className="corporate-process" aria-labelledby="corporate-process-title">
-            <div><span className="section-eyebrow">Sådan foregår det</span><h2 id="corporate-process-title">Fra idé til færdig gave</h2></div>
+            <div><span className="section-eyebrow">Vælg bestillingsform</span><h2 id="corporate-process-title">Fra enkeltgave til fast gaveordning</h2></div>
             <ol>
-              <li><span>1</span><strong>Fortæl os antal og budget</strong><p>Vælg et produkt eller bed os sammensætte et forslag.</p></li>
-              <li><span>2</span><strong>Godkend tilbuddet</strong><p>Du får pris, leveringstid og indhold samlet på skrift.</p></li>
-              <li><span>3</span><strong>Vi gør gaverne klar</strong><p>Vi pakker, tilføjer hilsen og aftaler den praktiske levering.</p></li>
+              <li><span>1</span><strong>En enkelt medarbejdergave</strong><p>Vælg en købsklar gaveæske ovenfor, tilføj hilsen og betal online.</p></li>
+              <li><span>2</span><strong>Flere gaver på én gang</strong><p>Fortæl os antal, budget og adresser. Du får en samlet pris og leveringsplan.</p></li>
+              <li><span>3</span><strong>Fast gaveordning</strong><p>Få en enkel løsning til barsel, jubilæum, tak eller mærkedage gennem året.</p></li>
             </ol>
+          </section>
+
+          <section className="corporate-faq" aria-labelledby="corporate-faq-title">
+            <div><span className="section-eyebrow">Praktisk</span><h2 id="corporate-faq-title">Det har virksomheden brug for at vide</h2></div>
+            <div className="corporate-faq-list">
+              <details><summary>Kan gaven sendes direkte til medarbejderen?</summary><p>Ja. Enkeltgaver kan bestilles online med modtagerens navn og adresse. Vi sender uden prisbilag og vedlægger jeres hilsen.</p></details>
+              <details><summary>Kan vi bestille til flere adresser?</summary><p>Ja. Brug forespørgslen ved flere modtagere, så aftaler vi adresser, leveringstid og en samlet pris, før bestillingen sættes i gang.</p></details>
+              <details><summary>Kan vi vælge budget pr. gave?</summary><p>Ja. Skriv budget og antal i formularen. Vi foreslår en løsning med tydeligt indhold og samlet pris.</p></details>
+              <details><summary>Kan Greenplanet hjælpe med firmajulegaver?</summary><p>Ja. Julegaver og større sæsonbestillinger sammensættes efter budget, antal og ønsket levering. Sortiment og lager bekræftes i tilbuddet.</p></details>
+            </div>
           </section>
 
           <section className="corporate-inquiry" id="firmagave-forespoergsel" aria-labelledby="corporate-inquiry-title">
             <div className="corporate-inquiry-copy">
-              <span className="section-eyebrow">Uforpligtende forespørgsel</span>
-              <h2 id="corporate-inquiry-title">Lad os finde den rigtige løsning</h2>
-              <p>Skriv lidt om antal, budget og leveringsønsker. Vi svarer personligt med muligheder og en samlet pris.</p>
+              <span className="section-eyebrow">Flere gaver eller særlige ønsker</span>
+              <h2 id="corporate-inquiry-title">Få en konkret pris og leveringsplan</h2>
+              <p>Skriv antal, budget og anledning. Vi svarer personligt med forslag, tilgængelighed og en samlet pris, før I beslutter jer.</p>
               <a href="mailto:hello@greenplanet.dk">hello@greenplanet.dk</a>
             </div>
             <CorporateGiftInquiry />
