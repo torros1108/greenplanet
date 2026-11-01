@@ -1281,6 +1281,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Corporate Christmas gifts */
+.corporate-page-shell { overflow-x: clip; }
 .corporate-page-content {
   width: min(1480px, 100%);
   margin: 0 auto;
@@ -1288,15 +1289,15 @@ input:focus, textarea:focus, select:focus {
 }
 .corporate-hero {
   display: grid;
-  grid-template-columns: minmax(0, .9fr) minmax(440px, 1.1fr);
-  min-height: min(760px, calc(100vh - 40px));
+  grid-template-columns: minmax(340px, .92fr) minmax(420px, 1.08fr);
+  min-height: min(720px, calc(100vh - 24px));
   overflow: hidden;
   background: #173d2a;
   color: var(--cream);
 }
 .corporate-hero-copy {
   align-self: center;
-  padding: clamp(48px, 7vw, 112px);
+  padding: clamp(40px, 4vw, 72px);
 }
 .corporate-hero-copy .eyebrow { color: #e4b3a6; }
 .corporate-hero-copy h1 {
@@ -1304,9 +1305,9 @@ input:focus, textarea:focus, select:focus {
   margin: 18px 0 26px;
   color: var(--cream);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(54px, 6.2vw, 94px);
+  font-size: clamp(48px, 4.6vw, 74px);
   font-weight: 500;
-  line-height: .94;
+  line-height: .98;
 }
 .corporate-hero-copy .lead {
   max-width: 610px;
