@@ -1422,7 +1422,6 @@ input:focus, textarea:focus, select:focus {
   .corporate-hero { grid-template-columns: 1fr; }
   .corporate-hero-stilllife { min-height: 580px; }
   .corporate-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .corporate-product-card:last-child { grid-column: 1 / -1; grid-template-columns: .9fr 1.1fr; grid-template-rows: 1fr; }
 }
 @media (max-width: 720px) {
   .corporate-hero-copy { padding: 42px 22px 48px; }
@@ -1431,7 +1430,6 @@ input:focus, textarea:focus, select:focus {
   .corporate-benefits, .corporate-product-grid, .corporate-process, .corporate-inquiry, .corporate-form-grid { grid-template-columns: 1fr; }
   .corporate-benefits article { min-height: 0; border-right: 0; border-bottom: 1px solid rgba(23, 32, 24, .12); }
   .corporate-section-head { display: grid; align-items: start; }
-  .corporate-product-card:last-child { grid-column: auto; grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .corporate-product-media { min-height: 300px; }
   .corporate-process, .corporate-inquiry { gap: 36px; }
   .corporate-form-actions { align-items: stretch; flex-direction: column; }

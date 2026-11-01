@@ -4,10 +4,13 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 
 const products = [
-  "Anna keramikvase, hvid",
-  "Terra bakke, caffe",
-  "Valencia Duo vase og lysestage",
-  "En kombination af produkterne",
+  "Giza keramikbakke",
+  "Templo lysestage",
+  "Emporio papirvase",
+  "CANDL STACK 03",
+  "Mini olivenolier gaveæske",
+  "Loulou keramikvase",
+  "En kombination af flere produkter",
   "Jeg vil gerne rådgives"
 ];
 
@@ -49,7 +52,7 @@ export default function CorporateGiftInquiry() {
         <label><span>Antal gaver</span><input name="quantity" required type="number" min="1" max="5000" defaultValue="25" /></label>
         <label>
           <span>Interesse</span>
-          <select name="product" defaultValue={products[3]}>
+          <select name="product" defaultValue={products[6]}>
             {products.map((product) => <option key={product}>{product}</option>)}
           </select>
         </label>
