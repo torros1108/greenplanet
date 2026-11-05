@@ -14,6 +14,9 @@ const products = [
   "Jeg vil gerne rådgives"
 ];
 
+const budgets = ["Ikke fastlagt", "Under 250 kr. pr. gave", "250-399 kr. pr. gave", "400-599 kr. pr. gave", "600-799 kr. pr. gave", "800 kr. eller mere pr. gave"];
+const deliveryMethods = ["Ikke afklaret", "Samlet til én adresse", "Direkte til hver modtager", "En kombination"];
+
 export default function CorporateGiftInquiry() {
   const [status, setStatus] = useState("");
   const [pending, setPending] = useState(false);
@@ -56,8 +59,21 @@ export default function CorporateGiftInquiry() {
             {products.map((product) => <option key={product}>{product}</option>)}
           </select>
         </label>
+        <label>
+          <span>Budget pr. gave</span>
+          <select name="budget" defaultValue={budgets[0]} required>
+            {budgets.map((budget) => <option key={budget}>{budget}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Levering</span>
+          <select name="deliveryMethod" defaultValue={deliveryMethods[0]} required>
+            {deliveryMethods.map((method) => <option key={method}>{method}</option>)}
+          </select>
+        </label>
+        <label><span>Ønsket leveringsdato</span><input name="requestedDate" type="date" /></label>
       </div>
-      <label><span>Ønsker og budget</span><textarea name="message" rows={5} maxLength={2000} placeholder="Fortæl fx om budget pr. gave, ønsket leveringsdato og om gaverne skal sendes samlet eller enkeltvis." /></label>
+      <label><span>Andre ønsker</span><textarea name="message" rows={5} maxLength={2000} placeholder="Fortæl fx om korttekst, logo, farver, gaveindpakning eller andre ønsker." /></label>
       <label className="corporate-honeypot" aria-hidden="true"><span>Website</span><input name="website" tabIndex={-1} autoComplete="off" /></label>
       <div className="corporate-form-actions">
         <button className="btn primary" type="submit" disabled={pending}>{pending ? "Sender..." : "Få et uforpligtende tilbud"}</button>

@@ -4,12 +4,35 @@ import { StoreSidebar } from "@/app/_components/StoreCategoryPage";
 import CorporateGiftInquiry from "./CorporateGiftInquiry";
 
 const siteUrl = "https://www.greenplanet.dk";
-const gizaImage = "https://cdn.faire.com/fastly/8029cbd8d05df3bba9b210cbbeade1990d6ad02f897897f25eb99a3cdad71bda.png?bg-color=FFFFFF&dpr=1&fit=crop&format=jpg&height=1440&width=1440";
-const temploImage = "https://cdn.faire.com/fastly/fb7393d8960f65b09c05bd44c7f94da3715c20fe7e649f0e00f79dbea700ee30.png?bg-color=FFFFFF&canvas=1440:1440&dpr=1&fit=bounds&format=jpg&height=1440&width=1440";
-const emporioImage = "https://cdn.faire.com/fastly/a87f364d55b2fa72f712051eb195ac8d5e49d0486c503c9d9604a2b99eb4f1fd.png?bg-color=FFFFFF&dpr=1&fit=crop&format=jpg&height=1440&width=1440";
-const candleStackImage = "https://cdn.faire.com/fastly/c32e22e2491b192abf9fb32842bd765e65315a260f405393c485855d9b1397e8.png?format=jpg&precrop=1%3A1&width=1440";
-const oliveOilImage = "https://cdn.faire.com/fastly/0a853aa2b852b533819c2b853057735e940d31977f95cf614eb3e9a65c088f88.jpeg?bg-color=F1F2ED&canvas=100p%2C109.2p%2Coffset-x50p%2Coffset-y0p&format=jpg&precrop=90.44p%2C82.82p%2Cx4.17p%2Cy17.17p&width=1440";
-const loulouImage = "https://cdn.faire.com/fastly/0e466665f318a56fe9dfb926563d4ac0c06337f0b0aebac49ca5c034a0db1b7a.png?bg-color=FFFFFF&canvas=1440:1440&dpr=1&fit=bounds&format=jpg&height=1440&width=1440";
+const gizaImage = "/images/firmagaver/giza-keramikbakke.jpg";
+const temploImage = "/images/firmagaver/templo-lysestage.jpg";
+const emporioImage = "/images/firmagaver/emporio-papirvase.jpg";
+const candleStackImage = "/images/firmagaver/candl-stack-03.jpg";
+const oliveOilImage = "/images/firmagaver/mini-olivenolier.jpg";
+const loulouImage = "/images/firmagaver/loulou-keramikvase.jpg";
+
+const faqs = [
+  {
+    question: "Hvor mange firmagaver kan vi bestille?",
+    answer: "Vi giver tilbud på både mindre og større bestillinger. Det mulige antal afhænger af produktets aktuelle lager, leveringstid og den ønskede indpakning."
+  },
+  {
+    question: "Kan gaverne få virksomhedens egen hilsen?",
+    answer: "Ja. Vi kan lægge et kort med virksomhedens tekst i gaverne. Logo, særligt kortformat eller anden tilpasning aftales som en del af tilbuddet."
+  },
+  {
+    question: "Kan gaverne sendes direkte til medarbejderne?",
+    answer: "Ja. Gaverne kan leveres samlet til virksomheden eller sendes direkte til hver modtager. Vi beregner levering og håndtering ud fra antal adresser."
+  },
+  {
+    question: "Hvad koster en firmajulegave?",
+    answer: "Den samlede pris afhænger af produkt, antal, kort, indpakning og levering. Send budget pr. gave i forespørgslen, så vender vi tilbage med et konkret forslag."
+  },
+  {
+    question: "Hvornår skal vi bestille firmajulegaver?",
+    answer: "Bestil gerne så tidligt som muligt. I tilbuddet bekræfter vi altid den aktuelle leveringstid og den seneste dato, hvor ordren skal godkendes."
+  }
+];
 
 const products = [
   {
@@ -91,6 +114,14 @@ export default function CorporateGiftsPage() {
         name: "Udvalg til firmajulegaver",
         numberOfItems: products.length,
         itemListElement: products.map((product, index) => ({ "@type": "ListItem", position: index + 1, name: product.name }))
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: faqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: { "@type": "Answer", text: faq.answer }
+        }))
       }
     ]
   };
@@ -155,6 +186,21 @@ export default function CorporateGiftsPage() {
               <li><span>2</span><strong>Godkend tilbuddet</strong><p>Du får pris, leveringstid og indhold samlet på skrift.</p></li>
               <li><span>3</span><strong>Vi gør gaverne klar</strong><p>Vi pakker, tilføjer hilsen og aftaler den praktiske levering.</p></li>
             </ol>
+          </section>
+
+          <section className="category-faq corporate-faq" aria-labelledby="corporate-faq-title">
+            <div>
+              <span className="section-eyebrow">Praktisk information</span>
+              <h2 id="corporate-faq-title">Spørgsmål om firmagaver</h2>
+            </div>
+            <div className="category-faq-list">
+              {faqs.map((faq) => (
+                <details key={faq.question}>
+                  <summary>{faq.question}</summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
+            </div>
           </section>
 
           <section className="corporate-inquiry" id="firmagave-forespoergsel" aria-labelledby="corporate-inquiry-title">
