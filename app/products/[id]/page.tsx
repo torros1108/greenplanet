@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { initialProducts, productSpecs, type Product, type ProductVariant } from "@/lib/data";
+import { polishDanishProductCopy } from "@/lib/publicCopy";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 import { AddToCartButton } from "./AddToCartButton";
 
@@ -33,8 +34,8 @@ function mapProduct(row: SupabaseProductRow): Product {
     brand: row.brand,
     category: row.category,
     tags: [],
-    description: row.description,
-    specs: row.specs || undefined,
+    description: polishDanishProductCopy(row.description),
+    specs: row.specs?.map((spec) => ({ label: polishDanishProductCopy(spec.label), value: polishDanishProductCopy(spec.value) })) || undefined,
     images: row.images || undefined,
     cost: 0,
     price: Number(row.price),

@@ -1,4 +1,5 @@
 import { giftboxes, initialProducts, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
+import { polishDanishGiftboxCopy, polishDanishProductCopy } from "@/lib/publicCopy";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 
 type ProductRow = {
@@ -15,8 +16,8 @@ type GiftboxRow = {
 type LinkRow = { sort_order: number; giftboxes: { legacy_id: string | null } | null; products: { legacy_id: string | null } | null };
 
 function mapProduct(row: ProductRow): Product {
-  return { id: row.legacy_id || row.slug, title: row.title, brand: row.brand, category: row.category, tags: [], description: row.description,
-    specs: row.specs || undefined, images: row.images || undefined, cost: 0, price: Number(row.price), stock: row.stock,
+  return { id: row.legacy_id || row.slug, title: row.title, brand: row.brand, category: row.category, tags: [], description: polishDanishProductCopy(row.description),
+    specs: row.specs?.map((spec) => ({ label: polishDanishProductCopy(spec.label), value: polishDanishProductCopy(spec.value) })) || undefined, images: row.images || undefined, cost: 0, price: Number(row.price), stock: row.stock,
     sku: row.sku || row.slug, image: row.image_url || undefined, variants: row.variants || undefined, giftbox: row.giftbox_eligible,
     occasions: row.occasions || [], shape: row.shape || "box", status: "Live" };
 }
@@ -38,9 +39,9 @@ export async function getGiftboxDetail(id: string) {
   if (!row) return null;
   const idToProduct = new Map(products.map((product) => [product.legacy_id || product.slug, mapProduct(product)]));
   const productIds = links.filter((link) => link.giftboxes?.legacy_id === id).map((link) => link.products?.legacy_id).filter(Boolean) as string[];
-  const giftbox: Giftbox = { id: row.legacy_id || row.slug, title: row.title, category: row.category, description: row.description,
-    productIds, note: row.note || "", recipient: row.recipient || "", occasion: row.occasion || "", packing: row.packing || "",
-    cardText: row.card_text || "", delivery: row.delivery || "", why: row.why || "", details: row.details || [] };
+  const giftbox: Giftbox = { id: row.legacy_id || row.slug, title: row.title, category: row.category, description: polishDanishGiftboxCopy(row.description),
+    productIds, note: polishDanishGiftboxCopy(row.note || ""), recipient: polishDanishGiftboxCopy(row.recipient || ""), occasion: polishDanishGiftboxCopy(row.occasion || ""), packing: polishDanishGiftboxCopy(row.packing || ""),
+    cardText: polishDanishGiftboxCopy(row.card_text || ""), delivery: polishDanishGiftboxCopy(row.delivery || ""), why: polishDanishGiftboxCopy(row.why || ""), details: (row.details || []).map(polishDanishGiftboxCopy) };
   return { giftbox, items: productIds.map((productId) => idToProduct.get(productId)).filter(Boolean) as Product[], boxPrice: Number(row.box_price) || 49 };
 }
 

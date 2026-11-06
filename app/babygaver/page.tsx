@@ -6,7 +6,12 @@ export const metadata: Metadata = {
   title: "Babygaver og barselsgaver",
   description: "Find babygaver og barselsgaver med blid babypleje, økologiske tekstiler, babynest, håndklæder og små gaver til den første tid.",
   alternates: { canonical: "/babygaver" },
-  openGraph: { title: "Babygaver og barselsgaver | Greenplanet", description: "Blid babypleje, økologiske tekstiler og brugbare gaver til baby og nye forældre.", url: "/babygaver" }
+  openGraph: {
+    title: "Babygaver og barselsgaver | Greenplanet",
+    description: "Blid babypleje, økologiske tekstiler og brugbare gaver til baby og nye forældre.",
+    url: "/babygaver",
+    images: [{ url: "/greenplanet-premium-hero.png", width: 1536, height: 1024, alt: "Barsels- og babygaver i Greenplanet gaveæske" }]
+  }
 };
 
 export default async function BabyGiftsPage() {

@@ -6,7 +6,12 @@ export const metadata: Metadata = {
   title: "Naturlig wellness og hudpleje",
   description: "Find naturlige olier, rosenvand, ler og hudpleje til wellness, selvforkælelse og personlige gaveæsker.",
   alternates: { canonical: "/wellness" },
-  openGraph: { title: "Naturlig wellness og hudpleje | Greenplanet", description: "Olier, rosenvand, ler og hudpleje til wellness og personlige gaver.", url: "/wellness" }
+  openGraph: {
+    title: "Naturlig wellness og hudpleje | Greenplanet",
+    description: "Olier, rosenvand, ler og hudpleje til wellness og personlige gaver.",
+    url: "/wellness",
+    images: [{ url: "/greenplanet-premium-hero.png", width: 1536, height: 1024, alt: "Personlig wellnessgave fra Greenplanet" }]
+  }
 };
 
 export default async function WellnessPage() {

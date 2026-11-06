@@ -3,10 +3,15 @@ import StoreCategoryPage from "@/app/_components/StoreCategoryPage";
 import { loadPublicProducts } from "@/lib/storefrontServer";
 
 export const metadata: Metadata = {
-  title: "Move | Activewear, leggings og sports-bh’er",
-  description: "Shop Greenplanet Move med activewear, leggings, sports-bh’er, løbetoppe og bløde lag fra Believe Athletics og Offbeatmode.",
+  title: "Move | Yogabukser, leggings og træningstøj",
+  description: "Shop yogabukser, yoga leggings, sports-bh’er, løbetoppe og athleisure fra Believe Athletics og Offbeatmode hos Greenplanet Move.",
   alternates: { canonical: "/move" },
-  openGraph: { title: "Greenplanet Move | Activewear til yoga og træning", description: "Activewear, leggings og sports-bh’er fra udvalgte brands.", url: "/move" }
+  openGraph: {
+    title: "Greenplanet Move | Yogabukser, leggings og træningstøj",
+    description: "Activewear, yoga leggings, sports-bh’er og løbetøj fra udvalgte brands.",
+    url: "/move",
+    images: [{ url: "/move/move-tropical-dark-hero-v1.png", width: 1536, height: 1024, alt: "Greenplanet Move activewear til yoga, løb og hverdag" }]
+  }
 };
 
 export default async function MovePage() {
@@ -14,12 +19,12 @@ export default async function MovePage() {
   return <StoreCategoryPage
     current="move"
     eyebrow="Greenplanet Move"
-    title="Activewear til yoga, træning og hverdagsbevægelse"
-    intro="Find leggings, sports-bh’er, løbetoppe, sweatshirts og bløde lag fra Believe Athletics og Offbeatmode."
+    title="Yogabukser, leggings og activewear til bevægelse"
+    intro="Find yoga leggings, sports-bh’er, løbetoppe, sweatshirts og bløde lag fra Believe Athletics og Offbeatmode."
     supportingText="Move samler behageligt træningstøj med tydelige størrelsesvalg, produktdetaljer og lagerstatus. Brug filtrene i shoppen, eller åbn et produkt for at vælge den rigtige variant."
     products={products}
-    guideTitle="Find det rigtige activewear"
-    guideIntro="Vælg efter aktivitet, pasform og det lag, du mangler. På produktsiderne kan du se tilgængelige størrelser og finde matchende dele."
+    guideTitle="Find det rigtige træningstøj"
+    guideIntro="Vælg yogabukser, løbetøj og bløde lag efter aktivitet og pasform. På produktsiderne kan du se tilgængelige størrelser og finde matchende dele."
     guide={[
       { title: "Yoga og rolig træning", body: "Vælg fleksible leggings og en støttende top, der følger bevægelsen uden at føles tung." },
       { title: "Løb og mere støtte", body: "Til løb er en tætsiddende sports-bh og leggings med god støtte et praktisk udgangspunkt." },

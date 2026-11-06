@@ -62,10 +62,10 @@ export const metadata: Metadata = {
     description: "Barselsgaver, babygaver og gaveæsker til nybagte mødre med personlig hilsen og direkte levering.",
     images: [
       {
-        url: "/brand/greenplanet-logo-mint.png",
-        width: 1792,
-        height: 1536,
-        alt: "Greenplanet logo"
+        url: "/greenplanet-premium-hero.png",
+        width: 1536,
+        height: 1024,
+        alt: "Greenplanet gaveæske med udvalgte produkter og personlig hilsen"
       }
     ]
   },
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Greenplanet | Barsels- og babygaver i flotte gaveæsker",
     description: "Barselsgaver, babygaver og gaveæsker til nybagte mødre med personlig hilsen og direkte levering.",
-    images: ["/brand/greenplanet-logo-mint.png"]
+    images: ["/greenplanet-premium-hero.png"]
   },
   robots: {
     index: true,

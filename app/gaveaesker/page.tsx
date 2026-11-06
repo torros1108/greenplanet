@@ -10,7 +10,12 @@ export const metadata: Metadata = {
   title: "Gaveæsker til barsel, baby og nybagt mor",
   description: "Find færdige gaveæsker til barsel, babyshower, nybagt mor og wellness. Tilføj personlig hilsen og send direkte til modtageren.",
   alternates: { canonical: "/gaveaesker" },
-  openGraph: { title: "Gaveæsker til barsel og baby | Greenplanet", description: "Færdige gaveæsker med personlig hilsen og direkte levering.", url: "/gaveaesker" }
+  openGraph: {
+    title: "Gaveæsker til barsel og baby | Greenplanet",
+    description: "Færdige gaveæsker med personlig hilsen og direkte levering.",
+    url: "/gaveaesker",
+    images: [{ url: "/greenplanet-premium-hero.png", width: 1536, height: 1024, alt: "Greenplanet gaveæske med personlig hilsen" }]
+  }
 };
 
 function money(value: number) {
@@ -23,10 +28,26 @@ export default async function GiftboxCollectionPage() {
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "CollectionPage",
+        "@id": `${siteUrl}/gaveaesker#collection`,
+        name: "Gaveæsker til barsel, baby og nybagt mor",
+        description: "Færdige gaveæsker med udvalgte produkter, personlig hilsen og direkte levering.",
+        url: `${siteUrl}/gaveaesker`,
+        mainEntity: { "@id": `${siteUrl}/gaveaesker#products` }
+      },
+      {
         "@type": "ItemList",
+        "@id": `${siteUrl}/gaveaesker#products`,
         name: "Greenplanet gaveæsker",
         numberOfItems: details.length,
         itemListElement: details.map((detail, index) => ({ "@type": "ListItem", position: index + 1, name: detail!.giftbox.title, url: `${siteUrl}/giftboxes/${detail!.giftbox.id}` }))
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Forside", item: siteUrl },
+          { "@type": "ListItem", position: 2, name: "Gaveæsker", item: `${siteUrl}/gaveaesker` }
+        ]
       },
       {
         "@type": "FAQPage",

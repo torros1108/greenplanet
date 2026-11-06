@@ -6,6 +6,7 @@ import Link from "next/link";
 import { hasAnalyticsConsent, openCookieSettings } from "./AnalyticsConsent";
 import { analyticsItem, ecommercePayload, type AnalyticsItem } from "@/lib/analytics";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
+import { polishDanishProductCopy } from "@/lib/publicCopy";
 
 const boxPrice = 49;
 const cardPrice = 0;
@@ -232,15 +233,6 @@ function parseCsv(text: string) {
 }
 
 
-
-function polishDanishProductCopy(value: string) {
-  return value
-    .replace(/Moses basket/gi, "babylift")
-    .replace(/100% linen/gi, "100 % hør")
-    .replace(/softened linen/gi, "blødgjort hør")
-    .replace(/Baby size/gi, "Babystørrelse")
-    .replace(/OekoTex/gi, "OEKO-TEX® STANDARD 100");
-}
 
 function fromSupabaseProduct(row: SupabaseProductRow): Product {
   return {
