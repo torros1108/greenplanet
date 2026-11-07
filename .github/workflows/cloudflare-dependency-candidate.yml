@@ -1,0 +1,29 @@
+name: Cloudflare dependency candidate
+on:
+  push:
+    branches: [cloudflare-migration-2026-11-07]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: corepack enable && corepack prepare pnpm@10 --activate
+      - name: Prepare compatible dependency candidate
+        run: pnpm add --save-exact next@16.4.5 react@19.2.7 react-dom@19.2.7
+      - run: pnpm add -D --save-exact @opennextjs/cloudflare@1.20.16 wrangler@4.158.0
+      - name: Preserve dependency candidate for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: greenplanet-cloudflare-dependencies
+          retention-days: 1
+          path: |
+            package.json
+            pnpm-lock.yaml
+      - run: pnpm exec tsc --noEmit --incremental false
+      - run: pnpm run test:security
