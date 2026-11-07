@@ -7,3 +7,9 @@ node_modules/
 .env
 .env.local
 .env.*.local
+
+# Cloudflare build output and local credentials
+.open-next/
+.wrangler/
+.dev.vars*
+.pnpm-store/

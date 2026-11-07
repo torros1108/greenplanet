@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "greenplanet-migration-test",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-07",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "workers_dev": true,
+  "keep_vars": true,
+  "vars": {
+    "NEXT_PUBLIC_APP_URL": "https://www.greenplanet.dk",
+    "NEXT_PUBLIC_SITE_URL": "https://www.greenplanet.dk"
+  },
+  "limits": {
+    "cpu_ms": 30000
+  }
+}
