@@ -8,19 +8,21 @@
     "start": "next start",
     "lint": "next lint",
     "test:security": "node --experimental-strip-types --test tests/security.test.ts",
-    "cf:setup": "pnpm add -D @opennextjs/cloudflare@1.20.16 wrangler@4",
+    "cf:setup": "pnpm add -D --save-exact @opennextjs/cloudflare@1.20.16 wrangler@4.158.0",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview"
   },
   "dependencies": {
-    "next": "16.2.10",
+    "next": "16.4.5",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.16",
     "@types/node": "24.0.14",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "wrangler": "4.158.0"
   }
 }
