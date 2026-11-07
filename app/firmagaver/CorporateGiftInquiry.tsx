@@ -4,13 +4,11 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 
 const products = [
-  "Giza keramikbakke",
-  "Templo lysestage",
-  "Emporio papirvase",
-  "CANDL STACK 03",
-  "Mini olivenolier gaveæske",
-  "Loulou keramikvase",
-  "En kombination af flere produkter",
+  "Nordisk køkkengave",
+  "Smageæske fra Middelhavet",
+  "Skulpturelle lys",
+  "Farverigt boligdesign",
+  "En kombination af flere gavekoncepter",
   "Jeg vil gerne rådgives"
 ];
 

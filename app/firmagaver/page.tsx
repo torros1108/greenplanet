@@ -9,7 +9,7 @@ const temploImage = "/images/firmagaver/templo-lysestage.jpg";
 const emporioImage = "/images/firmagaver/emporio-papirvase.jpg";
 const candleStackImage = "/images/firmagaver/candl-stack-03.jpg";
 const oliveOilImage = "/images/firmagaver/mini-olivenolier.jpg";
-const loulouImage = "/images/firmagaver/loulou-keramikvase.jpg";
+const kitchenGiftImage = "/images/firmagaver/nordisk-koekkengavesaet.jpg";
 
 const faqs = [
   {
@@ -36,52 +36,36 @@ const faqs = [
 
 const products = [
   {
-    name: "Giza keramikbakke",
-    subtitle: "OCTAEVO · Spanien",
-    description: "En håndbrændt porcelænsbakke med egyptisk inspireret mønster og håndpåført gulddetalje. Leveres i en præsentabel gaveæske.",
-    facts: ["15,5 × 15,5 cm", "Håndbrændt porcelæn", "Gaveæske med guldfolie"],
-    image: gizaImage,
-    tone: "light"
+    name: "Nordisk køkkengave",
+    subtitle: "Aspegren Denmark · Danmark",
+    description: "Et færdigt gavesæt med to viskestykker og to karklude i rolige blå nuancer. En brugbar gave i økologisk bomuld, pakket og klar til at give.",
+    facts: ["4 dele", "100 % økologisk bomuld", "Designet i Danmark"],
+    images: [kitchenGiftImage],
+    tone: "nordic"
   },
   {
-    name: "Templo lysestage",
-    subtitle: "OCTAEVO · Spanien",
-    description: "En skulpturel lysestage i mat stentøj, inspireret af søjlerne i antikke templer. Den kan stå alene eller indgå i en farvekombination.",
-    facts: ["11 × 8,5 × 8 cm", "Stentøj", "Plastfri gaveæske"],
-    image: temploImage,
-    tone: "sage"
-  },
-  {
-    name: "Emporio papirvase",
-    subtitle: "OCTAEVO · Spanien",
-    description: "En håndsyet papirvase med guldfolieprægning, der sættes over et glas eller en flaske. Let at sende og markant på et bord eller skrivebord.",
-    facts: ["26,5 × 29 cm", "Vandafvisende papir", "Plastfri"],
-    image: emporioImage,
-    tone: "marine"
-  },
-  {
-    name: "CANDL STACK 03",
-    subtitle: "Stan Editions · Belgien",
-    description: "Tre stablelige lys og to skulpturelle holdere samlet som et modulært designobjekt. Et statement-piece med cirka 80 timers samlet brændetid.",
-    facts: ["5 dele", "Ca. 80 timers brændetid", "Luksusgaveæske"],
-    image: candleStackImage,
-    tone: "burgundy"
-  },
-  {
-    name: "Mini olivenolier",
+    name: "Smageæske fra Middelhavet",
     subtitle: "Yiayia and Friends · Grækenland",
-    description: "Seks små ekstra jomfruolivenolier med original, citron, trøffel, chili, basilikum og hvidløg. En færdig smageæske med lang holdbarhed.",
-    facts: ["6 smagsvarianter", "Vegansk og glutenfri", "Plastfri emballage"],
-    image: oliveOilImage,
+    description: "Seks små ekstra jomfruolivenolier med original, citron, trøffel, chili, basilikum og hvidløg. En farverig smagegave, der er nem at dele.",
+    facts: ["6 smagsvarianter", "Vegansk og glutenfri", "Færdig gaveæske"],
+    images: [oliveOilImage],
     tone: "olive"
   },
   {
-    name: "Loulou keramikvase",
-    subtitle: "Opjet Paris · Frankrig",
-    description: "En enkel vase i sandfarvet stentøj med en rolig, organisk form. Den neutrale farve gør den velegnet som gave til mange forskellige hjem.",
-    facts: ["Ø 12,5 × H 20 cm", "100 % stentøj", "Sandfarvet finish"],
-    image: loulouImage,
-    tone: "sand"
+    name: "Skulpturelle lys",
+    subtitle: "Stan Editions + OCTAEVO · Europa",
+    description: "Et markant lysobjekt kombineret med en mat lysestage i stentøj. Et moderne valg til medarbejdere og kunder, der holder af farve og boligdesign.",
+    facts: ["Ca. 80 timers brændetid", "Stentøj og bivoks", "Kan tilpasses budgettet"],
+    images: [candleStackImage, temploImage],
+    tone: "burgundy"
+  },
+  {
+    name: "Farverigt boligdesign",
+    subtitle: "OCTAEVO · Spanien",
+    description: "En håndbrændt porcelænsbakke med gulddetaljer sammen med et grafisk designobjekt til hjemmet eller skrivebordet. Let at sende og svært at overse.",
+    facts: ["Europæisk design", "Plastfri emballage", "Personlig hilsen"],
+    images: [gizaImage, emporioImage],
+    tone: "colour"
   }
 ];
 
@@ -111,7 +95,7 @@ export default function CorporateGiftsPage() {
       },
       {
         "@type": "ItemList",
-        name: "Udvalg til firmajulegaver",
+        name: "Gavekoncepter til firmajulegaver",
         numberOfItems: products.length,
         itemListElement: products.map((product, index) => ({ "@type": "ListItem", position: index + 1, name: product.name }))
       },
@@ -142,10 +126,10 @@ export default function CorporateGiftsPage() {
                 <Link className="btn corporate-secondary" href="#firmagave-udvalg">Se udvalget</Link>
               </div>
             </div>
-            <div className="corporate-hero-stilllife" aria-label="Udvalgte boligprodukter">
-              <div className="corporate-hero-card corporate-hero-card-anna"><img src={gizaImage} alt="Giza keramikbakke" /></div>
-              <div className="corporate-hero-card corporate-hero-card-valencia"><img src={candleStackImage} alt="CANDL STACK i bourgogne" /></div>
-              <div className="corporate-hero-tray" aria-hidden="true"><span /></div>
+            <div className="corporate-hero-gallery" aria-label="Udvalgte firmagaver">
+              <img className="corporate-hero-gallery-main" src={kitchenGiftImage} alt="Nordisk køkkengavesæt i økologisk bomuld" />
+              <img src={oliveOilImage} alt="Smageæske med små olivenolier" />
+              <img src={gizaImage} alt="Farverig Giza keramikbakke" />
             </div>
           </header>
 
@@ -157,15 +141,17 @@ export default function CorporateGiftsPage() {
 
           <section className="corporate-products" id="firmagave-udvalg" aria-labelledby="firmagave-title">
             <div className="corporate-section-head">
-              <div><span className="section-eyebrow">Det konkrete udvalg</span><h2 id="firmagave-title">Design, lys og smag</h2></div>
-              <p>Vælg et produkt som udgangspunkt, eller lad os sammensætte et forslag efter budget. Pris og leveringstid bekræftes altid efter antal og aktuel tilgængelighed.</p>
+              <div><span className="section-eyebrow">Fire gavekoncepter</span><h2 id="firmagave-title">Firmagaver, der er klar til at give</h2></div>
+              <p>Vælg et færdigt gavesæt eller et designkoncept, som vi tilpasser efter antal og budget. Du får altid indhold, pris og leveringstid samlet på skrift.</p>
             </div>
             <div className="corporate-product-grid">
               {products.map((product, index) => (
                 <article className={`corporate-product-card tone-${product.tone}`} key={product.name}>
-                  <div className="corporate-product-number">0{index + 1}</div>
-                  <div className="corporate-product-media">
-                    <img src={product.image} alt={`${product.name}, ${product.subtitle}`} loading="lazy" />
+                  <div className="corporate-product-number">Gave 0{index + 1}</div>
+                  <div className={`corporate-product-media ${product.images.length > 1 ? "corporate-product-collage" : ""}`}>
+                    {product.images.map((image, imageIndex) => (
+                      <img src={image} alt={imageIndex === 0 ? `${product.name}, ${product.subtitle}` : ""} loading="lazy" key={image} />
+                    ))}
                   </div>
                   <div className="corporate-product-copy">
                     <span>{product.subtitle}</span>
