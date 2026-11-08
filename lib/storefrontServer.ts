@@ -29,7 +29,7 @@ function fallbackGiftbox(id: string) {
 }
 
 export async function getGiftboxDetail(id: string) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return fallbackGiftbox(id);
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) return fallbackGiftbox(id);
   const [rows, products, links] = await Promise.all([
     supabaseAdminRequest<GiftboxRow[]>(`giftboxes?legacy_id=eq.${encodeURIComponent(id)}&status=eq.live&select=legacy_id,slug,title,category,description,note,recipient,occasion,packing,card_text,delivery,why,details,box_price&limit=1`),
     supabaseAdminRequest<ProductRow[]>("products?status=eq.live&select=legacy_id,slug,title,brand,category,description,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,specs"),
@@ -46,7 +46,7 @@ export async function getGiftboxDetail(id: string) {
 }
 
 export async function loadPublicRouteIds() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
     return { productIds: initialProducts.filter((p) => p.status === "Live").map((p) => p.id), giftboxIds: giftboxes.map((g) => g.id) };
   }
   const [products, boxes] = await Promise.all([
@@ -57,7 +57,7 @@ export async function loadPublicRouteIds() {
 }
 
 export async function loadPublicRouteEntries() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
     return {
       products: initialProducts.filter((product) => product.status === "Live").map((product) => ({ id: product.id, updatedAt: null })),
       giftboxes: giftboxes.map((giftbox) => ({ id: giftbox.id, updatedAt: null }))
@@ -75,7 +75,7 @@ export async function loadPublicRouteEntries() {
 }
 
 export async function loadPublicProducts(category?: string) {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
     return initialProducts.filter((product) => product.status === "Live" && (!category || product.category === category));
   }
   const categoryFilter = category ? `&category=eq.${encodeURIComponent(category)}` : "";

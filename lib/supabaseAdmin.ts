@@ -1,6 +1,6 @@
 export async function supabaseAdminRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceKey) {
     throw new Error("Supabase server env mangler");
@@ -10,7 +10,7 @@ export async function supabaseAdminRequest<T>(path: string, init: RequestInit = 
     ...init,
     headers: {
       apikey: serviceKey,
-      Authorization: `Bearer ${serviceKey}`,
+      ...(serviceKey.startsWith("sb_secret_") ? {} : { Authorization: `Bearer ${serviceKey}` }),
       "Content-Type": "application/json",
       Prefer: "return=representation",
       ...(init.headers || {})
