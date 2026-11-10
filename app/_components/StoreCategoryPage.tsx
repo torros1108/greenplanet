@@ -7,6 +7,13 @@ function money(value: number) {
   return `${Math.round(value)} kr.`;
 }
 
+function moveProductGroup(title: string) {
+  const value = title.toLowerCase();
+  if (/hoodie|cardigan|sweatshirt|jakke/.test(value)) return "layers";
+  if (/sports-bh|sports bh|løbetop|\btop\b|\bbh\b/.test(value)) return "tops";
+  return "bottoms";
+}
+
 export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" | "wellness" | "move" | "firmagaver" }) {
   return (
     <aside className="sidebar category-sidebar">
@@ -44,6 +51,13 @@ type StoreCategoryPageProps = {
 
 export default function StoreCategoryPage({ current, eyebrow, title, intro, supportingText, products, guideTitle, guideIntro, guide, faqs }: StoreCategoryPageProps) {
   const pageUrl = `${siteUrl}/${current}`;
+  const productSections = current === "move"
+    ? [
+        { id: "leggings-og-bukser", title: "Leggings & bukser", description: "Yoga leggings, løbeleggings, joggers og shorts.", products: products.filter((product) => moveProductGroup(product.title) === "bottoms") },
+        { id: "toppe-og-sports-bher", title: "Toppe & sports-bh’er", description: "Sports-bh’er og toppe til yoga, løb og træning.", products: products.filter((product) => moveProductGroup(product.title) === "tops") },
+        { id: "hoodies-og-cardigans", title: "Hoodies & cardigans", description: "Bløde lag til opvarmning, hverdag og afslapning.", products: products.filter((product) => moveProductGroup(product.title) === "layers") }
+      ].filter((section) => section.products.length > 0)
+    : [{ id: "category-products", title: "Se produkterne", description: "", products }];
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -96,32 +110,40 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
             <p className="lead">{intro}</p>
             <p>{supportingText}</p>
           </header>
-          <section aria-labelledby="category-products-title">
-            <div className="section-head">
-              <div>
-                <span className="section-eyebrow">Udvalget</span>
-                <h2 id="category-products-title">Se produkterne</h2>
+          {current === "move" && (
+            <nav className="category-jump-links" aria-label="Move-kategorier">
+              {productSections.map((section) => <Link key={section.id} href={`#${section.id}`}>{section.title}</Link>)}
+            </nav>
+          )}
+          {productSections.map((section, sectionIndex) => (
+            <section className="category-product-section" id={section.id} key={section.id} aria-labelledby={`${section.id}-title`}>
+              <div className="section-head">
+                <div>
+                  <span className="section-eyebrow">{current === "move" ? `Move ${String(sectionIndex + 1).padStart(2, "0")}` : "Udvalget"}</span>
+                  <h2 id={`${section.id}-title`}>{section.title}</h2>
+                  {section.description && <p>{section.description}</p>}
+                </div>
               </div>
-            </div>
-            <div className="grid category-product-grid">
-              {products.map((product) => (
-                <article className="card" key={product.id}>
-                  <Link className="product-visual category-product-image" href={`/products/${product.id}`} aria-label={`Se ${product.title}`}>
-                    {product.image ? <img className="product-image" src={product.image} alt={product.title} loading="lazy" /> : <span className={`shape ${product.shape}`} />}
-                  </Link>
-                  <div className="card-body">
-                    <div className="meta">{product.brand} · {product.category}</div>
-                    <h3><Link href={`/products/${product.id}`}>{product.title}</Link></h3>
-                    <p>{product.description}</p>
-                    <div className="buy-row">
-                      <span className="price">{money(product.price)}</span>
-                      <Link className="btn primary" href={`/products/${product.id}`}>Se produkt</Link>
+              <div className="grid category-product-grid">
+                {section.products.map((product) => (
+                  <article className="card" key={product.id}>
+                    <Link className="product-visual category-product-image" href={`/products/${product.id}`} aria-label={`Se ${product.title}`}>
+                      {product.image ? <img className="product-image" src={product.image} alt={product.title} loading="lazy" /> : <span className={`shape ${product.shape}`} />}
+                    </Link>
+                    <div className="card-body">
+                      <div className="meta">{product.brand} · {product.category}</div>
+                      <h3><Link href={`/products/${product.id}`}>{product.title}</Link></h3>
+                      <p>{product.description}</p>
+                      <div className="buy-row">
+                        <span className="price">{money(product.price)}</span>
+                        <Link className="btn primary" href={`/products/${product.id}`}>Se produkt</Link>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
           <section className="category-guide" aria-labelledby="category-guide-title">
             <div className="category-guide-intro">
               <span className="section-eyebrow">Guide</span>

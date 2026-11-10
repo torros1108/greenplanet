@@ -289,6 +289,31 @@ input:focus, textarea:focus, select:focus {
 .category-product-grid .card p { display: -webkit-box; min-height: 66px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 .category-product-grid .buy-row { grid-template-columns: auto minmax(130px, .7fr); }
 .category-product-grid .btn { width: 100%; }
+.category-jump-links {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.category-jump-links a {
+  display: grid;
+  place-items: center;
+  min-height: 54px;
+  padding: 10px 14px;
+  background: rgba(255,253,248,.96);
+  color: var(--forest);
+  font-size: 14px;
+  font-weight: 850;
+  text-align: center;
+  text-decoration: none;
+}
+.category-jump-links a:hover { background: #edf1e8; }
+.category-product-section { scroll-margin-top: 72px; }
+.category-product-section .section-head p { margin: 8px 0 0; color: var(--muted); }
 
 @media (max-width: 780px) {
   .category-page-shell .category-sidebar { position: relative; }
@@ -296,6 +321,7 @@ input:focus, textarea:focus, select:focus {
   .category-page-shell .category-sidebar .side-note { display: none; }
   .category-hero { padding-top: 24px; }
   .category-hero h1 { font-size: 46px; }
+  .category-jump-links { position: static; grid-template-columns: 1fr; }
 }
 
 /* Stronger boutique pass */
