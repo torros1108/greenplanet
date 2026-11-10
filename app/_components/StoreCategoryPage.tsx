@@ -21,7 +21,6 @@ export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" 
         <Link className={current === "babygaver" ? "active" : ""} href="/babygaver">Baby &amp; barsel</Link>
         <Link className={current === "wellness" ? "active" : ""} href="/wellness">Velvære</Link>
         <Link className={current === "move" ? "active" : ""} href="/move">Move</Link>
-        <Link className={current === "firmagaver" ? "active" : ""} href="/firmagaver">Firmagaver</Link>
         <Link href="/#builder">Byg selv</Link>
         <Link href="/#orders">Kurv</Link>
       </nav>

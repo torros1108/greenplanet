@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { StoreSidebar } from "@/app/_components/StoreCategoryPage";
 import CorporateGiftInquiry from "./CorporateGiftInquiry";
 
@@ -10,6 +11,7 @@ const emporioImage = "/images/firmagaver/emporio-papirvase.jpg";
 const candleStackImage = "/images/firmagaver/candl-stack-03.jpg";
 const oliveOilImage = "/images/firmagaver/mini-olivenolier.jpg";
 const kitchenGiftImage = "/images/firmagaver/nordisk-koekkengavesaet.jpg";
+const loulouImage = "/images/firmagaver/loulou-keramikvase.jpg";
 
 const faqs = [
   {
@@ -38,6 +40,7 @@ const products = [
   {
     name: "Nordisk køkkengave",
     subtitle: "Aspegren Denmark · Danmark",
+    occasion: "Til hjemmet",
     description: "Et færdigt gavesæt med to viskestykker og to karklude i rolige blå nuancer. En brugbar gave i økologisk bomuld, pakket og klar til at give.",
     facts: ["4 dele", "100 % økologisk bomuld", "Designet i Danmark"],
     images: [kitchenGiftImage],
@@ -46,26 +49,47 @@ const products = [
   {
     name: "Smageæske fra Middelhavet",
     subtitle: "Yiayia and Friends · Grækenland",
+    occasion: "Til madelskeren",
     description: "Seks små ekstra jomfruolivenolier med original, citron, trøffel, chili, basilikum og hvidløg. En farverig smagegave, der er nem at dele.",
     facts: ["6 smagsvarianter", "Vegansk og glutenfri", "Færdig gaveæske"],
     images: [oliveOilImage],
     tone: "olive"
   },
   {
-    name: "Skulpturelle lys",
-    subtitle: "Stan Editions + OCTAEVO · Europa",
-    description: "Et markant lysobjekt kombineret med en mat lysestage i stentøj. Et moderne valg til medarbejdere og kunder, der holder af farve og boligdesign.",
-    facts: ["Ca. 80 timers brændetid", "Stentøj og bivoks", "Kan tilpasses budgettet"],
-    images: [candleStackImage, temploImage],
+    name: "Skulpturelt designlys",
+    subtitle: "Stan Editions · Belgien",
+    occasion: "Til designelskeren",
+    description: "Et markant lysobjekt, der fungerer som både brugskunst og stemningsskaber. Et moderne valg til medarbejdere og kunder, der holder af farve og boligdesign.",
+    facts: ["Ca. 80 timers brændetid", "Bivoks", "Flere farver"],
+    images: [candleStackImage],
     tone: "burgundy"
   },
   {
-    name: "Farverigt boligdesign",
+    name: "Templo røgelsesholder",
     subtitle: "OCTAEVO · Spanien",
-    description: "En håndbrændt porcelænsbakke med gulddetaljer sammen med et grafisk designobjekt til hjemmet eller skrivebordet. Let at sende og svært at overse.",
-    facts: ["Europæisk design", "Plastfri emballage", "Personlig hilsen"],
+    occasion: "Til den rolige pause",
+    description: "En skulpturel røgelsesholder i glaseret stentøj. En kompakt designgave til skrivebordet eller hjemmet, som kan kombineres med en personlig hilsen.",
+    facts: ["Glaseret stentøj", "Til røgelsespinde", "Designet i Barcelona"],
+    images: [temploImage],
+    tone: "stone"
+  },
+  {
+    name: "Grafisk designgave",
+    subtitle: "OCTAEVO · Spanien",
+    occasion: "Til hjem og kontor",
+    description: "Giza-bakken i højbrændt keramik kombineret med en vandafvisende papirvase. Farverigt europæisk design, der er let at sende og svært at overse.",
+    facts: ["Keramik og papir", "Gulddetaljer", "Leveres gaveklart"],
     images: [gizaImage, emporioImage],
     tone: "colour"
+  },
+  {
+    name: "Loulou keramikvase",
+    subtitle: "Opjet Paris · Frankrig",
+    occasion: "Til den klassiske gave",
+    description: "En høj vase i brun keramisk stentøj med et enkelt, håndværkspræget udtryk. En rolig og anvendelig gave til medarbejdere, kunder eller samarbejdspartnere.",
+    facts: ["33 cm høj", "Keramisk stentøj", "Kan gives alene eller i et sæt"],
+    images: [loulouImage],
+    tone: "clay"
   }
 ];
 
@@ -78,10 +102,13 @@ export const metadata: Metadata = {
     description: "Boligdesign, lys og delikatesser som firmajulegaver med personlig hilsen og fleksibel levering.",
     url: "/firmagaver",
     images: [{ url: gizaImage, alt: "Giza keramikbakke som firmagave" }]
-  }
+  },
+  robots: { index: false, follow: false }
 };
 
 export default function CorporateGiftsPage() {
+  redirect("/");
+
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -141,8 +168,8 @@ export default function CorporateGiftsPage() {
 
           <section className="corporate-products" id="firmagave-udvalg" aria-labelledby="firmagave-title">
             <div className="corporate-section-head">
-              <div><span className="section-eyebrow">Fire gavekoncepter</span><h2 id="firmagave-title">Firmagaver, der er klar til at give</h2></div>
-              <p>Vælg et færdigt gavesæt eller et designkoncept, som vi tilpasser efter antal og budget. Du får altid indhold, pris og leveringstid samlet på skrift.</p>
+              <div><span className="section-eyebrow">Seks gaveidéer</span><h2 id="firmagave-title">Vælg den gave, der passer til modtageren</h2></div>
+              <p>Se indholdet, vælg en favorit og send en forespørgsel. Vi bekræfter altid lager, pris og leveringstid samlet på skrift.</p>
             </div>
             <div className="corporate-product-grid">
               {products.map((product, index) => (
@@ -154,11 +181,11 @@ export default function CorporateGiftsPage() {
                     ))}
                   </div>
                   <div className="corporate-product-copy">
-                    <span>{product.subtitle}</span>
+                    <div className="corporate-product-meta"><span>{product.subtitle}</span><em>{product.occasion}</em></div>
                     <h3>{product.name}</h3>
                     <p>{product.description}</p>
                     <ul>{product.facts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
-                    <Link className="text-link" href="#firmagave-forespoergsel">Få pris efter antal</Link>
+                    <Link className="corporate-select-gift" href={`/firmagaver?gift=${encodeURIComponent(product.name)}#firmagave-forespoergsel`}>Vælg denne gave</Link>
                   </div>
                 </article>
               ))}

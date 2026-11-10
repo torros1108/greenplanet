@@ -1184,7 +1184,6 @@ export default function Home() {
               </button>
             );
           })}
-          <Link href="/firmagaver">Firmagaver</Link>
         </nav>
         <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
       </aside>
@@ -1946,7 +1945,6 @@ export default function Home() {
               <Link href="/babygaver">Baby & barsel</Link>
               <Link href="/wellness">Velvære</Link>
               <Link href="/move">Move</Link>
-              <Link href="/firmagaver">Firmagaver</Link>
               <button onClick={() => setView("builder")}>Byg selv</button>
             </div>
             <div>

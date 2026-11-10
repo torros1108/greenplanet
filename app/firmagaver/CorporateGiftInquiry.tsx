@@ -1,13 +1,15 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const products = [
   "Nordisk køkkengave",
   "Smageæske fra Middelhavet",
-  "Skulpturelle lys",
-  "Farverigt boligdesign",
+  "Skulpturelt designlys",
+  "Templo røgelsesholder",
+  "Grafisk designgave",
+  "Loulou keramikvase",
   "En kombination af flere gavekoncepter",
   "Jeg vil gerne rådgives"
 ];
@@ -18,6 +20,12 @@ const deliveryMethods = ["Ikke afklaret", "Samlet til én adresse", "Direkte til
 export default function CorporateGiftInquiry() {
   const [status, setStatus] = useState("");
   const [pending, setPending] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(products[0]);
+
+  useEffect(() => {
+    const requestedProduct = new URLSearchParams(window.location.search).get("gift");
+    if (requestedProduct && products.includes(requestedProduct)) setSelectedProduct(requestedProduct);
+  }, []);
 
   async function submitInquiry(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,7 +61,7 @@ export default function CorporateGiftInquiry() {
         <label><span>Antal gaver</span><input name="quantity" required type="number" min="1" max="5000" defaultValue="25" /></label>
         <label>
           <span>Interesse</span>
-          <select name="product" defaultValue={products[6]}>
+          <select name="product" value={selectedProduct} onChange={(event) => setSelectedProduct(event.target.value)}>
             {products.map((product) => <option key={product}>{product}</option>)}
           </select>
         </label>
