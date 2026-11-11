@@ -175,7 +175,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
           <Link href="/move">Move</Link>
           <Link href="/#builder">Byg selv</Link>
         </nav>
-        <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
+        <p className="side-note">Personlige gaveæsker, velvære og activewear fra udvalgte brands.</p>
       </aside>
 
       <section className="main">

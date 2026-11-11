@@ -31,7 +31,7 @@ export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" 
         <Link href="/#builder">Byg selv</Link>
         <Link href="/#orders">Kurv</Link>
       </nav>
-      <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
+      <p className="side-note">Personlige gaveæsker, velvære og activewear fra udvalgte brands.</p>
     </aside>
   );
 }

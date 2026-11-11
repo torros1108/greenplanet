@@ -1185,7 +1185,7 @@ export default function Home() {
             );
           })}
         </nav>
-        <p className="side-note">Personlige gaver, boligdesign og activewear fra udvalgte brands.</p>
+        <p className="side-note">Personlige gaveæsker, velvære og activewear fra udvalgte brands.</p>
       </aside>
 
       <section className="main">
