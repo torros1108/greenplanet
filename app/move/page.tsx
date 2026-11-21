@@ -14,15 +14,17 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function MovePage() {
+export default async function MovePage({ searchParams }: { searchParams: Promise<{ kategori?: string }> }) {
+  const { kategori } = await searchParams;
   const products = await loadPublicProducts("Move");
   return <StoreCategoryPage
     current="move"
     eyebrow="Greenplanet Move"
     title="Yoga leggings, løbeleggings og athleisure"
     intro="Find yoga leggings, løbeleggings, sports-bh’er, løbetoppe, sweatshirts og bløde lag fra Believe Athletics og Offbeatmode."
-    supportingText="Move samler behageligt træningstøj med tydelige størrelsesvalg, produktdetaljer og lagerstatus. Gå direkte til leggings, toppe eller bløde lag, og åbn et produkt for at vælge størrelse."
+    supportingText="Kombinér leggings med en top i samme mønster, eller brug en blød cardigan som ekstra lag på vej til træning og i hverdagen."
     products={products}
+    selectedMoveGroup={kategori}
     guideTitle="Find det rigtige træningstøj"
     guideIntro="Vælg yogabukser, løbetøj og bløde lag efter aktivitet og pasform. På produktsiderne kan du se tilgængelige størrelser og finde matchende dele."
     guide={[

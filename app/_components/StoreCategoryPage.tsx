@@ -22,21 +22,25 @@ type StoreCategoryPageProps = {
   intro: string;
   supportingText: string;
   products: Product[];
+  selectedMoveGroup?: string;
   guideTitle: string;
   guideIntro: string;
   guide: Array<{ title: string; body: string }>;
   faqs: Array<{ question: string; answer: string }>;
 };
 
-export default function StoreCategoryPage({ current, eyebrow, title, intro, supportingText, products, guideTitle, guideIntro, guide, faqs }: StoreCategoryPageProps) {
+export default function StoreCategoryPage({ current, eyebrow, title, intro, supportingText, products, selectedMoveGroup, guideTitle, guideIntro, guide, faqs }: StoreCategoryPageProps) {
   const pageUrl = `${siteUrl}/${current}`;
-  const productSections = current === "move"
+  const allProductSections = current === "move"
     ? [
         { id: "leggings-og-bukser", title: "Leggings & bukser", description: "Yoga leggings, løbeleggings, joggers og shorts.", products: products.filter((product) => moveProductGroup(product.title) === "bottoms") },
         { id: "toppe-og-sports-bher", title: "Toppe & sports-bh’er", description: "Sports-bh’er og toppe til yoga, løb og træning.", products: products.filter((product) => moveProductGroup(product.title) === "tops") },
         { id: "hoodies-og-cardigans", title: "Hoodies & cardigans", description: "Bløde lag til opvarmning, hverdag og afslapning.", products: products.filter((product) => moveProductGroup(product.title) === "layers") }
       ].filter((section) => section.products.length > 0)
     : [{ id: "category-products", title: "Se produkterne", description: "", products }];
+  const activeGroup = allProductSections.some((section) => section.id === selectedMoveGroup) ? selectedMoveGroup : undefined;
+  const productSections = activeGroup ? allProductSections.filter((section) => section.id === activeGroup) : allProductSections;
+  const visibleProducts = productSections.flatMap((section) => section.products);
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -51,8 +55,8 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
       {
         "@type": "ItemList",
         "@id": `${pageUrl}#products`,
-        numberOfItems: products.length,
-        itemListElement: products.map((product, index) => ({
+        numberOfItems: visibleProducts.length,
+        itemListElement: visibleProducts.map((product, index) => ({
           "@type": "ListItem",
           position: index + 1,
           url: `${siteUrl}/products/${product.id}`,
@@ -89,12 +93,13 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
             <p className="lead">{intro}</p>
           </header>
           {current === "move" && (
-            <nav className="category-jump-links" aria-label="Move-kategorier">
-              {productSections.map((section) => <Link key={section.id} href={`#${section.id}`}>{section.title}</Link>)}
+            <nav className="category-jump-links" aria-label="Filtrer Move-produkter">
+              <Link href="/move#move-products" className={!activeGroup ? "active" : undefined} aria-current={!activeGroup ? "page" : undefined}>Alle</Link>
+              {allProductSections.map((section) => <Link key={section.id} href={`/move?kategori=${section.id}#move-products`} className={activeGroup === section.id ? "active" : undefined} aria-current={activeGroup === section.id ? "page" : undefined}>{section.title}</Link>)}
             </nav>
           )}
           {productSections.map((section, sectionIndex) => (
-            <section className="category-product-section" id={section.id} key={section.id} aria-labelledby={`${section.id}-title`}>
+            <section className="category-product-section" id={current === "move" && sectionIndex === 0 ? "move-products" : section.id} key={section.id} aria-labelledby={`${section.id}-title`}>
               <div className="section-head">
                 <div>
                   <span className="section-eyebrow">{current === "move" ? `Move ${String(sectionIndex + 1).padStart(2, "0")}` : "Udvalget"}</span>

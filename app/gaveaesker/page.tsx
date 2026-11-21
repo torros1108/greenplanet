@@ -70,7 +70,6 @@ export default async function GiftboxCollectionPage() {
             <span className="eyebrow">Klar til at give</span>
             <h1>Gaveæsker til barsel, baby og nybagt mor</h1>
             <p className="lead">Vælg en færdig gaveæske med udvalgte produkter, personlig korttekst og mulighed for levering direkte til modtageren.</p>
-            <p>Prisen viser både indhold og gaveæske. På den enkelte gaveæske kan du se alle produkter, varianter og den samlede pris, før du lægger den i kurven.</p>
           </header>
           <section aria-labelledby="giftbox-list-title">
             <div className="section-head"><div><span className="section-eyebrow">Udvalget</span><h2 id="giftbox-list-title">Se gaveæskerne</h2></div></div>
@@ -89,7 +88,7 @@ export default async function GiftboxCollectionPage() {
                       ))}
                     </Link>
                     <div className="card-body">
-                      <div className="meta">{giftbox.category} · {items.length} produkter</div>
+                      <div className="meta">{giftbox.category}</div>
                       <h3><Link href={`/giftboxes/${giftbox.id}`}>{giftbox.title}</Link></h3>
                       <p>{giftbox.description}</p>
                       <ul className="giftbox-collection-contents" aria-label="Indhold i gaveæsken">
@@ -103,6 +102,7 @@ export default async function GiftboxCollectionPage() {
               })}
             </div>
           </section>
+          <p className="category-supporting-copy">Prisen viser både indhold og gaveæske. På den enkelte gaveæske kan du se alle produkter, varianter og den samlede pris, før du lægger den i kurven.</p>
           <section className="category-guide" aria-labelledby="giftbox-guide-title">
             <div className="category-guide-intro">
               <span className="section-eyebrow">Gaveguide</span>

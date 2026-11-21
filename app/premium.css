@@ -1655,3 +1655,79 @@ input:focus, textarea:focus, select:focus {
   .builder-section .builder-mobile-total .btn { width: auto; padding-inline: 14px; }
   .builder-section .builder-catalog-head h3 { font-size: 27px; }
 }
+
+.category-jump-links { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.category-jump-links a.active { background: var(--forest); color: var(--cream); }
+.category-product-grid .category-product-image { aspect-ratio: 4 / 3; height: auto; }
+.category-page-shell:has(.category-jump-links) .category-product-image { aspect-ratio: 4 / 5; }
+.category-product-grid .product-image { width: 100%; height: 100%; object-fit: contain; }
+.category-product-grid .card-body > p { min-height: 0; -webkit-line-clamp: 2; }
+.category-product-grid .card { box-shadow: none; }
+@media (max-width: 640px) {
+  .category-jump-links { display: flex; overflow-x: auto; scrollbar-width: thin; }
+  .category-jump-links a { flex: 0 0 auto; min-width: 108px; }
+}
+
+.home-photo-hero {
+  display: flex;
+  align-items: center;
+  min-height: 590px;
+  border: 0;
+  background: linear-gradient(90deg, rgba(255,253,248,.93) 0%, rgba(255,253,248,.78) 31%, transparent 62%), url("/greenplanet-premium-hero.png") center / cover;
+  box-shadow: none;
+}
+.home-photo-hero .hero-copy { width: min(650px, 62%); padding: 40px 54px; }
+.home-photo-hero .big-title { max-width: 610px; font-size: 64px; line-height: 1.04; }
+.home-photo-hero .lead { max-width: 460px; font-size: 18px; }
+.home-photo-hero .actions { gap: 10px; }
+.home-photo-hero .btn { min-height: 48px; }
+.home-giftboxes { padding: 36px 0 18px; }
+.home-giftboxes-head { display: flex; align-items: end; gap: 20px; margin-bottom: 16px; }
+.home-giftboxes-head h2 { margin: 0 auto 0 0; color: var(--forest); font-family: Georgia, "Times New Roman", serif; font-size: 38px; font-weight: 500; }
+.home-giftboxes-head a { color: var(--forest); }
+.home-giftboxes-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.home-giftbox { display: grid; grid-template-rows: auto auto auto; min-width: 0; padding-bottom: 16px; border: 1px solid var(--line); background: var(--cream); color: var(--forest); text-decoration: none; }
+.home-giftbox-image { display: grid; grid-template-columns: 1.2fr 1fr; grid-template-rows: 1fr 1fr; gap: 5px; aspect-ratio: 4 / 3; padding: 10px; background: var(--mint); overflow: hidden; }
+.home-giftbox-image img { width: 100%; height: 100%; min-height: 0; object-fit: contain; padding: 6px; background: var(--cream); }
+.home-giftbox-image img:first-child { grid-row: 1 / 3; }
+.checkout-count { white-space: nowrap; }
+.builder-preview-panel { scroll-margin-top: 76px; }
+.home-giftbox-title { padding: 16px 16px 4px; font-family: Georgia, "Times New Roman", serif; font-size: 23px; }
+.home-giftbox-price { padding: 0 16px; font-weight: 800; }
+.home-giftbox:hover, .home-giftbox:focus-visible { border-color: var(--forest); }
+.home-move-feature { display: flex; flex-direction: column; justify-content: end; min-height: 330px; margin-top: 28px; padding: 32px; background: url("/move/move-tropical-dark-hero-v1.png") center / cover; color: var(--cream); text-decoration: none; }
+.home-move-feature span { font-size: 12px; font-weight: 800; text-transform: uppercase; }
+.home-move-feature strong { max-width: 560px; margin: 10px 0; font-family: Georgia, "Times New Roman", serif; font-size: 39px; font-weight: 500; }
+.home-move-feature em { font-style: normal; font-weight: 800; text-decoration: underline; }
+.cart-contents { margin-top: 12px; border: 1px solid var(--line); }
+.cart-line .summary-row > .cart-line-name { display: flex; align-items: center; min-width: 0; gap: 12px; }
+.cart-line-name > img { flex: 0 0 56px; width: 56px; height: 56px; object-fit: contain; padding: 4px; background: var(--mint); }
+.cart-line-name > span { min-width: 0; overflow-wrap: anywhere; }
+.cart-contents summary { padding: 11px 14px; color: var(--forest); font-size: 14px; font-weight: 800; cursor: pointer; }
+.cart-contents .cart-breakdown { margin: 0; border: 0; border-top: 1px solid var(--line); box-shadow: none; }
+.checkout-review-mobile { display: none; }
+.order-summary-panel .order-preview { margin-top: 12px; }
+@media (max-width: 1080px) {
+  .checkout-review-mobile { display: grid; margin-top: 18px; border-top: 1px solid var(--line); }
+  .checkout-review-mobile > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .checkout-review-mobile span { color: var(--muted); }
+  .checkout-review-mobile strong { max-width: 62%; text-align: right; overflow-wrap: anywhere; }
+  .order-summary-panel { display: none; }
+}
+@media (max-width: 900px) {
+  .home-photo-hero { min-height: 560px; background-position: 58% center; }
+  .home-photo-hero .hero-copy { width: min(560px, 75%); padding: 30px; }
+  .home-photo-hero .big-title { font-size: 52px; }
+}
+@media (max-width: 640px) {
+  .home-photo-hero { align-items: start; min-height: 640px; background-image: linear-gradient(180deg, rgba(255,253,248,.94) 0%, rgba(255,253,248,.81) 39%, transparent 70%), url("/greenplanet-premium-hero.png"); background-position: 60% center; }
+  .home-photo-hero .hero-copy { width: 100%; padding: 24px 20px; }
+  .home-photo-hero .big-title { font-size: 43px; }
+  .home-photo-hero .lead { font-size: 16px; }
+  .home-photo-hero .actions { flex-wrap: wrap; }
+  .home-giftboxes-head { flex-wrap: wrap; }
+  .home-giftboxes-head h2 { width: 100%; font-size: 32px; }
+  .home-giftboxes-grid { grid-template-columns: 1fr; }
+  .home-move-feature { min-height: 300px; background-position: 58% center; }
+  .home-move-feature strong { font-size: 32px; }
+}

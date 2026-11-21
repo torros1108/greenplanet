@@ -1,15 +1,18 @@
 # Greenplanet: design- og brugervenlighedsplan til Sol Høj
 
-Dato: 21. november 2026. Status: første leverance implementeret lokalt; de resterende punkter er stadig en plan. Live-status kræver særskilt verifikation efter deployment.
+Dato: 21. november 2026. Status: D01-D04 er deployet og live-verificeret. Anden leverance er implementeret og afventer live-verifikation. Restpunkter er angivet herunder.
 
 ## Status for første leverance
 
-- D01: kontrast på kurvens totalrække rettet lokalt.
-- D02: fælles menu/kurv på kategori- og detaljesider samt footer på disse sider. Forsidens eksisterende menu og footer er endnu ikke flyttet til de fælles komponenter.
-- D03: miniaturebilleder klikbare; variantbillede og variantpris koblet til købspanelet lokalt.
-- D05: kategori-intro komprimeret, og den uddybende tekst flyttet under udvalget. Egentlige Move-filtre er endnu ikke lavet.
-- D04: produktlisten vises før den store æskeillustration på desktop, og de dekorative trin er fjernet. Mobilens første produktfoto vises nu i første viewport. En fuld mobil "Se din æske"-interaktion er endnu ikke lavet.
-- D06, D07 og D08 er ikke implementeret.
+- D01: kurvens totalrække har læselig lys tekst.
+- D02: menu, kurv og footer er gennemgående på kategori- og detaljesider. Forsiden har fortsat egen komponent med samme links; en refaktorering er ikke nødvendig for kunden.
+- D03: miniaturer skifter hovedfoto; farvevariant og pris kobles til købspanelet.
+- D04: produktlisten vises tidligt på desktop og mobil; mobilknappen fører til æskens indhold, variantvalg og endelig kurvknap.
+- D05: Move får server-renderede kategoriresultater med delbare links og aktivt valg; katalog og strukturerede data følger valget.
+- D06: forsiden har et billedbåret hero, reelle gaveæsker før guideteksten og en særskilt Move-indgang. Den tidligere automatisk skiftende slider er fjernet.
+- D07: kategorikort har faste billedformater, kortere listebeskrivelser og roligere skygger. Originalbilleder er ikke ændret.
+- D08: kurven har ikke gentagne enkeltvarelinjer; gaveæskeindhold kan foldes ud; ét regnestykke står ved betalingen. På mobil er en kompakt ordrecheck før betalingsknappen, og felterne har labels/autocomplete.
+- Ikke dækket: reel livebetaling, ordre-e-mails, billedkvalitetskontrol af hvert katalogfoto og fuld tilgængelighedsrevision. De kræver særskilte kontroller og må ikke udledes af en bestået UI-test.
 
 ## Formål og rammer
 

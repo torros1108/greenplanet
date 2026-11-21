@@ -486,7 +486,6 @@ export default function Home() {
   const cartProductsTotal = cart.reduce((sum, line) => sum + line.items.reduce((itemSum, item) => itemSum + item.price, 0), 0);
   const cartPackagingTotal = Math.max(0, cartTotal - cartProductsTotal);
   const cartProductCount = cart.reduce((sum, line) => sum + line.items.length, 0);
-  const cardTextCount = cart.filter((line) => line.cardText?.trim()).length;
   const isDirectDelivery = deliveryMethod === "Send direkte til modtager";
   const isPickup = deliveryMethod === "Afhentes / aftales";
   const shippingFee = isPickup || cart.length === 0 ? 0 : deliveryShippingPrice;
@@ -500,33 +499,10 @@ export default function Home() {
   const effectiveDeliveryAddress = useBillingAsDelivery ? customerAddress : recipientAddress;
   const effectiveDeliveryPostcode = useBillingAsDelivery ? customerPostcode : recipientPostcode;
   const effectiveDeliveryCity = useBillingAsDelivery ? customerCity : recipientCity;
-  const [heroIndex, setHeroIndex] = useState(0);
   const averageMargin = products.length
     ? Math.round(products.reduce((sum, product) => sum + margin(product), 0) / products.length)
     : 0;
   const currentPolicy = view in policyCatalog ? policyCatalog[view as PolicyView] : null;
-  const heroSlides = [
-    {
-      title: "Baby First Care",
-      text: "Blid babypleje, mild vask og en blød økologisk ven til den første tid.",
-      productIds: ["p3", "p5", "p6"]
-    },
-    {
-      title: "Mors Timeout",
-      text: "En gave med blid hudpleje til den gravide eller nybagte mor.",
-      productIds: ["p4", "p13", "p15"]
-    },
-    {
-      title: "Premium Barsel",
-      text: "En større barselsgave med Babyly, SoKind og Summerville organic.",
-      productIds: ["p1", "p3", "p10"]
-    }
-  ];
-  const activeHeroSlide = heroSlides[heroIndex];
-  const heroSlideCount = heroSlides.length;
-  const activeHeroProducts = activeHeroSlide.productIds
-    .map((id) => products.find((item) => item.id === id))
-    .filter(Boolean) as Product[];
   const cartTrackingItems: TrackingCartItem[] = useMemo(
     () => cart.map((line) => ({
       title: line.title,
@@ -699,14 +675,6 @@ export default function Home() {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    if (view !== "home") return;
-    const interval = window.setInterval(() => {
-      setHeroIndex((current) => (current + 1) % heroSlideCount);
-    }, 5500);
-    return () => window.clearInterval(interval);
-  }, [heroSlideCount, view]);
 
   useEffect(() => {
     if (!selectedProduct?.variants?.some((variant) => variant.id === selectedVariantId)) {
@@ -1195,64 +1163,30 @@ export default function Home() {
         <div className="content">
           {view === "home" && (
             <>
-              <section className="hero">
+              <section className="hero home-photo-hero">
                 <div className="hero-copy">
                   <span className="eyebrow">Gaveæsker til baby, barsel og ny mor</span>
                   <h1 className="big-title">Barsels- og babygaver i flotte gaveæsker</h1>
                   <p className="lead">
-                    Vælg en færdig gaveæske eller byg din egen med udvalgte produkter til baby, barsel og ny mor.
-                    Vi pakker gaven pænt, lægger kortet ved og sender direkte til modtageren uden prisbilag.
+                    Vælg en færdig gaveæske eller sammensæt din egen. Vi pakker gaven og sender den med din personlige hilsen.
                   </p>
                   <div className="actions">
-                    <Link className="btn primary" href="/gaveaesker">Find en gaveæske</Link>
+                    <Link className="btn primary" href="/gaveaesker">Se gaveæskerne</Link>
                     <button className="btn" onClick={() => setView("builder")}>Byg din egen</button>
-                    <Link className="btn" href="/babygaver">Se babyprodukter</Link>
-                  </div>
-                </div>
-                <div className="hero-art">
-                  <div className="hero-slider">
-                    <div className="hero-featured-product">
-                      {activeHeroProducts[0] && <ProductVisual product={activeHeroProducts[0]} />}
-                    </div>
-                    <div className="hero-product-stack">
-                      {activeHeroProducts.slice(1).map((product) => (
-                        <div className="hero-product-thumb" key={product.id}>
-                          <ProductVisual product={product} />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="hero-slide-copy">
-                      <em>Udvalgt gaveæske {heroIndex + 1}/{heroSlideCount}</em>
-                      <span>{activeHeroSlide.title}</span>
-                      <strong>{activeHeroSlide.text}</strong>
-                    </div>
-                    <div className="hero-arrows" aria-label="Hero navigation">
-                      <button
-                        aria-label="Forrige slide"
-                        onClick={() => setHeroIndex((current) => (current - 1 + heroSlideCount) % heroSlideCount)}
-                      >
-                        ‹
-                      </button>
-                      <button
-                        aria-label="Næste slide"
-                        onClick={() => setHeroIndex((current) => (current + 1) % heroSlideCount)}
-                      >
-                        ›
-                      </button>
-                    </div>
-                    <div className="hero-dots" aria-label="Hero slider">
-                      {heroSlides.map((slide, index) => (
-                        <button
-                          key={slide.title}
-                          className={heroIndex === index ? "active" : ""}
-                          aria-label={`Vis ${slide.title}`}
-                          onClick={() => setHeroIndex(index)}
-                        />
-                      ))}
-                    </div>
                   </div>
                 </div>
               </section>
+              {giftboxCatalog.length > 0 && <section className="home-giftboxes" aria-labelledby="home-giftboxes-title">
+                <div className="home-giftboxes-head"><span className="section-eyebrow">Udvalgte gaveæsker</span><h2 id="home-giftboxes-title">Vælg en gave</h2><Link href="/gaveaesker">Se alle gaveæsker</Link></div>
+                <div className="home-giftboxes-grid">{giftboxCatalog.slice(0, 3).map((giftbox) => {
+                  const items = giftboxProducts(giftbox);
+                  return <Link className="home-giftbox" href={`/giftboxes/${giftbox.id}`} key={giftbox.id}>
+                    <span className="home-giftbox-image">{items.slice(0, 3).map((item) => item.image && <img src={item.image} alt="" loading="lazy" key={item.id} />)}</span>
+                    <span className="home-giftbox-title">{giftbox.title}</span>
+                    <span className="home-giftbox-price">{money(giftboxTotal(giftbox))}</span>
+                  </Link>;
+                })}</div>
+              </section>}
               <section className="stats">
                 <Link className="stat" href="/babygaver">
                   <strong>Baby</strong><span>Blide produkter til den første tid</span>
@@ -1267,6 +1201,7 @@ export default function Home() {
                   <strong>Move</strong><span>Yoga, træning og activewear i matchende sæt</span>
                 </Link>
               </section>
+              <Link className="home-move-feature" href="/move"><span>Greenplanet Move</span><strong>Activewear til bevægelse og hverdag</strong><em>Se Move</em></Link>
               <section className="seo-gift-guide" aria-labelledby="gift-guide-title">
                 <div className="seo-gift-guide-head">
                   <span className="eyebrow">Find den rigtige gave</span>
@@ -1543,7 +1478,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="builder">
-                <aside className="panel sticky builder-preview-panel">
+                <aside className="panel sticky builder-preview-panel" id="builder-summary">
                   <div className="builder-panel-head">
                     <div>
                       <span className="eyebrow">Din gaveæske</span>
@@ -1637,8 +1572,8 @@ export default function Home() {
                     <span>Din gaveæske</span>
                     <strong>{selectedBuilderItems.length} produkter · {money(customGiftboxTotal)}</strong>
                   </div>
-                  <button className="btn primary" disabled={unavailableBuilderItem || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
-                    {missingBuilderVariant ? "Vælg farve" : editingCartLineId ? "Gem ændringer" : "Læg i kurv"}
+                  <button className="btn primary" disabled={!selectedBuilderItems.length} onClick={() => document.getElementById("builder-summary")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+                    Se din æske
                   </button>
                 </div>
                 <div className="builder-catalog-head">
@@ -1691,24 +1626,24 @@ export default function Home() {
                     <span className="eyebrow">Checkout</span>
                     <h2>Kurv og bestilling</h2>
                   </div>
-                  <span className="checkout-count">{cart.length} gave{cart.length === 1 ? "" : "r"}</span>
+                  <span className="checkout-count">{cart.length} vare{cart.length === 1 ? "" : "r"}</span>
                 </div>
                 {cart.length ? cart.map((line) => (
                   <div className="cart-line" key={line.id}>
                     <div className="summary-row line">
-                      <span>{line.title}<small>{line.items.length} produkt{line.items.length === 1 ? "" : "er"}</small></span>
+                      <span className="cart-line-name">
+                        {line.items[0]?.image && <img src={line.items[0].image} alt="" />}
+                        <span>{line.title}<small>{line.items.length} produkt{line.items.length === 1 ? "" : "er"}</small></span>
+                      </span>
                       <strong>
                         {money(line.total)}
                         <span className="cart-line-actions">
-                          {line.items.length > 1 && <button className="chip" onClick={() => editCartGiftbox(line)}>Rediger</button>}
+                          {(line.source?.type === "custom" || line.source?.type === "giftbox" || line.items.length > 1) && <button className="chip" onClick={() => editCartGiftbox(line)}>Rediger</button>}
                           <button className="chip" onClick={() => removeCartLine(line)}>Fjern</button>
                         </span>
                       </strong>
                     </div>
-                    <div className="cart-products">
-                      {line.items.map((item) => <span key={`${line.id}-${item.id}-${item.selectedVariant?.id || "standard"}`}>{item.brand}: {cartItemLabel(item)}</span>)}
-                    </div>
-                    <div className="cart-breakdown">
+                    {(line.items.length > 1 || lineBoxTotal(line) > 0) && <details className="cart-contents"><summary>Se indhold og prisopdeling</summary><div className="cart-breakdown">
                       {line.items.map((item) => (
                         <div key={`${line.id}-price-${item.id}-${item.selectedVariant?.id || "standard"}`}>
                           <span>{cartItemLabel(item)}</span>
@@ -1727,7 +1662,7 @@ export default function Home() {
                           <strong>{cardPrice > 0 ? money(cardPrice) : "Inkluderet"}</strong>
                         </div>
                       )}
-                    </div>
+                    </div></details>}
                     <label className="cart-card-text">
                       <span>Korttekst til denne gave</span>
                       <textarea
@@ -1748,12 +1683,12 @@ export default function Home() {
                 <div className="checkout-section">
                   <h3><span>1</span> Bestiller og fakturaadresse</h3>
                   <div className="form-grid">
-                    <label className="form-field"><span>Navn eller firma</span><input value={customerName} onChange={(event) => setCustomerName(event.target.value)} placeholder="Navn eller firma" /></label>
-                    <label className="form-field"><span>E-mail</span><input type="email" value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} placeholder="navn@email.dk" /></label>
-                    <label className="form-field"><span>Telefon</span><input type="tel" value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} placeholder="Telefonnummer" /></label>
-                    <label className="form-field wide-field"><span>Fakturaadresse</span><input value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="Vej og husnummer" /></label>
-                    <label className="form-field"><span>Postnummer</span><input inputMode="numeric" value={customerPostcode} onChange={(event) => setCustomerPostcode(event.target.value)} placeholder="Postnr." /></label>
-                    <label className="form-field"><span>By</span><input value={customerCity} onChange={(event) => setCustomerCity(event.target.value)} placeholder="By" /></label>
+                    <label className="form-field"><span>Navn eller firma</span><input autoComplete="name" value={customerName} onChange={(event) => setCustomerName(event.target.value)} placeholder="Navn eller firma" /></label>
+                    <label className="form-field"><span>E-mail</span><input type="email" autoComplete="email" value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} placeholder="navn@email.dk" /></label>
+                    <label className="form-field"><span>Telefon</span><input type="tel" autoComplete="tel" value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} placeholder="Telefonnummer" /></label>
+                    <label className="form-field wide-field"><span>Fakturaadresse</span><input autoComplete="street-address" value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="Vej og husnummer" /></label>
+                    <label className="form-field"><span>Postnummer</span><input inputMode="numeric" autoComplete="postal-code" value={customerPostcode} onChange={(event) => setCustomerPostcode(event.target.value)} placeholder="Postnr." /></label>
+                    <label className="form-field"><span>By</span><input autoComplete="address-level2" value={customerCity} onChange={(event) => setCustomerCity(event.target.value)} placeholder="By" /></label>
                     <label className="checkbox-row wide-field">
                       <input
                         type="checkbox"
@@ -1775,7 +1710,7 @@ export default function Home() {
                         <option>Afhentes / aftales</option>
                       </select>
                     </label>
-                    {!useBillingAsDelivery && <label className="form-field"><span>{deliveryNameLabel}</span><input value={recipientName} onChange={(event) => setRecipientName(event.target.value)} placeholder={deliveryNameLabel} /></label>}
+                    {!useBillingAsDelivery && <label className="form-field"><span>{deliveryNameLabel}</span><input autoComplete="shipping name" value={recipientName} onChange={(event) => setRecipientName(event.target.value)} placeholder={deliveryNameLabel} /></label>}
                     {deliveryMethod === "Send til mig" && (
                       <label className="checkbox-row wide-field">
                         <input
@@ -1786,9 +1721,9 @@ export default function Home() {
                         <span>Brug bestillers adresse som leveringsadresse</span>
                       </label>
                     )}
-                    {!isPickup && !useBillingAsDelivery && <label className="form-field wide-field"><span>{deliveryAddressLabel}</span><input value={recipientAddress} onChange={(event) => setRecipientAddress(event.target.value)} placeholder="Vej og husnummer" /></label>}
-                    {!isPickup && !useBillingAsDelivery && <label className="form-field"><span>Postnummer</span><input inputMode="numeric" value={recipientPostcode} onChange={(event) => setRecipientPostcode(event.target.value)} placeholder="Postnr." /></label>}
-                    {!isPickup && !useBillingAsDelivery && <label className="form-field"><span>By</span><input value={recipientCity} onChange={(event) => setRecipientCity(event.target.value)} placeholder="By" /></label>}
+                    {!isPickup && !useBillingAsDelivery && <label className="form-field wide-field"><span>{deliveryAddressLabel}</span><input autoComplete="shipping street-address" value={recipientAddress} onChange={(event) => setRecipientAddress(event.target.value)} placeholder="Vej og husnummer" /></label>}
+                    {!isPickup && !useBillingAsDelivery && <label className="form-field"><span>Postnummer</span><input inputMode="numeric" autoComplete="shipping postal-code" value={recipientPostcode} onChange={(event) => setRecipientPostcode(event.target.value)} placeholder="Postnr." /></label>}
+                    {!isPickup && !useBillingAsDelivery && <label className="form-field"><span>By</span><input autoComplete="shipping address-level2" value={recipientCity} onChange={(event) => setRecipientCity(event.target.value)} placeholder="By" /></label>}
                     <label className="form-field wide-field"><span>{isPickup ? "Ønsket afhentningsdato" : "Ønsket leveringsdato"}</span><input type="date" min={new Date().toISOString().slice(0, 10)} value={deliveryDate} onChange={(event) => setDeliveryDate(event.target.value)} /></label>
                   </div>
                   <p className="checkout-help">
@@ -1798,11 +1733,19 @@ export default function Home() {
                         ? "Vi aftaler afhentning eller anden levering direkte med dig."
                         : "Gaven sendes til dig, så du selv kan give den videre."}
                   </p>
-                  <textarea value={shipping} onChange={(event) => setShipping(event.target.value)} placeholder="Leveringsnote, fx ring ikke på, stil ved døren, send uden prisbilag..." />
+                  <label className="form-field wide-field"><span>Leveringsnote (valgfri)</span><textarea value={shipping} onChange={(event) => setShipping(event.target.value)} placeholder="Fx ring ikke på eller stil pakken ved døren" /></label>
                 </div>
                 <div className="checkout-section">
                   <h3><span>3</span> Bekræft</h3>
                   <p className="checkout-help">Tjek ordreoversigten, levering og kontaktoplysninger. Når du klikker videre, oprettes ordren og du sendes til Stripe for sikker kortbetaling.</p>
+                  <div className="checkout-review-mobile">
+                    <div><span>Bestiller</span><strong>{customerName || "Ikke udfyldt"}</strong></div>
+                    <div><span>E-mail</span><strong>{customerEmail || "Ikke udfyldt"}</strong></div>
+                    <div><span>Levering</span><strong>{deliveryMethod}</strong></div>
+                    {!useBillingAsDelivery && <div><span>{deliverySummaryLabel}</span><strong>{effectiveDeliveryName || "Ikke udfyldt"}</strong></div>}
+                    {!isPickup && <div><span>Adresse</span><strong>{[effectiveDeliveryAddress, effectiveDeliveryPostcode, effectiveDeliveryCity].filter(Boolean).join(", ") || "Ikke udfyldt"}</strong></div>}
+                    <div><span>Total inkl. fragt</span><strong>{money(checkoutTotal)}</strong></div>
+                  </div>
                 </div>
                 {!!checkoutErrors.length && (
                   <div className="checkout-errors" role="alert">
@@ -1818,16 +1761,6 @@ export default function Home() {
               </div>
               <div className="panel order-summary-panel">
                 <h2>Ordreoversigt</h2>
-                <div className="summary-box">
-                  <div><span>Gaver i kurv</span><strong>{cart.length}</strong></div>
-                  <div><span>Produkter i alt</span><strong>{cartProductCount}</strong></div>
-                  <div><span>Korttekster</span><strong>{cardTextCount}/{cart.length}</strong></div>
-                  <div><span>Produkter</span><strong>{money(cartProductsTotal)}</strong></div>
-                  <div><span>Gaveæske/kasse</span><strong>{money(cartPackagingTotal)}</strong></div>
-                  <div><span>Kort</span><strong>{cardPrice > 0 ? money(cardPrice * cart.length) : "Inkluderet"}</strong></div>
-                  <div><span>Fragt</span><strong>{shippingLabel}</strong></div>
-                  <div className="summary-total"><span>Total</span><strong>{money(checkoutTotal)}</strong></div>
-                </div>
                 <div className="order-preview">
                   <div><span>Bestiller</span><strong>{customerName || "Ikke udfyldt"}</strong></div>
                   <div><span>Kontakt</span><strong>{customerEmail || customerPhone ? [customerEmail, customerPhone].filter(Boolean).join(" · ") : "Ikke udfyldt"}</strong></div>
