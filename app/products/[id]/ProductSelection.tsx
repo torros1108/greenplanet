@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ProductVariant } from "@/lib/data";
 
 type Selection = {
@@ -31,8 +31,14 @@ export function ProductGallery({ title, images, variants }: { title: string; ima
   const activeIndex = Math.max(0, images.indexOf(activeImage));
   const [zoomed, setZoomed] = useState(false);
   const opener = useRef<HTMLButtonElement>(null);
+  const zoomViewport = useRef<HTMLDivElement>(null);
   const closeZoom = () => { setZoomed(false); requestAnimationFrame(() => opener.current?.focus()); };
   const showImage = (offset: number) => setImage(images[(activeIndex + offset + images.length) % images.length]);
+
+  useEffect(() => {
+    if (!zoomed || !zoomViewport.current) return;
+    zoomViewport.current.scrollLeft = (zoomViewport.current.scrollWidth - zoomViewport.current.clientWidth) / 2;
+  }, [zoomed, activeImage]);
 
   if (!images.length) return null;
   return (
@@ -53,7 +59,11 @@ export function ProductGallery({ title, images, variants }: { title: string; ima
       }}>
         <button className="gallery-zoom-close" type="button" autoFocus onClick={closeZoom} aria-label="Luk billede">×</button>
         {images.length > 1 && <button className="gallery-zoom-prev" type="button" onClick={() => showImage(-1)} aria-label="Forrige billede">‹</button>}
-        <img src={activeImage} alt={selectedVariant ? `${title} - ${selectedVariant.title}` : title} />
+        <div className="gallery-zoom-viewport" ref={zoomViewport}>
+          <button className="gallery-zoom-image" type="button" onClick={closeZoom} aria-label={`Luk forstørret billede af ${title}`}>
+            <img src={activeImage} alt={selectedVariant ? `${title} - ${selectedVariant.title}` : title} />
+          </button>
+        </div>
         {images.length > 1 && <button className="gallery-zoom-next" type="button" onClick={() => showImage(1)} aria-label="Næste billede">›</button>}
         {images.length > 1 && <span className="gallery-zoom-count">{activeIndex + 1} / {images.length}</span>}
       </div>}
