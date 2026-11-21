@@ -261,7 +261,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             <div className="product-detail-info panel">
               <div className="meta">{product.brand} · {product.category}</div>
-              <h1>{product.title}</h1>
+              <h1 className={product.title.length > 28 ? "long-product-title" : undefined}>{product.title}</h1>
               <p className="lead">{product.description}</p>
               <div className="purchase-panel">
                 <AddToCartButton product={product} />
