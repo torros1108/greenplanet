@@ -9,6 +9,9 @@ import { initialProducts, productSpecs, type Product, type ProductVariant } from
 import { polishDanishProductCopy } from "@/lib/publicCopy";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 import { AddToCartButton } from "./AddToCartButton";
+import { ProductGallery, ProductSelection } from "./ProductSelection";
+import { StoreSidebar } from "@/app/_components/StoreSidebar";
+import { StoreFooter } from "@/app/_components/StoreFooter";
 
 const siteUrl = "https://www.greenplanet.dk";
 type SupabaseProductRow = {
@@ -247,50 +250,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productStructuredData) }}
       />
-      <aside className="sidebar">
-        <div className="brand">
-          <Link className="logo-lockup" href="/" aria-label="Greenplanet forside">
-            <img className="brand-logo" src="/brand/greenplanet-logo-white-crop.png" alt="Greenplanet" />
-          </Link>
-        </div>
-        <nav className="nav">
-          <Link href="/">Forside</Link>
-          <Link href="/gaveaesker">Gaveæsker</Link>
-          <Link className={product.category === "Baby & barsel" ? "active" : undefined} href="/babygaver">Baby & barsel</Link>
-          <Link className={product.category === "Naturlig beauty" ? "active" : undefined} href="/wellness">Velvære</Link>
-          <Link className={product.category === "Move" ? "active" : undefined} href="/move">Move</Link>
-          <Link href="/#builder">Byg selv</Link>
-        </nav>
-        <p className="side-note">Personlige gaveæsker, velvære og activewear fra udvalgte brands.</p>
-      </aside>
+      <StoreSidebar current={product.category === "Move" ? "move" : product.category === "Naturlig beauty" ? "wellness" : "babygaver"} />
 
       <section className="main">
         <div className="content">
-          <section className="product-detail">
+          <ProductSelection><section className="product-detail">
             <Link className="btn back-btn" href={categoryHref}>Tilbage til {categoryLabel}</Link>
             <div className="product-detail-media panel">
-              {images.length ? (
-                <div className="product-gallery">
-                  <div className="gallery-main visual-frame">
-                    <img className="product-image" src={images[0]} alt={product.title} />
-                  </div>
-                  {images.length > 1 && (
-                    <div className="gallery-thumbs" aria-label="Produktbilleder">
-                      {images.map((image, index) => (
-                        <span className={`gallery-thumb ${index === 0 ? "active" : ""}`} key={image}>
-                          <img src={image} alt="" />
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : <span className={`shape ${product.shape}`} />}
+              {images.length ? <ProductGallery title={product.title} images={images} variants={liveVariants} /> : <span className={`shape ${product.shape}`} />}
             </div>
             <div className="product-detail-info panel">
               <div className="meta">{product.brand} · {product.category}</div>
               <h1>{product.title}</h1>
               <p className="lead">{product.description}</p>
-              <div className="detail-price">{money(product.price)}</div>
               <div className="purchase-panel">
                 <AddToCartButton product={product} />
                 {product.giftbox && <Link className="btn" href="/#builder">Brug i byg-selv</Link>}
@@ -323,8 +295,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
 
             </div>
-          </section>
+          </section></ProductSelection>
         </div>
+        <StoreFooter />
       </section>
     </main>
   );

@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import { giftboxes, initialProducts, productSpecs, type Product } from "@/lib/data";
 import { AddGiftboxToCartButton } from "./AddGiftboxToCartButton";
 import { getGiftboxDetail } from "@/lib/storefrontServer";
+import { StoreSidebar } from "@/app/_components/StoreSidebar";
+import { StoreFooter } from "@/app/_components/StoreFooter";
 
 const boxPrice = 49;
 const siteUrl = "https://www.greenplanet.dk";
@@ -160,22 +162,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(giftboxStructuredData) }}
       />
-      <aside className="sidebar">
-        <div className="brand">
-          <Link className="logo-lockup" href="/" aria-label="Greenplanet forside">
-            <img className="brand-logo" src="/brand/greenplanet-logo-white-crop.png" alt="Greenplanet" />
-          </Link>
-        </div>
-        <nav className="nav">
-          <Link href="/">Forside</Link>
-          <Link className="active" href="/gaveaesker">Gaveæsker</Link>
-          <Link href="/babygaver">Baby & barsel</Link>
-          <Link href="/wellness">Velvære</Link>
-          <Link href="/move">Move</Link>
-          <Link href="/#builder">Byg selv</Link>
-        </nav>
-        <p className="side-note">Personlige gaveæsker, velvære og activewear fra udvalgte brands.</p>
-      </aside>
+      <StoreSidebar current="gaveaesker" />
 
       <section className="main">
         <div className="content">
@@ -277,6 +264,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
             </div>
           </section>
         </div>
+        <StoreFooter />
       </section>
     </main>
   );

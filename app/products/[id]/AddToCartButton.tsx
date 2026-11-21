@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { hasAnalyticsConsent } from "@/app/AnalyticsConsent";
 import { analyticsItem, ecommercePayload } from "@/lib/analytics";
 import type { Product, ProductVariant } from "@/lib/data";
 import { canAddProduct, isProductAvailable, publicVariants } from "@/lib/catalogRules";
 import { money } from "@/lib/money";
+import { useProductSelection } from "./ProductSelection";
 
 const cartStorageKey = "greenplanet-cart";
 
@@ -30,7 +31,7 @@ function variantColor(variant?: ProductVariant | null) {
 
 export function AddToCartButton({ product }: { product: Product }) {
   const variants = useMemo(() => publicVariants(product.variants), [product]);
-  const [variantId, setVariantId] = useState("");
+  const { variantId, setVariantId, setImage } = useProductSelection();
   const selectedVariant = variants.find((variant) => variant.id === variantId) || null;
   const variantLabel = product.category === "Move" ? "størrelse" : "variant";
 
@@ -85,7 +86,7 @@ export function AddToCartButton({ product }: { product: Product }) {
               <button
                 className={`variant-option ${selectedVariant?.id === variant.id ? "active" : ""}`}
                 key={variant.id}
-                onClick={() => setVariantId(variant.id)}
+                onClick={() => { setVariantId(variant.id); setImage(null); }}
                 disabled={variant.stock <= 0}
                 type="button"
                 role="option"
@@ -106,11 +107,7 @@ export function AddToCartButton({ product }: { product: Product }) {
           Valgt {variantLabel}: <strong>{selectedVariant.title}</strong>
         </div>
       )}
-      {selectedVariant?.image && (
-        <div className="variant-photo-preview">
-          <img src={selectedVariant.image} alt={`${product.title} - ${selectedVariant.title}`} />
-        </div>
-      )}
+      <div className="detail-price" aria-live="polite">{money(selectedVariant?.price ?? product.price)}</div>
       <button className="btn primary" disabled={!canAddProduct(product, selectedVariant?.id)} onClick={addToCart}>
         {!isProductAvailable(product) ? "Udsolgt" : variants.length > 0 && !selectedVariant ? `Vælg ${variantLabel} først` : "Læg i kurv"}
       </button>

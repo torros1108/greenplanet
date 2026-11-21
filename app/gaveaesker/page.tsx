@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StoreSidebar } from "@/app/_components/StoreCategoryPage";
+import { StoreFooter } from "@/app/_components/StoreFooter";
 import { getGiftboxDetail, loadPublicRouteIds } from "@/lib/storefrontServer";
 import { money } from "@/lib/money";
 import { isProductAvailable } from "@/lib/catalogRules";
@@ -123,6 +124,7 @@ export default async function GiftboxCollectionPage() {
             </div>
           </section>
         </div>
+        <StoreFooter />
       </section>
     </main>
   );

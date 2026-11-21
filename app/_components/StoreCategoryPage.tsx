@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { StoreSidebar } from "./StoreSidebar";
+import { StoreFooter } from "./StoreFooter";
+export { StoreSidebar } from "./StoreSidebar";
 import type { Product } from "@/lib/data";
 import { money } from "@/lib/money";
 
@@ -10,28 +13,6 @@ function moveProductGroup(title: string) {
   if (/hoodie|cardigan|sweatshirt|jakke/.test(value)) return "layers";
   if (/sports-bh|sports bh|løbetop|\btop\b|\bbh\b/.test(value)) return "tops";
   return "bottoms";
-}
-
-export function StoreSidebar({ current }: { current: "gaveaesker" | "babygaver" | "wellness" | "move" | "firmagaver" }) {
-  return (
-    <aside className="sidebar category-sidebar">
-      <div className="brand">
-        <Link className="logo-lockup" href="/" aria-label="Greenplanet forside">
-          <img className="brand-logo" src="/brand/greenplanet-logo-white-crop.png" alt="Greenplanet" />
-        </Link>
-      </div>
-      <nav className="nav" aria-label="Shop">
-        <Link href="/">Forside</Link>
-        <Link className={current === "gaveaesker" ? "active" : ""} href="/gaveaesker">Gaveæsker</Link>
-        <Link className={current === "babygaver" ? "active" : ""} href="/babygaver">Baby &amp; barsel</Link>
-        <Link className={current === "wellness" ? "active" : ""} href="/wellness">Velvære</Link>
-        <Link className={current === "move" ? "active" : ""} href="/move">Move</Link>
-        <Link href="/#builder">Byg selv</Link>
-        <Link href="/#orders">Kurv</Link>
-      </nav>
-      <p className="side-note">Personlige gaveæsker, velvære og activewear fra udvalgte brands.</p>
-    </aside>
-  );
 }
 
 type StoreCategoryPageProps = {
@@ -106,7 +87,6 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
             <span className="eyebrow">{eyebrow}</span>
             <h1>{title}</h1>
             <p className="lead">{intro}</p>
-            <p>{supportingText}</p>
           </header>
           {current === "move" && (
             <nav className="category-jump-links" aria-label="Move-kategorier">
@@ -142,6 +122,7 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
               </div>
             </section>
           ))}
+          <p className="category-supporting-copy">{supportingText}</p>
           <section className="category-guide" aria-labelledby="category-guide-title">
             <div className="category-guide-intro">
               <span className="section-eyebrow">Guide</span>
@@ -172,6 +153,7 @@ export default function StoreCategoryPage({ current, eyebrow, title, intro, supp
             </div>
           </section>
         </div>
+        <StoreFooter />
       </section>
     </main>
   );
