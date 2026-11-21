@@ -1572,7 +1572,7 @@ export default function Home() {
                     <span>Din gaveæske</span>
                     <strong>{selectedBuilderItems.length} produkter · {money(customGiftboxTotal)}</strong>
                   </div>
-                  <button className="btn primary" disabled={!selectedBuilderItems.length} onClick={() => document.getElementById("builder-summary")?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+                  <button className="btn primary" disabled={!selectedBuilderItems.length} onClick={() => document.getElementById("builder-summary")?.scrollIntoView({ behavior: "auto", block: "start" })}>
                     Se din æske
                   </button>
                 </div>
