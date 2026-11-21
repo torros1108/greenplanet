@@ -820,7 +820,7 @@ input:focus, textarea:focus, select:focus {
 .giftbox-card-media:is([data-photos="0"], [data-photos="1"]) { grid-template-columns: minmax(0, 1fr); }
 .giftbox-card-media[data-photos="0"] { place-items: center; padding: 16px; text-align: center; }
 .giftbox-card-media[data-photos="3"] { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
-.giftbox-card-media[data-photos="3"] img:first-child { grid-row: span 2; object-fit: cover; }
+.giftbox-card-media[data-photos="3"] img:first-child { grid-row: span 2; }
 .giftbox-card-media img {
   display: block;
   width: 100%;
@@ -898,7 +898,7 @@ input:focus, textarea:focus, select:focus {
     grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
     grid-template-rows: auto;
   }
-  .giftbox-card:first-child .giftbox-card-media { align-self: stretch; aspect-ratio: auto; min-height: 400px; }
+  .giftbox-card:first-child .giftbox-card-media { align-self: start; aspect-ratio: 5 / 4; min-height: 0; }
   .giftbox-card:first-child .giftbox-card-copy { padding: 32px; }
   .giftbox-card:first-child h3 { font-size: 2.625rem; }
 }
