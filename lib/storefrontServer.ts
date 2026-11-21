@@ -1,6 +1,7 @@
 import { giftboxes, initialProducts, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 import { polishDanishGiftboxCopy, polishDanishProductCopy } from "@/lib/publicCopy";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
+import { connection } from "next/server";
 
 type ProductRow = {
   legacy_id: string | null; slug: string; title: string; brand: string; category: string; description: string;
@@ -29,6 +30,7 @@ function fallbackGiftbox(id: string) {
 }
 
 export async function getGiftboxDetail(id: string) {
+  await connection();
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) return fallbackGiftbox(id);
   const [rows, products, links] = await Promise.all([
     supabaseAdminRequest<GiftboxRow[]>(`giftboxes?legacy_id=eq.${encodeURIComponent(id)}&status=eq.live&select=legacy_id,slug,title,category,description,note,recipient,occasion,packing,card_text,delivery,why,details,box_price&limit=1`),
@@ -46,6 +48,7 @@ export async function getGiftboxDetail(id: string) {
 }
 
 export async function loadPublicRouteIds() {
+  await connection();
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
     return { productIds: initialProducts.filter((p) => p.status === "Live").map((p) => p.id), giftboxIds: giftboxes.map((g) => g.id) };
   }
@@ -57,6 +60,7 @@ export async function loadPublicRouteIds() {
 }
 
 export async function loadPublicRouteEntries() {
+  await connection();
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
     return {
       products: initialProducts.filter((product) => product.status === "Live").map((product) => ({ id: product.id, updatedAt: null })),
@@ -75,6 +79,7 @@ export async function loadPublicRouteEntries() {
 }
 
 export async function loadPublicProducts(category?: string) {
+  await connection();
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
     return initialProducts.filter((product) => product.status === "Live" && (!category || product.category === category));
   }

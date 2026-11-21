@@ -3,6 +3,7 @@ import { money } from "@/lib/money";
 import { publicVariants } from "@/lib/catalogRules";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import { initialProducts, productSpecs, type Product, type ProductVariant } from "@/lib/data";
 import { polishDanishProductCopy } from "@/lib/publicCopy";
@@ -55,15 +56,14 @@ function mapProduct(row: SupabaseProductRow): Product {
 const productSelect = "legacy_id,slug,title,brand,category,description,price,stock,sku,variants,image_url,images,giftbox_eligible,occasions,shape,specs";
 
 const getProduct = cache(async (id: string) => {
-  try {
-    const rows = await supabaseAdminRequest<SupabaseProductRow[]>(
-      `products?select=${productSelect}&legacy_id=eq.${encodeURIComponent(id)}&status=eq.live&limit=1`
-    );
-    if (rows[0]) return mapProduct(rows[0]);
-  } catch {
-    // Local fallback keeps builds and previews working without Supabase credentials.
+  await connection();
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+    return initialProducts.find((item) => item.id === id) || null;
   }
-  return initialProducts.find((item) => item.id === id) || null;
+  const rows = await supabaseAdminRequest<SupabaseProductRow[]>(
+    `products?select=${productSelect}&legacy_id=eq.${encodeURIComponent(id)}&status=eq.live&limit=1`
+  );
+  return rows[0] ? mapProduct(rows[0]) : null;
 });
 
 const getMoveProducts = cache(async () => {
