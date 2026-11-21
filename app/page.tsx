@@ -1542,11 +1542,6 @@ export default function Home() {
                   {occasions.map((item) => <button className={`chip ${occasion === item ? "active" : ""}`} key={item} onClick={() => setOccasion(item)}>{item}</button>)}
                 </div>
               </div>
-              <div className="builder-steps" aria-label="Byg selv trin">
-                <span className={selectedBuilderItems.length ? "done" : "active"}>1. Vælg produkter</span>
-                <span className={message.trim() ? "done" : selectedBuilderItems.length ? "active" : ""}>2. Skriv kort</span>
-                <span className={selectedBuilderItems.length && !missingBuilderVariant ? "active" : ""}>3. Læg i kurv</span>
-              </div>
               <div className="builder">
                 <aside className="panel sticky builder-preview-panel">
                   <div className="builder-panel-head">
@@ -1648,7 +1643,6 @@ export default function Home() {
                 </div>
                 <div className="builder-catalog-head">
                   <div><span className="section-eyebrow">Udvalgte produkter</span><h3>Vælg indhold</h3></div>
-                  <p>Tryk på Vælg for at lægge et produkt i gaveæsken. Du kan vælge op til seks produkter.</p>
                 </div>
                 <div className="grid builder-product-grid">
                   {filteredBuilderProducts.map((product) => (

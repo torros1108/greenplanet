@@ -1612,3 +1612,46 @@ input:focus, textarea:focus, select:focus {
   .category-jump-links a { min-height: 54px; padding: 6px; font-size: 11px; line-height: 1.2; }
   .category-product-section .section-head h2 { font-size: 32px; }
 }
+
+@media (min-width: 901px) {
+  .builder-section .builder {
+    grid-template-columns: minmax(0, 1fr) minmax(290px, 340px);
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    gap: 18px 24px;
+  }
+  .builder-section .builder-catalog-head { grid-column: 1; grid-row: 1; }
+  .builder-section .builder-product-grid { grid-column: 1; grid-row: 2; }
+  .builder-section .builder-preview-panel {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    position: sticky;
+    top: 18px;
+    display: block;
+    max-height: calc(100vh - 36px);
+    overflow: auto;
+  }
+  .builder-section .builder-panel-head { padding: 20px; }
+  .builder-section .builder-panel-head h3 { font-size: 25px; }
+  .builder-section .builder-panel-head > strong { font-size: 20px; }
+  .builder-section .box-preview { display: none; }
+  .builder-section .summary { padding: 18px; }
+  .builder-section .builder-product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .builder-section .builder-selected-product { grid-template-columns: 44px minmax(0, 1fr) 30px; gap: 4px 8px; }
+  .builder-section .builder-selected-thumb { grid-column: 1; grid-row: 1 / span 2; width: 44px; }
+  .builder-section .builder-selected-product > div:nth-child(2) { grid-column: 2; grid-row: 1; }
+  .builder-section .builder-selected-product b { white-space: normal; text-overflow: clip; }
+  .builder-section .builder-selected-product em { grid-column: 2; grid-row: 2; font-size: 12px; }
+  .builder-section .builder-selected-product button { grid-column: 3; grid-row: 1 / span 2; }
+}
+@media (max-width: 900px) {
+  .builder-section .builder-head { gap: 14px; }
+  .builder-section .builder-mobile-total { grid-template-columns: minmax(0, 1fr) auto; }
+  .builder-section .builder-mobile-total .btn { width: auto; }
+}
+@media (max-width: 640px) {
+  .builder-section .builder-head h2 { font-size: 40px; }
+  .builder-section .builder-mobile-total { grid-template-columns: minmax(0, 1fr) auto; }
+  .builder-section .builder-mobile-total .btn { width: auto; padding-inline: 14px; }
+  .builder-section .builder-catalog-head h3 { font-size: 27px; }
+}

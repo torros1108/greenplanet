@@ -8,7 +8,8 @@ Dato: 21. november 2026. Status: første leverance implementeret lokalt; de rest
 - D02: fælles menu/kurv på kategori- og detaljesider samt footer på disse sider. Forsidens eksisterende menu og footer er endnu ikke flyttet til de fælles komponenter.
 - D03: miniaturebilleder klikbare; variantbillede og variantpris koblet til købspanelet lokalt.
 - D05: kategori-intro komprimeret, og den uddybende tekst flyttet under udvalget. Egentlige Move-filtre er endnu ikke lavet.
-- D04, D06, D07 og D08 er ikke implementeret.
+- D04: produktlisten vises før den store æskeillustration på desktop, og de dekorative trin er fjernet. Mobilens første produktfoto vises nu i første viewport. En fuld mobil "Se din æske"-interaktion er endnu ikke lavet.
+- D06, D07 og D08 er ikke implementeret.
 
 ## Formål og rammer
 
