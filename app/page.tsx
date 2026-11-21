@@ -4,6 +4,7 @@ import type { FormEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { hasAnalyticsConsent, openCookieSettings } from "./AnalyticsConsent";
+import { GiftboxCard } from "./_components/GiftboxCard";
 import { analyticsItem, ecommercePayload, type AnalyticsItem } from "@/lib/analytics";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 import { polishDanishProductCopy } from "@/lib/publicCopy";
@@ -1250,43 +1251,32 @@ export default function Home() {
           )}
 
           {view === "giftboxes" && (
-            <section className="giftbox-section">
-              <div className="section-head">
-                <div><span className="section-eyebrow">Klar til at give</span><h2>Gaveæsker</h2></div>
+            <section className="giftbox-section" aria-labelledby="giftbox-list-title">
+              <header className="giftbox-intro">
+                <span className="eyebrow">Klar til at give</span>
+                <h1>Gaveæsker</h1>
                 <p>Udvalgte produkter, pakket i Greenplanet-gaveæske med plads til din personlige hilsen.</p>
-              </div>
-              <div className="grid giftbox-grid">
+              </header>
+              <h2 className="giftbox-list-title" id="giftbox-list-title">Udvalget</h2>
+              <div className="giftbox-grid">
                 {giftboxCatalog.map((giftbox) => {
                   const items = giftboxProducts(giftbox);
+                  const hasVariants = items.some((item) => publicVariants(item.variants).length > 0);
+                  const soldOut = items.some((item) => !isProductAvailable(item));
                   return (
-                    <article className="card giftbox-card" key={giftbox.id}>
-                      <Link className="giftbox-visual-link" href={`/giftboxes/${giftbox.id}`} aria-label={`Se ${giftbox.title}`}>
-                        <div className="product-visual mini-row">
-                          <span className="giftbox-mark" aria-hidden="true">G</span>
-                          {items.slice(0, 4).map((product, index) => (
-                            <div className="selected-mini image-mini" key={product.id} style={{ "--gift-index": index } as React.CSSProperties}>
-                              {product.image ? <img src={product.image} alt="" loading="lazy" /> : product.brand.split(" ")[0]}
-                            </div>
-                          ))}
-                        </div>
-                      </Link>
-                      <div className="card-body">
-                        <div className="meta">{giftbox.category} · {items.length} produkter</div>
-                        <h3>{giftbox.title}</h3>
-                        <p>{giftbox.description}</p>
-                        <p className="giftbox-contents"><span>Gaveæsken indeholder</span>{items.map((item) => item.title).join(" · ")}</p>
-                        <div className="buy-row">
-                          <span className="price">{money(giftboxTotal(giftbox))}</span>
-                          <div className="card-actions">
-                            <Link className="btn" href={`/giftboxes/${giftbox.id}`}>Se gaveæsken</Link>
-                            {items.some((item) => publicVariants(item.variants).length > 0)
-                              ? <Link className="btn primary" href={`/giftboxes/${giftbox.id}`}>Vælg farve</Link>
-                              : <button className="btn primary" disabled={!items.length || items.some((item) => !isProductAvailable(item))} onClick={() => addGiftboxToCart(giftbox)}>{items.some((item) => !isProductAvailable(item)) ? "Udsolgt" : "Læg i kurv"}</button>}
-
-                          </div>
-                        </div>
-                      </div>
-                    </article>
+                    <GiftboxCard
+                      key={giftbox.id}
+                      giftbox={giftbox}
+                      items={items}
+                      total={giftboxTotal(giftbox)}
+                      available={items.length > 0 && !soldOut}
+                      detailLabel={hasVariants ? "Vælg farve" : undefined}
+                      purchaseAction={!hasVariants ? (
+                        <button className="btn primary" disabled={!items.length || soldOut} onClick={() => addGiftboxToCart(giftbox)}>
+                          {soldOut ? "Udsolgt" : "Læg i kurv"}
+                        </button>
+                      ) : undefined}
+                    />
                   );
                 })}
               </div>

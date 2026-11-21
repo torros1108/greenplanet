@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { GiftboxCard } from "@/app/_components/GiftboxCard";
 import { StoreSidebar } from "@/app/_components/StoreCategoryPage";
 import { StoreFooter } from "@/app/_components/StoreFooter";
 import { getGiftboxDetail, loadPublicRouteIds } from "@/lib/storefrontServer";
-import { money } from "@/lib/money";
 import { isProductAvailable } from "@/lib/catalogRules";
 
 const siteUrl = "https://www.greenplanet.dk";
@@ -66,38 +65,20 @@ export default async function GiftboxCollectionPage() {
       <StoreSidebar current="gaveaesker" />
       <section className="main">
         <div className="content category-page-content">
-          <header className="category-hero">
-            <span className="eyebrow">Klar til at give</span>
-            <h1>Gaveæsker til barsel, baby og nybagt mor</h1>
-            <p className="lead">Vælg en færdig gaveæske med udvalgte produkter, personlig korttekst og mulighed for levering direkte til modtageren.</p>
-          </header>
-          <section aria-labelledby="giftbox-list-title">
-            <div className="section-head"><div><span className="section-eyebrow">Udvalget</span><h2 id="giftbox-list-title">Se gaveæskerne</h2></div></div>
-            <div className="grid category-product-grid">
+          <section className="giftbox-section" aria-labelledby="giftbox-list-title">
+            <header className="giftbox-intro">
+              <span className="eyebrow">Klar til at give</span>
+              <h1>Gaveæsker til barsel, baby og nybagt mor</h1>
+              <p>Vælg en færdig gaveæske med udvalgte produkter, personlig korttekst og mulighed for levering direkte til modtageren.</p>
+            </header>
+            <h2 className="giftbox-list-title" id="giftbox-list-title">Udvalget</h2>
+            <div className="giftbox-grid">
               {details.map((detail) => {
                 const { giftbox, items, boxPrice } = detail!;
                 const total = items.reduce((sum, item) => sum + item.price, 0) + boxPrice;
                 const available = items.length > 0 && items.length === giftbox.productIds.length && items.every(isProductAvailable);
                 return (
-                  <article className="card giftbox-collection-card" key={giftbox.id}>
-                    <Link className="giftbox-collection-media" href={`/giftboxes/${giftbox.id}`} aria-label={`Se indholdet i ${giftbox.title}`}>
-                      {items.slice(0, 4).map((item) => (
-                        <span className="giftbox-collection-item" key={item.id}>
-                          {item.image ? <img src={item.image} alt={item.title} loading="lazy" /> : <span>{item.title}</span>}
-                        </span>
-                      ))}
-                    </Link>
-                    <div className="card-body">
-                      <div className="meta">{giftbox.category}</div>
-                      <h3><Link href={`/giftboxes/${giftbox.id}`}>{giftbox.title}</Link></h3>
-                      <p>{giftbox.description}</p>
-                      <ul className="giftbox-collection-contents" aria-label="Indhold i gaveæsken">
-                        {items.map((item) => <li key={item.id}>{item.title}</li>)}
-                      </ul>
-                      <span className="giftbox-collection-stock">{available ? "Gaveæske og kort inkluderet" : "Ikke på lager"}</span>
-                      <div className="buy-row"><span className="price">{money(total)}</span><Link className="btn primary" href={`/giftboxes/${giftbox.id}`}>Se gaveæsken</Link></div>
-                    </div>
-                  </article>
+                  <GiftboxCard key={giftbox.id} giftbox={giftbox} items={items} total={total} available={available} />
                 );
               })}
             </div>
