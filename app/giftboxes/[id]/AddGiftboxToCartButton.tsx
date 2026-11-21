@@ -31,7 +31,8 @@ export function AddGiftboxToCartButton({
   note,
   items,
   expectedItemCount,
-  total
+  total,
+  boxPrice
 }: {
   id: string;
   title: string;
@@ -39,6 +40,7 @@ export function AddGiftboxToCartButton({
   items: Product[];
   expectedItemCount: number;
   total: number;
+  boxPrice: number;
 }) {
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const productsWithVariants = useMemo(
@@ -56,6 +58,17 @@ export function AddGiftboxToCartButton({
       : item;
   });
   const adjustedTotal = total + resolvedItems.reduce((sum, item, index) => sum + item.price - items[index].price, 0);
+  // For unselected variants, quote the lowest available price rather than the parent product price.
+  let displayTotal = adjustedTotal;
+  let isStartingPrice = false;
+  for (const item of productsWithVariants) {
+    if (selectedVariants[item.id]) continue;
+    const prices = publicVariants(item.variants).filter((variant) => variant.stock > 0).map((variant) => variant.price);
+    if (!prices.length) continue;
+    const lowestPrice = Math.min(...prices);
+    displayTotal += lowestPrice - item.price;
+    isStartingPrice ||= prices.some((price) => price !== lowestPrice);
+  }
 
   useEffect(() => {
     if (hasAnalyticsConsent() && window.gtag) window.gtag("event", "view_item", ecommercePayload(adjustedTotal, resolvedItems.map((item) => analyticsItem({ id: item.id, title: item.title, brand: item.brand, price: item.price }))));
@@ -114,8 +127,15 @@ export function AddGiftboxToCartButton({
           </label>
         );
       })}
-      <button className="btn primary" disabled={!canAdd} onClick={addToCart}>
-        {unavailable ? "Udsolgt" : missingVariant ? "Vælg farve først" : `Læg i kurv · ${money(adjustedTotal)}`}
+      {items.length > 0 && items.length === expectedItemCount && (
+        <dl className="giftbox-price-breakdown" aria-live="polite" aria-atomic="true">
+          <div><dt>Produkter</dt><dd>{isStartingPrice && "Fra "}{money(displayTotal - boxPrice)}</dd></div>
+          <div><dt>Gaveæske</dt><dd>{money(boxPrice)}</dd></div>
+          <div className="giftbox-price-total"><dt>I alt uden fragt</dt><dd>{isStartingPrice && "Fra "}{money(displayTotal)}</dd></div>
+        </dl>
+      )}
+      <button className="btn primary" type="button" disabled={!canAdd} onClick={addToCart}>
+        {unavailable ? "Udsolgt" : missingVariant ? "Vælg farve først" : "Læg i kurv"}
       </button>
     </div>
   );

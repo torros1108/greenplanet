@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-import { money } from "@/lib/money";
 import { isProductAvailable } from "@/lib/catalogRules";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { giftboxes, initialProducts, productSpecs, type Product } from "@/lib/data";
+import { giftboxes, productSpecs } from "@/lib/data";
 import { AddGiftboxToCartButton } from "./AddGiftboxToCartButton";
 import { getGiftboxDetail } from "@/lib/storefrontServer";
 import { StoreSidebar } from "@/app/_components/StoreSidebar";
 import { StoreFooter } from "@/app/_components/StoreFooter";
 
-const boxPrice = 49;
 const siteUrl = "https://www.greenplanet.dk";
 const shippingDetails = {
   "@type": "OfferShippingDetails",
@@ -78,9 +76,8 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
   const { id } = await params;
   const detail = await getGiftboxDetail(id);
   if (!detail) notFound();
-  const { giftbox, items, boxPrice: liveBoxPrice } = detail;
-  const total = items.reduce((sum, product) => sum + product.price, 0) + liveBoxPrice;
-  const productsTotal = items.reduce((sum, product) => sum + product.price, 0);
+  const { giftbox, items, boxPrice } = detail;
+  const total = items.reduce((sum, product) => sum + product.price, 0) + boxPrice;
   const image = items.find((item) => item.image)?.image;
   const giftboxStructuredData = {
     "@context": "https://schema.org",
@@ -166,34 +163,60 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
 
       <section className="main">
         <div className="content">
-          <section className="product-detail">
+          <section className="product-detail giftbox-detail">
             <Link className="btn back-btn" href="/gaveaesker">Tilbage til gaveæsker</Link>
             <div className="product-detail-media giftbox-detail-media panel">
               <div className="giftbox-collage">
                 {items.map((product, index) => (
-                  <Link
+                  <div
                     className={`giftbox-collage-item giftbox-collage-item-${index + 1}`}
-                    href={`/products/${product.id}`}
                     key={product.id}
                   >
-                    {product.image ? <img src={product.image} alt={product.title} /> : <span className={`shape ${product.shape}`} />}
-                  </Link>
+                    {product.image ? <img src={product.image} alt={product.title} /> : <span className={`shape ${product.shape}`} aria-hidden="true" />}
+                  </div>
                 ))}
-              </div>
-              <div className="giftbox-media-note">
-                <strong>{items.length} produkter i æsken</strong>
-                <span>Indhold {money(productsTotal)} · gaveæske {money(boxPrice)}</span>
               </div>
             </div>
             <div className="product-detail-info panel">
-              <div className="meta">{giftbox.category} · {items.length} produkter</div>
+              <div className="meta">Gaveæske · {giftbox.category}</div>
               <h1>{giftbox.title}</h1>
               <p className="lead">{giftbox.description}</p>
-              <div className="detail-price">{money(total)}</div>
+              {items.length > 0 && <a className="detail-text-link" href="#gaveaeskens-indhold">Se indholdet ({items.length} produkter)</a>}
               <div className="purchase-panel">
-                <AddGiftboxToCartButton id={giftbox.id} title={giftbox.title} note={giftbox.note} items={items} expectedItemCount={giftbox.productIds.length} total={total} />
-                <Link className="btn" href="/#builder">Byg din egen</Link>
+                <AddGiftboxToCartButton id={giftbox.id} title={giftbox.title} note={giftbox.note} items={items} expectedItemCount={giftbox.productIds.length} total={total} boxPrice={boxPrice} />
+                <p className="giftbox-purchase-note">Tilføj en personlig hilsen i kurven. Gaven kan sendes direkte til modtageren.</p>
               </div>
+              {items.length > 0 && (
+                <section id="gaveaeskens-indhold" className="giftbox-contents" aria-labelledby="gaveaeskens-indhold-titel" tabIndex={-1}>
+                  <h2 className="included-title" id="gaveaeskens-indhold-titel">Indhold i gaveæsken</h2>
+                  <div className="included-products">
+                    {items.map((product) => {
+                      const facts = productSpecs(product).slice(0, 2);
+                      return (
+                        <article className="included-product" key={product.id}>
+                          <span className="included-product-image">
+                            {product.image ? <img src={product.image} alt="" loading="lazy" /> : <span className={`shape ${product.shape}`} aria-hidden="true" />}
+                          </span>
+                          <div className="included-product-copy">
+                            <span className="included-product-brand">{product.brand}</span>
+                            <h3>{product.title}</h3>
+                            <small>{product.description}</small>
+                            <span className="included-product-facts">
+                              {facts.map((spec) => (
+                                <span key={spec.label}>
+                                  <b>{spec.label}</b>
+                                  <em>{spec.value}</em>
+                                </span>
+                              ))}
+                            </span>
+                            <Link className="detail-text-link" href={`/products/${product.id}`} aria-label={`Se produkt: ${product.title}`}>Se produkt</Link>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
               <div className="giftbox-detail-grid">
                 <div className="giftbox-info-box">
                   <span>Passer til</span>
@@ -205,62 +228,17 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
                 </div>
               </div>
               <div className="detail-list">
-                <div><span>Gaveæske</span><strong>{money(boxPrice)}</strong></div>
-                <div><span>Indhold</span><strong>{items.length} produkter</strong></div>
-                <div><span>Kategori</span><strong>{giftbox.category}</strong></div>
                 <div><span>Pakning</span><strong>{giftbox.packing}</strong></div>
-                <div><span>Kort</span><strong>{giftbox.cardText}</strong></div>
                 <div><span>Levering</span><strong>{giftbox.delivery}</strong></div>
               </div>
               <div className="giftbox-story">
-                <h3>Hvorfor denne gaveæske?</h3>
+                <h2 className="included-title">Hvorfor denne gaveæske?</h2>
                 <p>{giftbox.why}</p>
                 <div className="giftbox-bullets">
                   {giftbox.details.map((detail) => <span key={detail}>{detail}</span>)}
                 </div>
               </div>
-              <div className="included-title-row">
-                <div>
-                  <h3 className="included-title">Indhold i gaveæsken</h3>
-                  <p>Produkterne er valgt, så æsken føles samlet, brugbar og klar til at give videre.</p>
-                </div>
-                <strong>{money(productsTotal)}</strong>
-              </div>
-              <div className="included-products">
-                {items.map((product, index) => {
-                  const facts = productSpecs(product).slice(0, 2);
-                  return (
-                  <Link className="included-product" href={`/products/${product.id}`} key={product.id}>
-                    <span className="included-product-image">
-                      {product.image ? <img src={product.image} alt={product.title} /> : <span className={`shape ${product.shape}`} />}
-                    </span>
-                    <span className="included-product-copy">
-                      <span className="included-product-brand">0{index + 1} · {product.brand}</span>
-                      <strong>{product.title}</strong>
-                      <small>{product.description}</small>
-                      <span className="included-product-facts">
-                        {facts.map((spec) => (
-                          <span key={`${product.id}-${spec.label}`}>
-                            <b>{spec.label}</b>
-                            <em>{spec.value}</em>
-                          </span>
-                        ))}
-                      </span>
-                    </span>
-                    <span className="included-product-price">{money(product.price)}</span>
-                  </Link>
-                  );
-                })}
-                <div className="giftbox-packaging-summary">
-                  <div>
-                    <span>Pakning</span>
-                    <strong>Greenplanet gaveæske</strong>
-                    <p>{giftbox.packing}</p>
-                  </div>
-                  <em>{money(boxPrice)}</em>
-                </div>
-              </div>
-
+              <Link className="detail-text-link" href="/#builder">Byg din egen gaveæske</Link>
             </div>
           </section>
         </div>

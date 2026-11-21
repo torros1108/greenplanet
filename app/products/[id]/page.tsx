@@ -265,8 +265,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="lead">{product.description}</p>
               <div className="purchase-panel">
                 <AddToCartButton product={product} />
-                {product.giftbox && <Link className="btn" href="/#builder">Brug i byg-selv</Link>}
               </div>
+              {product.giftbox && <Link className="detail-text-link" href="/#builder">Byg din egen gaveæske</Link>}
               {matchingProducts.length > 0 && (
                 <section className="matching-products" aria-labelledby="matching-products-title">
                   <div className="matching-products-head">

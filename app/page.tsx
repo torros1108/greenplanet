@@ -410,6 +410,8 @@ export default function Home() {
   const [createCustomerProfile, setCreateCustomerProfile] = useState(false);
   const [shipping, setShipping] = useState("");
   const [checkoutErrors, setCheckoutErrors] = useState<string[]>([]);
+  const [checkoutSubmitting, setCheckoutSubmitting] = useState(false);
+  const checkoutSubmittingRef = useRef(false);
   const [message, setMessage] = useState("");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [newsletterStatus, setNewsletterStatus] = useState("");
@@ -953,10 +955,13 @@ export default function Home() {
   }
 
   async function submitOrder() {
+    if (checkoutSubmittingRef.current) return;
     if (!validateCheckout()) {
       window.setTimeout(() => document.querySelector(".checkout-errors")?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
       return;
     }
+    checkoutSubmittingRef.current = true;
+    setCheckoutSubmitting(true);
 
     const shippingLine: CartLine | null = shippingFee > 0 ? {
       id: `shipping-${Date.now()}`,
@@ -993,6 +998,7 @@ export default function Home() {
 
     let orderId = `GP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    let redirecting = false;
     try {
       sendEcommerceEvent("begin_checkout", ecommercePayload(checkoutTotal, cartAnalyticsItems(cart)));
       const response = await fetch("/api/checkout", {
@@ -1025,6 +1031,7 @@ export default function Home() {
         void trackActivity("checkout_started", orderId);
 
         if (saved.url) {
+          redirecting = true;
           window.location.href = saved.url;
           return;
         }
@@ -1040,6 +1047,11 @@ export default function Home() {
       console.warn("Betaling kunne ikke startes.", error);
       window.alert("Betaling kunne ikke startes. Prøv igen eller kontakt Greenplanet.");
       return;
+    } finally {
+      if (!redirecting) {
+        checkoutSubmittingRef.current = false;
+        setCheckoutSubmitting(false);
+      }
     }
   }
 
@@ -1745,8 +1757,8 @@ export default function Home() {
                     </ul>
                   </div>
                 )}
-                <button className="btn primary" disabled={!cart.length} onClick={submitOrder}>
-                  Gå til sikker betaling
+                <button className="btn primary" disabled={!cart.length || checkoutSubmitting} onClick={submitOrder}>
+                  {checkoutSubmitting ? "Opretter sikker betaling..." : "Gå til sikker betaling"}
                 </button>
               </div>
               <div className="panel order-summary-panel">

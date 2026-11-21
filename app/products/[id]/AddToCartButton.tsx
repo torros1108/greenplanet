@@ -24,8 +24,8 @@ function variantColor(variant?: ProductVariant | null) {
   if (!variant) return null;
   const title = variant.title.toLowerCase();
   if (title.includes("beige")) return "#d8c4a6";
-  if (title.includes("sea blue")) return "#8fb8c9";
-  if (title.includes("forest green")) return "#2f5a3d";
+  if (title.includes("sea blue") || title.includes("havblå")) return "#8fb8c9";
+  if (title.includes("forest green") || title.includes("skovgrøn")) return "#2f5a3d";
   return "#dfeade";
 }
 
@@ -34,6 +34,9 @@ export function AddToCartButton({ product }: { product: Product }) {
   const { variantId, setVariantId, setImage } = useProductSelection();
   const selectedVariant = variants.find((variant) => variant.id === variantId) || null;
   const variantLabel = product.category === "Move" ? "størrelse" : "variant";
+  const availablePrices = variants.filter((variant) => variant.stock > 0).map((variant) => variant.price);
+  const displayedPrice = selectedVariant?.price ?? (availablePrices.length ? Math.min(...availablePrices) : product.price);
+  const isStartingPrice = !selectedVariant && availablePrices.some((price) => price !== displayedPrice);
 
   useEffect(() => {
     if (hasAnalyticsConsent() && window.gtag) window.gtag("event", "view_item", ecommercePayload(product.price, [analyticsItem({ id: product.id, title: product.title, brand: product.brand, price: product.price })]));
@@ -78,10 +81,11 @@ export function AddToCartButton({ product }: { product: Product }) {
 
   return (
     <>
+      <div className="detail-price" aria-live="polite">{isStartingPrice && "Fra "}{money(displayedPrice)}</div>
       {variants.length > 0 && (
         <div className="variant-picker">
-          <span>Vælg {variantLabel}</span>
-          <div className="variant-options" role="listbox" aria-label={`Vælg ${variantLabel}`}>
+          <span id="product-variant-label">Vælg {variantLabel}</span>
+          <div className="variant-options" role="group" aria-labelledby="product-variant-label">
             {variants.map((variant) => (
               <button
                 className={`variant-option ${selectedVariant?.id === variant.id ? "active" : ""}`}
@@ -89,8 +93,7 @@ export function AddToCartButton({ product }: { product: Product }) {
                 onClick={() => { setVariantId(variant.id); setImage(null); }}
                 disabled={variant.stock <= 0}
                 type="button"
-                role="option"
-                aria-selected={selectedVariant?.id === variant.id}
+                aria-pressed={selectedVariant?.id === variant.id}
                 style={{ ["--variant-color" as string]: variantColor(variant) || "#dfeade" }}
               >
                 {product.category !== "Move" && <span className="variant-swatch" />}
@@ -101,14 +104,7 @@ export function AddToCartButton({ product }: { product: Product }) {
           </div>
         </div>
       )}
-      {selectedVariant && (
-        <div className="variant-preview" style={{ ["--variant-color" as string]: variantColor(selectedVariant) || "#dfeade" }}>
-          <span className="variant-swatch" />
-          Valgt {variantLabel}: <strong>{selectedVariant.title}</strong>
-        </div>
-      )}
-      <div className="detail-price" aria-live="polite">{money(selectedVariant?.price ?? product.price)}</div>
-      <button className="btn primary" disabled={!canAddProduct(product, selectedVariant?.id)} onClick={addToCart}>
+      <button className="btn primary" type="button" disabled={!canAddProduct(product, selectedVariant?.id)} onClick={addToCart}>
         {!isProductAvailable(product) ? "Udsolgt" : variants.length > 0 && !selectedVariant ? `Vælg ${variantLabel} først` : "Læg i kurv"}
       </button>
     </>
