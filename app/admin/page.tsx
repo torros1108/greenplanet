@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { money } from "@/lib/money";
 
 type OrderLine = {
   id: string;
@@ -125,9 +126,6 @@ const productStatusLabels: Record<string, string> = {
 const statuses = Object.keys(statusLabels);
 const productStatuses = Object.keys(productStatusLabels);
 
-function money(value: number | string) {
-  return `${Math.round(Number(value) || 0).toLocaleString("da-DK")} kr.`;
-}
 
 function formatDate(value: string) {
   if (!value) return "Ingen dato";

@@ -1,5 +1,6 @@
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
 import { orderMailIdempotencyKey } from "@/lib/mailIdempotency";
+import { money as formatMoney } from "@/lib/money";
 
 type MailTemplate = {
   slug: string;
@@ -53,9 +54,6 @@ type SendEmailInput = {
   idempotencyKey?: string;
 };
 
-function formatMoney(value: number | string) {
-  return `${Math.round(Number(value) || 0)} kr.`;
-}
 
 function escapeHtml(value: string) {
   return value

@@ -1478,6 +1478,31 @@ input:focus, textarea:focus, select:focus {
   text-underline-offset: 4px;
 }
 
+.giftbox-collection-media {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  aspect-ratio: 4 / 3;
+  gap: 8px;
+  padding: 18px;
+  background: #e8eee6;
+  overflow: hidden;
+}
+.giftbox-collection-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  background: #fffdf8;
+}
+.giftbox-collection-item:first-child:nth-last-child(3) { grid-row: span 2; }
+.giftbox-collection-item img { width: 100%; height: 100%; min-height: 0; object-fit: contain; padding: 10px; }
+.giftbox-collection-contents { margin: 0 0 16px; padding-left: 18px; font-size: 14px; line-height: 1.6; color: var(--muted); }
+.giftbox-collection-stock { display: block; margin-top: auto; padding-bottom: 14px; font-size: 13px; color: var(--forest); }
+.giftbox-collection-card .buy-row { flex-wrap: wrap; gap: 14px; }
+.giftbox-collection-card .buy-row .btn { min-width: 0; white-space: normal; }
+
 /* Search landing page guides */
 .category-guide,
 .category-faq {

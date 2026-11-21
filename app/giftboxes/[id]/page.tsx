@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { money } from "@/lib/money";
+import { isProductAvailable } from "@/lib/catalogRules";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { giftboxes, initialProducts, productSpecs, type Product } from "@/lib/data";
@@ -21,9 +23,6 @@ const returnPolicy = {
   returnFees: "https://schema.org/ReturnFeesCustomerResponsibility"
 };
 
-function money(value: number) {
-  return `${Math.round(value)} kr.`;
-}
 
 
 function absoluteUrl(url?: string) {
@@ -109,7 +108,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
           "@type": "Offer",
           price: total.toFixed(2),
           priceCurrency: "DKK",
-          availability: "https://schema.org/InStock",
+          availability: items.length > 0 && items.length === giftbox.productIds.length && items.every(isProductAvailable) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
           itemCondition: "https://schema.org/NewCondition",
           url: `${siteUrl}/giftboxes/${giftbox.id}`,
           shippingDetails,
@@ -205,7 +204,7 @@ export default async function GiftboxPage({ params }: GiftboxPageProps) {
               <p className="lead">{giftbox.description}</p>
               <div className="detail-price">{money(total)}</div>
               <div className="purchase-panel">
-                <AddGiftboxToCartButton id={giftbox.id} title={giftbox.title} note={giftbox.note} items={items} total={total} />
+                <AddGiftboxToCartButton id={giftbox.id} title={giftbox.title} note={giftbox.note} items={items} expectedItemCount={giftbox.productIds.length} total={total} />
                 <Link className="btn" href="/#builder">Byg din egen</Link>
               </div>
               <div className="giftbox-detail-grid">

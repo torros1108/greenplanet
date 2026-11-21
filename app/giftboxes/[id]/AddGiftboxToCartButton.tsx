@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { hasAnalyticsConsent } from "@/app/AnalyticsConsent";
 import { analyticsItem, ecommercePayload } from "@/lib/analytics";
 import type { Product, ProductVariant } from "@/lib/data";
+import { canAddProduct, isProductAvailable, publicVariants } from "@/lib/catalogRules";
+import { money } from "@/lib/money";
 
 const cartStorageKey = "greenplanet-cart";
 
@@ -28,22 +30,26 @@ export function AddGiftboxToCartButton({
   title,
   note,
   items,
+  expectedItemCount,
   total
 }: {
   id: string;
   title: string;
   note: string;
   items: Product[];
+  expectedItemCount: number;
   total: number;
 }) {
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const productsWithVariants = useMemo(
-    () => items.filter((item) => item.variants?.some((variant) => variant.status !== "archived")),
+    () => items.filter((item) => publicVariants(item.variants).length > 0),
     [items]
   );
   const missingVariant = productsWithVariants.some((item) => !selectedVariants[item.id]);
+  const unavailable = !items.length || items.length !== expectedItemCount || items.some((item) => !isProductAvailable(item));
+  const canAdd = !unavailable && items.every((item) => canAddProduct(item, selectedVariants[item.id]));
   const resolvedItems: CartItem[] = items.map((item) => {
-    const variants = item.variants?.filter((variant) => variant.status !== "archived") || [];
+    const variants = publicVariants(item.variants);
     const variant = variants.find((candidate) => candidate.id === selectedVariants[item.id]);
     return variant
       ? { ...item, price: variant.price, stock: variant.stock, sku: variant.sku, image: variant.image || item.image, selectedVariant: variant }
@@ -56,7 +62,7 @@ export function AddGiftboxToCartButton({
   }, [adjustedTotal, resolvedItems]);
 
   function addToCart() {
-    if (missingVariant) return;
+    if (!canAdd) return;
     const storedCart = window.localStorage.getItem(cartStorageKey);
     let cart: CartLine[] = [];
 
@@ -90,7 +96,7 @@ export function AddGiftboxToCartButton({
   return (
     <div className="giftbox-purchase-controls">
       {productsWithVariants.map((item) => {
-        const variants = item.variants?.filter((variant) => variant.status !== "archived") || [];
+        const variants = publicVariants(item.variants);
         return (
           <label className="giftbox-variant-field" key={item.id}>
             <span>Vælg farve til {item.title}</span>
@@ -108,8 +114,8 @@ export function AddGiftboxToCartButton({
           </label>
         );
       })}
-      <button className="btn primary" disabled={missingVariant} onClick={addToCart}>
-        {missingVariant ? "Vælg farve først" : `Læg i kurv · ${Math.round(adjustedTotal)} kr.`}
+      <button className="btn primary" disabled={!canAdd} onClick={addToCart}>
+        {unavailable ? "Udsolgt" : missingVariant ? "Vælg farve først" : `Læg i kurv · ${money(adjustedTotal)}`}
       </button>
     </div>
   );

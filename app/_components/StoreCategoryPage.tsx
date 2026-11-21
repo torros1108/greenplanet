@@ -1,11 +1,9 @@
 import Link from "next/link";
 import type { Product } from "@/lib/data";
+import { money } from "@/lib/money";
 
 const siteUrl = "https://www.greenplanet.dk";
 
-function money(value: number) {
-  return `${Math.round(value)} kr.`;
-}
 
 function moveProductGroup(title: string) {
   const value = title.toLowerCase();

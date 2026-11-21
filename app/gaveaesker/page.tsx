@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StoreSidebar } from "@/app/_components/StoreCategoryPage";
-import { giftboxes } from "@/lib/data";
-import { getGiftboxDetail } from "@/lib/storefrontServer";
+import { getGiftboxDetail, loadPublicRouteIds } from "@/lib/storefrontServer";
+import { money } from "@/lib/money";
+import { isProductAvailable } from "@/lib/catalogRules";
 
 const siteUrl = "https://www.greenplanet.dk";
 
@@ -18,12 +19,10 @@ export const metadata: Metadata = {
   }
 };
 
-function money(value: number) {
-  return `${Math.round(value)} kr.`;
-}
 
 export default async function GiftboxCollectionPage() {
-  const details = (await Promise.all(giftboxes.map((giftbox) => getGiftboxDetail(giftbox.id)))).filter(Boolean);
+  const { giftboxIds } = await loadPublicRouteIds();
+  const details = (await Promise.all(giftboxIds.map(getGiftboxDetail))).filter(Boolean);
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -78,16 +77,24 @@ export default async function GiftboxCollectionPage() {
               {details.map((detail) => {
                 const { giftbox, items, boxPrice } = detail!;
                 const total = items.reduce((sum, item) => sum + item.price, 0) + boxPrice;
-                const image = items.find((item) => item.image)?.image;
+                const available = items.length > 0 && items.length === giftbox.productIds.length && items.every(isProductAvailable);
                 return (
-                  <article className="card" key={giftbox.id}>
-                    <Link className="product-visual category-product-image" href={`/giftboxes/${giftbox.id}`} aria-label={`Se ${giftbox.title}`}>
-                      {image ? <img className="product-image" src={image} alt={giftbox.title} loading="lazy" /> : <span className="giftbox-mark">G</span>}
+                  <article className="card giftbox-collection-card" key={giftbox.id}>
+                    <Link className="giftbox-collection-media" href={`/giftboxes/${giftbox.id}`} aria-label={`Se indholdet i ${giftbox.title}`}>
+                      {items.slice(0, 4).map((item) => (
+                        <span className="giftbox-collection-item" key={item.id}>
+                          {item.image ? <img src={item.image} alt={item.title} loading="lazy" /> : <span>{item.title}</span>}
+                        </span>
+                      ))}
                     </Link>
                     <div className="card-body">
                       <div className="meta">{giftbox.category} · {items.length} produkter</div>
                       <h3><Link href={`/giftboxes/${giftbox.id}`}>{giftbox.title}</Link></h3>
                       <p>{giftbox.description}</p>
+                      <ul className="giftbox-collection-contents" aria-label="Indhold i gaveæsken">
+                        {items.map((item) => <li key={item.id}>{item.title}</li>)}
+                      </ul>
+                      <span className="giftbox-collection-stock">{available ? "Gaveæske og kort inkluderet" : "Ikke på lager"}</span>
                       <div className="buy-row"><span className="price">{money(total)}</span><Link className="btn primary" href={`/giftboxes/${giftbox.id}`}>Se gaveæsken</Link></div>
                     </div>
                   </article>

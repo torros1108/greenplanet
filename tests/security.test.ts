@@ -8,6 +8,45 @@ import { createNewsletterToken, verifyNewsletterToken } from "../lib/newsletterT
 import { orderMailIdempotencyKey } from "../lib/mailIdempotency.ts";
 import { isPaidCheckoutEvent } from "../lib/stripeEvents.ts";
 import { verifyStripeSignature } from "../lib/stripeSignature.ts";
+import { canAddProduct, isProductAvailable, publicVariants } from "../lib/catalogRules.ts";
+import { money } from "../lib/money.ts";
+
+test("storefront and checkout share live variant and stock rules", () => {
+  const variants = [
+    { id: "live", stock: 1, status: "live" },
+    { id: "sold-out", stock: 0, status: "live" },
+    { id: "draft", stock: 10, status: "draft" },
+    { id: "archived", stock: 10, status: "archived" },
+    { id: "legacy", stock: 1 }
+  ];
+  assert.deepEqual(publicVariants(variants).map((variant) => variant.id), ["live", "sold-out", "legacy"]);
+  const product = { stock: 100, variants };
+  assert.equal(canAddProduct(product), false);
+  assert.equal(canAddProduct(product, "live"), true);
+  assert.equal(canAddProduct(product, "legacy"), true);
+  for (const id of ["sold-out", "draft", "archived", "unknown"]) assert.equal(canAddProduct(product, id), false);
+  assert.equal(isProductAvailable(product), true);
+  assert.equal(isProductAvailable({ stock: 100, variants: variants.slice(2, 4) }), false);
+  assert.equal(canAddProduct({ stock: 100, variants: variants.slice(2, 4) }), false);
+  assert.equal(isProductAvailable({ stock: 100, variants: [variants[1]] }), false);
+  assert.equal(canAddProduct({ stock: 0 }), false);
+  assert.equal(canAddProduct({ stock: 1 }), true);
+  assert.equal(canAddProduct({ stock: 1 }, "unknown"), false);
+});
+
+test("all price displays preserve Danish ore amounts", () => {
+  assert.equal(money(149.95), "149,95 kr.");
+  assert.equal(money("536.75"), "536,75 kr.");
+  assert.equal(money(49), "49,00 kr.");
+  assert.equal(money(0), "0,00 kr.");
+  assert.equal(money(536.75 + 148.33 + 49), "734,08 kr.");
+});
+
+test("product detail cart lines include the checkout source", async () => {
+  const source = await readFile(new URL("../app/products/[id]/AddToCartButton.tsx", import.meta.url), "utf8");
+  assert.match(source, /source:\s*\{\s*type:\s*"product"/);
+  assert.match(source, /if \(!canAddProduct\(product, selectedVariant\?\.id\)\) return/);
+});
 
 test("Stripe accepts any matching v1 signature inside the time window", () => {
   const payload = JSON.stringify({ id: "evt_test" });

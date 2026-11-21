@@ -8,6 +8,7 @@ import {
   type CheckoutVariant
 } from "@/lib/checkoutPricing";
 import { supabaseAdminRequest } from "@/lib/supabaseAdmin";
+import { canAddProduct, publicVariants } from "@/lib/catalogRules";
 
 type LineSource = {
   type?: "giftbox" | "custom" | "product";
@@ -113,9 +114,7 @@ function validateOrder(payload: OrderInput) {
 }
 
 function liveVariants(product: CheckoutProduct) {
-  return Array.isArray(product.variants)
-    ? product.variants.filter((variant) => variant.status !== "draft" && variant.status !== "archived")
-    : [];
+  return publicVariants(product.variants);
 }
 
 async function priceOrder(payload: OrderInput): Promise<OrderInput> {
@@ -163,9 +162,10 @@ async function priceOrder(payload: OrderInput): Promise<OrderInput> {
       const requestedVariantId = clean(item.selectedVariant?.id || line.source?.selectedVariants?.[item.id]);
       const variant = requestedVariantId ? variants.find((candidate) => candidate.id === requestedVariantId) : undefined;
       if (requestedVariantId && !variant) throw new CheckoutError(`${product.title}: Varianten er ikke længere tilgængelig`);
-      if (sourceType !== "giftbox" && variants.length > 0 && !variant) {
+      if (product.variants?.length && !variant) {
         throw new CheckoutError(`${product.title}: Vælg en variant før betaling`);
       }
+      if (!canAddProduct(product, variant?.id)) throw new CheckoutError(`${product.title}: Ikke på lager`);
 
       const stockKey = `${product.legacy_id}::${variant?.id || ""}`;
       requestedStock.set(stockKey, (requestedStock.get(stockKey) || 0) + 1);

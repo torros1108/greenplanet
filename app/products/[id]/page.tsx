@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { money } from "@/lib/money";
+import { publicVariants } from "@/lib/catalogRules";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -76,9 +78,6 @@ const getMoveProducts = cache(async () => {
 });
 
 
-function money(value: number) {
-  return `${Math.round(value)} kr.`;
-}
 
 function moveSeries(title: string) {
   return title
@@ -89,7 +88,7 @@ function moveSeries(title: string) {
 
 
 function productGalleryImages(product: (typeof initialProducts)[number]) {
-  const images = [product.image, ...(product.images || []), ...(product.variants || []).map((variant) => variant.image)]
+  const images = [product.image, ...(product.images || []), ...publicVariants(product.variants).map((variant) => variant.image)]
     .filter(Boolean) as string[];
   return Array.from(new Set(images));
 }
@@ -164,7 +163,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
   const specs = productSpecs(product);
   const images = productGalleryImages(product);
-  const liveVariants = product.variants?.filter((variant) => variant.status !== "archived") || [];
+  const liveVariants = publicVariants(product.variants);
   const moveProducts = product.category === "Move" ? await getMoveProducts() : [];
   const matchingProducts = moveProducts.filter((item) => item.id !== product.id && moveSeries(item.title) === moveSeries(product.title));
   const categoryHref = product.category === "Move" ? "/move" : product.category === "Naturlig beauty" ? "/wellness" : product.category === "Baby & barsel" ? "/babygaver" : "/";

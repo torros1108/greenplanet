@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { hasAnalyticsConsent } from "@/app/AnalyticsConsent";
 import { analyticsItem, ecommercePayload } from "@/lib/analytics";
 import type { Product, ProductVariant } from "@/lib/data";
+import { canAddProduct, isProductAvailable, publicVariants } from "@/lib/catalogRules";
+import { money } from "@/lib/money";
 
 const cartStorageKey = "greenplanet-cart";
 
@@ -14,6 +16,7 @@ type CartLine = {
   cardText: string;
   items: Array<Product & { selectedVariant?: ProductVariant }>;
   total: number;
+  source: { type: "product"; selectedIds: string[]; selectedVariants: Record<string, string> };
 };
 
 function variantColor(variant?: ProductVariant | null) {
@@ -26,7 +29,7 @@ function variantColor(variant?: ProductVariant | null) {
 }
 
 export function AddToCartButton({ product }: { product: Product }) {
-  const variants = useMemo(() => product.variants?.filter((variant) => variant.status !== "archived") || [], [product]);
+  const variants = useMemo(() => publicVariants(product.variants), [product]);
   const [variantId, setVariantId] = useState("");
   const selectedVariant = variants.find((variant) => variant.id === variantId) || null;
   const variantLabel = product.category === "Move" ? "størrelse" : "variant";
@@ -36,7 +39,7 @@ export function AddToCartButton({ product }: { product: Product }) {
   }, [product]);
 
   function addToCart() {
-    if (variants.length > 0 && !selectedVariant) return;
+    if (!canAddProduct(product, selectedVariant?.id)) return;
 
     const storedCart = window.localStorage.getItem(cartStorageKey);
     let cart: CartLine[] = [];
@@ -59,7 +62,12 @@ export function AddToCartButton({ product }: { product: Product }) {
       note: product.brand,
       cardText: "",
       items: [item],
-      total: item.price
+      total: item.price,
+      source: {
+        type: "product",
+        selectedIds: [product.id],
+        selectedVariants: selectedVariant ? { [product.id]: selectedVariant.id } : {}
+      }
     });
 
     window.localStorage.setItem(cartStorageKey, JSON.stringify(cart));
@@ -86,7 +94,7 @@ export function AddToCartButton({ product }: { product: Product }) {
               >
                 {product.category !== "Move" && <span className="variant-swatch" />}
                 <strong>{variant.title}</strong>
-                <em>{Math.round(variant.price)} kr. · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}</em>
+                <em>{money(variant.price)} · {variant.stock > 0 ? `${variant.stock} på lager` : "Ikke på lager"}</em>
               </button>
             ))}
           </div>
@@ -103,8 +111,8 @@ export function AddToCartButton({ product }: { product: Product }) {
           <img src={selectedVariant.image} alt={`${product.title} - ${selectedVariant.title}`} />
         </div>
       )}
-      <button className="btn primary" disabled={variants.length > 0 && !selectedVariant} onClick={addToCart}>
-        {variants.length > 0 && !selectedVariant ? `Vælg ${variantLabel} først` : "Læg i kurv"}
+      <button className="btn primary" disabled={!canAddProduct(product, selectedVariant?.id)} onClick={addToCart}>
+        {!isProductAvailable(product) ? "Udsolgt" : variants.length > 0 && !selectedVariant ? `Vælg ${variantLabel} først` : "Læg i kurv"}
       </button>
     </>
   );

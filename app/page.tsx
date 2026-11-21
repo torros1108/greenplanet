@@ -7,6 +7,8 @@ import { hasAnalyticsConsent, openCookieSettings } from "./AnalyticsConsent";
 import { analyticsItem, ecommercePayload, type AnalyticsItem } from "@/lib/analytics";
 import { giftboxes as initialGiftboxes, initialProducts, productSpecs, type Giftbox, type Product, type ProductVariant } from "@/lib/data";
 import { polishDanishProductCopy } from "@/lib/publicCopy";
+import { canAddProduct, isProductAvailable, publicVariants } from "@/lib/catalogRules";
+import { money } from "@/lib/money";
 
 const boxPrice = 49;
 const cardPrice = 0;
@@ -151,9 +153,6 @@ async function trackVerifiedPurchase(orderNumber: string) {
   sendEcommerceEvent("purchase", data.event);
   window.localStorage.setItem(storageKey, "sent");
 }
-function money(value: number) {
-  return `${Math.round(value)} kr.`;
-}
 
 function moveSeries(title: string) {
   return title
@@ -265,7 +264,6 @@ function fromSupabaseProduct(row: SupabaseProductRow): Product {
             image: String(variant.image || ""),
             status: variant.status || "live"
           }))
-          .filter((variant) => variant.status !== "archived")
       : [],
     image: row.image_url || "",
     images: Array.isArray(row.images) ? row.images.filter(Boolean) : undefined,
@@ -322,7 +320,7 @@ function ProductVisual({ product, variant }: { product: Product; variant?: Produ
 }
 
 function productGalleryImages(product: Product, variant?: ProductVariant | null) {
-  const images = [variant?.image, product.image, ...(product.images || []), ...(product.variants || []).map((item) => item.image)]
+  const images = [variant?.image, product.image, ...(product.images || []), ...publicVariants(product.variants).map((item) => item.image)]
     .filter(Boolean) as string[];
   return Array.from(new Set(images));
 }
@@ -393,6 +391,7 @@ export default function Home() {
   const [moveFilter, setMoveFilter] = useState("Alle");
   const [occasion, setOccasion] = useState("Alle");
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [cartRestored, setCartRestored] = useState(false);
   const [csvText, setCsvText] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -425,14 +424,14 @@ export default function Home() {
     () => ["Alle", ...Array.from(new Set(products.flatMap((product) => product.occasions)))],
     [products]
   );
-  const eligibleProducts = products.filter((product) => product.giftbox && product.status === "Live");
+  const eligibleProducts = products.filter((product) => product.giftbox && product.status === "Live" && isProductAvailable(product));
   const moveFilters = ["Alle", "Leggings", "Toppe & sports-bh’er", "Hoodies & cardigans"];
   const categoryProducts = category === "Alle" ? products : products.filter((product) => product.category === category);
   const filteredProducts = category === "Move" && moveFilter !== "Alle"
     ? categoryProducts.filter((product) => moveProductType(product.title) === moveFilter)
     : categoryProducts;
   const productCards: ProductCardItem[] = filteredProducts.flatMap((product) => {
-    const variants = product.variants?.filter((variant) => variant.status !== "archived") || [];
+    const variants = publicVariants(product.variants);
     if (!variants.length || product.category === "Move") {
       return [{
         key: product.id,
@@ -464,16 +463,16 @@ export default function Home() {
       )
     : [];
   const selectedProductSpecs = selectedProduct ? productSpecs(selectedProduct) : [];
-  const selectedProductVariants = selectedProduct?.variants?.filter((variant) => variant.status !== "archived") || [];
+  const selectedProductVariants = publicVariants(selectedProduct?.variants);
   const selectedProductVariant =
     selectedProductVariants.find((variant) => variant.id === selectedVariantId) || null;
-  const selectedProductVariantUnavailable = !!selectedProductVariant && selectedProductVariant.stock <= 0;
+  const selectedProductVariantUnavailable = !!selectedProduct && (!isProductAvailable(selectedProduct) || (!!selectedProductVariant && selectedProductVariant.stock <= 0));
   const selectedProductPrice = selectedProductVariant?.price ?? selectedProduct?.price ?? 0;
   const filteredBuilderProducts =
     occasion === "Alle" ? eligibleProducts : eligibleProducts.filter((product) => product.occasions.includes(occasion));
   const selectedProducts = selected.map((id) => products.find((product) => product.id === id)).filter(Boolean) as Product[];
   const selectedBuilderItems = selectedProducts.map((product) => {
-    const variants = product.variants?.filter((variant) => variant.status !== "archived") || [];
+    const variants = publicVariants(product.variants);
     const selectedVariant = variants.find((variant) => variant.id === selectedBuilderVariants[product.id]) || null;
     const item: CartItem = selectedVariant
       ? { ...product, price: selectedVariant.price, stock: selectedVariant.stock, sku: selectedVariant.sku, image: selectedVariant.image || product.image, selectedVariant }
@@ -481,6 +480,7 @@ export default function Home() {
     return { product, variants, selectedVariant, item };
   });
   const missingBuilderVariant = selectedBuilderItems.some(({ variants, selectedVariant }) => variants.length > 0 && !selectedVariant);
+  const unavailableBuilderItem = selectedBuilderItems.some(({ product, selectedVariant }) => !canAddProduct(product, selectedVariant?.id));
   const customGiftboxTotal = selectedBuilderItems.reduce((sum, { item }) => sum + item.price, 0) + boxPrice;
   const cartTotal = cart.reduce((sum, line) => sum + line.total, 0);
   const cartProductsTotal = cart.reduce((sum, line) => sum + line.items.reduce((itemSum, item) => itemSum + item.price, 0), 0);
@@ -587,19 +587,20 @@ export default function Home() {
 
   useEffect(() => {
     const storedCart = window.localStorage.getItem(cartStorageKey);
-    if (!storedCart) return;
-
     try {
-      const parsed = JSON.parse(storedCart) as CartLine[];
+      const parsed = storedCart ? JSON.parse(storedCart) as CartLine[] : [];
       if (Array.isArray(parsed)) setCart(parsed);
     } catch {
       window.localStorage.removeItem(cartStorageKey);
+    } finally {
+      setCartRestored(true);
     }
   }, []);
 
   useEffect(() => {
+    if (!cartRestored) return;
     window.localStorage.setItem(cartStorageKey, JSON.stringify(cart));
-  }, [cart]);
+  }, [cart, cartRestored]);
 
   useEffect(() => {
     if (!visitorSessionId) return;
@@ -828,6 +829,7 @@ export default function Home() {
 
   function addGiftboxToCart(giftbox: Giftbox) {
     const items = giftboxProducts(giftbox);
+    if (!items.length || items.length !== giftbox.productIds.length || items.some((item) => !canAddProduct(item))) return;
     setCart((current) => [
       ...current,
       {
@@ -850,7 +852,7 @@ export default function Home() {
   }
 
   function addCustomGiftboxToCart() {
-    if (missingBuilderVariant || !selectedBuilderItems.length) return;
+    if (unavailableBuilderItem || !selectedBuilderItems.length) return;
     setCart((current) => {
       const existing = editingCartLineId ? current.find((line) => line.id === editingCartLineId) : null;
       const updatedLine: CartLine = {
@@ -904,6 +906,7 @@ export default function Home() {
   }
 
   function addProductToCart(product: Product, variant?: ProductVariant | null) {
+    if (!canAddProduct(product, variant?.id)) return;
     const item: CartItem = variant
       ? { ...product, price: variant.price, stock: variant.stock, sku: variant.sku, image: variant.image || product.image, selectedVariant: variant }
       : product;
@@ -1341,9 +1344,9 @@ export default function Home() {
                           <span className="price">{money(giftboxTotal(giftbox))}</span>
                           <div className="card-actions">
                             <Link className="btn" href={`/giftboxes/${giftbox.id}`}>Se gaveæsken</Link>
-                            {items.some((item) => item.variants?.some((variant) => variant.status !== "archived"))
+                            {items.some((item) => publicVariants(item.variants).length > 0)
                               ? <Link className="btn primary" href={`/giftboxes/${giftbox.id}`}>Vælg farve</Link>
-                              : <button className="btn primary" onClick={() => addGiftboxToCart(giftbox)}>Læg i kurv</button>}
+                              : <button className="btn primary" disabled={!items.length || items.some((item) => !isProductAvailable(item))} onClick={() => addGiftboxToCart(giftbox)}>{items.some((item) => !isProductAvailable(item)) ? "Udsolgt" : "Læg i kurv"}</button>}
 
                           </div>
                         </div>
@@ -1424,10 +1427,10 @@ export default function Home() {
                               }
                               addProductToCart(card.product);
                             }}
-                            disabled={!!card.variant && card.variant.stock <= 0}
-                            aria-label={card.product.category === "Move" && !card.variant ? "Vælg størrelse" : card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
+                            disabled={card.variant ? !canAddProduct(card.product, card.variant.id) : !isProductAvailable(card.product)}
+                            aria-label={!isProductAvailable(card.product) || card.variant?.stock === 0 ? "Udsolgt" : card.product.category === "Move" && !card.variant ? "Vælg størrelse" : "Læg i kurv"}
                           >
-                            {card.product.category === "Move" && !card.variant ? "Vælg størrelse" : card.variant?.stock === 0 ? "Udsolgt" : "Læg i kurv"}
+                            {!isProductAvailable(card.product) || card.variant?.stock === 0 ? "Udsolgt" : card.product.category === "Move" && !card.variant ? "Vælg størrelse" : "Læg i kurv"}
                           </button>
                         </div>
                       </div>
@@ -1628,7 +1631,8 @@ export default function Home() {
                       <div className="total"><span>Total gaveæske</span><em>{money(customGiftboxTotal)}</em></div>
                     </div>
                     {missingBuilderVariant && <p className="builder-warning">Vælg farve på alle produkter med varianter, før gaveæsken lægges i kurven.</p>}
-                    <button className="btn primary" disabled={missingBuilderVariant || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
+                    {!missingBuilderVariant && unavailableBuilderItem && <p className="builder-warning">Et valgt produkt er ikke længere på lager. Fjern det eller vælg en anden variant.</p>}
+                    <button className="btn primary" disabled={unavailableBuilderItem || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
                       {missingBuilderVariant ? "Vælg farve først" : editingCartLineId ? "Gem ændringer" : "Læg i kurv"}
                     </button>
                   </div>
@@ -1638,7 +1642,7 @@ export default function Home() {
                     <span>Din gaveæske</span>
                     <strong>{selectedBuilderItems.length} produkter · {money(customGiftboxTotal)}</strong>
                   </div>
-                  <button className="btn primary" disabled={missingBuilderVariant || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
+                  <button className="btn primary" disabled={unavailableBuilderItem || !selectedBuilderItems.length} onClick={addCustomGiftboxToCart}>
                     {missingBuilderVariant ? "Vælg farve" : editingCartLineId ? "Gem ændringer" : "Læg i kurv"}
                   </button>
                 </div>
